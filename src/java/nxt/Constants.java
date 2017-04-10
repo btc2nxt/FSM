@@ -16,6 +16,7 @@ public final class Constants {
     public static final long INITIAL_BASE_TARGET = 153722867;
     public static final long MAX_BASE_TARGET = MAX_BALANCE_NXT * INITIAL_BASE_TARGET;
     public static final int MAX_ROLLBACK = Nxt.getIntProperty("nxt.maxRollback");
+
     static {
         if (MAX_ROLLBACK < 1440) {
             throw new RuntimeException("nxt.maxRollback must be at least 1440");
@@ -82,6 +83,8 @@ public final class Constants {
 	public static final long AUTOMATED_TRANSACTIONS_STEP_COST_NQT = 1 * ONE_NXT / 4; 
 	public static final long MAX_AUTOMATED_TRANSATIONS_STEP_FEE_NQT = 2 * ONE_NXT;
 	public static final int AUTOMATED_TRANSACTION_FINISHED = Integer.MAX_VALUE;	
+	public static final int MAX_PLAYERS_PER_POINT = 20;
+	public static final int MAX_BUILDING_POINT = 20;
 
     public static final int[] MIN_VERSION = new int[] {1, 2};
 
