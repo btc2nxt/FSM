@@ -1529,12 +1529,12 @@ public interface Attachment extends Appendix {
 			this.name = (String) attachmentData.get("name");
 			this.description = (String) attachmentData.get("description");
 			//Logger.logDebugMessage("after description");
-			machineCode = Convert.parseHexString((String)attachmentData.get("machineCode"));
+			this.machineCode = Convert.parseHexString((String)attachmentData.get("machineCode"));
 			/*if (machineCode.length > machineCodePages*Constants.AUTOMATED_TRANSACTION_PAGE_SIZE) {
 				throw new NxtException.NotValidException("Max mchine code length exceeded: " + machineCode.length);
 			}*/
-			machineData = Convert.parseHexString((String)attachmentData.get("machineData"));
-			variables = Convert.parseHexString((String)attachmentData.get("variables"));
+			this.machineData = Convert.parseHexString((String)attachmentData.get("machineData"));
+			this.variables = Convert.parseHexString((String)attachmentData.get("variables"));
 			
 			try {
 				this.totalPages = AT_Controller.checkCreationBytes( machineCode, machineData, variables , Nxt.getBlockchain().getHeight() );
@@ -1628,26 +1628,26 @@ public interface Attachment extends Appendix {
 				byte transactionVersion) throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			
-			atId = buffer.getLong();
-			pc = buffer.getShort();
-			steps = buffer.getShort();			
-			timeStamp = buffer.getLong();			
-			lastStateId = buffer.getLong();
-			atPayments = new ArrayList<AT_Transaction>();
+			this.atId = buffer.getLong();
+			this.pc = buffer.getShort();
+			this.steps = buffer.getShort();			
+			this.timeStamp = buffer.getLong();			
+			this.lastStateId = buffer.getLong();
+			this.atPayments = new ArrayList<AT_Transaction>();
 			
 			byte atPaymentsCount = buffer.get();		
 			for ( byte i=0; i < atPaymentsCount ; i++) {
 				AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(buffer.getLong()), buffer.getLong(), null);
-				atPayments.add(tx);
+				this.atPayments.add(tx);
 			}
 
 			short machineCodeAttachmentSize = buffer.getShort();
-			machineCode = new byte[machineCodeAttachmentSize];
-			buffer.get(machineCode);
+			this.machineCode = new byte[machineCodeAttachmentSize];
+			buffer.get(this.machineCode);
 			
 			short machineDataAttachmentSize = buffer.getShort();
-			machineData = new byte[machineDataAttachmentSize];
-			buffer.get(machineData);		
+			this.machineData = new byte[machineDataAttachmentSize];
+			buffer.get(this.machineData);		
 		}
 
 		AutomatedTransactionsState(JSONObject attachmentData) throws NxtException.NotValidException {
@@ -1670,8 +1670,8 @@ public interface Attachment extends Appendix {
     			
             }   
             
-			machineCode = Convert.parseHexString((String)attachmentData.get("machineCode"));
-			machineData = Convert.parseHexString((String)attachmentData.get("machineData"));
+			this.machineCode = Convert.parseHexString((String)attachmentData.get("machineCode"));
+			this.machineData = Convert.parseHexString((String)attachmentData.get("machineData"));
             
 		}
 		
@@ -1987,5 +1987,56 @@ public interface Attachment extends Appendix {
         public short getPeriod() {
             return period;
         }
+    }
+    
+    public final static class GamePreDistribute extends AbstractAttachment {
+
+        //x1,y1,x2,y2...
+    	private final byte[] coordinate;
+
+        GamePreDistribute(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+			this.coordinate = new byte[Constants.GAME_DISTRIBUTE_PACKAGES * 2];
+			buffer.get(this.coordinate);
+        }
+
+        GamePreDistribute(JSONObject attachmentData) {
+            super(attachmentData);
+            this.coordinate = Convert.parseHexString((String)attachmentData.get("coordinate"));
+        }
+
+        public GamePreDistribute(byte[] coordinate) throws NxtException.NotValidException {
+            this.coordinate = coordinate;
+        }
+
+        @Override
+        String getAppendixName() {
+            return "PreDistritution";
+        }
+
+        @Override
+        int getMySize() {
+            return Constants.GAME_DISTRIBUTE_PACKAGES * 2;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.put(coordinate);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("coordinate", Convert.toHexString(coordinate));
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.Game.PREDISTRIBUTE;
+        }
+
+        public byte[] getCoordinate() {
+            return coordinate;
+        }
+
     }
 }

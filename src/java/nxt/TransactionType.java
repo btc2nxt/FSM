@@ -28,6 +28,7 @@ public abstract class TransactionType {
     private static final byte TYPE_DIGITAL_GOODS = 3;
     private static final byte TYPE_ACCOUNT_CONTROL = 4;
     private static final byte TYPE_AUTOMATED_TRANSACTIONS = 5;
+    private static final byte TYPE_GAME = 6;
 
     private static final byte SUBTYPE_PAYMENT_ORDINARY_PAYMENT = 0;
 
@@ -58,7 +59,21 @@ public abstract class TransactionType {
     
     private static final byte SUBTYPE_AT_CREATION = 0;
     private static final byte SUBTYPE_AT_STATE = 1;
-    private static final byte SUBTYPE_AT_ASSET_PAYMENT = 2;    
+    private static final byte SUBTYPE_AT_ASSET_PAYMENT = 2;
+    
+    private static final byte SUBTYPE_GAME_PREDISTRIBUTE = 0;
+    private static final byte SUBTYPE_GAME_BE_WORKER = 1;
+    private static final byte SUBTYPE_GAME_BE_COLLECTOR = 2;
+    private static final byte SUBTYPE_GAME_COLLECT = 3;
+    private static final byte SUBTYPE_GAME_CHECKIN = 4;        
+    private static final byte SUBTYPE_GAME_EAT = 5;
+    private static final byte SUBTYPE_GAME_ATTACK = 6;
+    private static final byte SUBTYPE_GAME_KEEPFIT = 7;
+    private static final byte SUBTYPE_GAME_PRACTISE_MARTIAL = 8;
+    private static final byte SUBTYPE_GAME_BUY_ARMOR = 9;
+    private static final byte SUBTYPE_GAME_IN_COMA = 10;
+    private static final byte SUBTYPE_GAME_WAKEUP = 11;
+    private static final byte SUBTYPE_GAME_QUIT = 12;    
 
     private static final byte SUBTYPE_ACCOUNT_CONTROL_EFFECTIVE_BALANCE_LEASING = 0;
 
@@ -1992,6 +2007,63 @@ public abstract class TransactionType {
                     ", appendagesFee=" + appendagesFee +
                     '}';
         }
+    }
+    
+    public static abstract class Game extends TransactionType {
+
+        private Game() {
+        }
+
+        @Override
+        public final byte getType() {
+            return TransactionType.TYPE_GAME;
+        }
+
+        @Override
+        final boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+            return true;
+        }
+
+        @Override
+        final void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+        }
+
+        public static final TransactionType PREDISTRIBUTE = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_PREDISTRIBUTE;
+            }
+
+            @Override
+            Attachment.GamePreDistribute parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GamePreDistribute(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GamePreDistribute parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GamePreDistribute(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GamePreDistribute attachment = (Attachment.GamePreDistribute) transaction.getAttachment();
+                
+            }
+
+            @Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GamePreDistribute attachment = (Attachment.GamePreDistribute)transaction.getAttachment();
+
+            }
+
+            @Override
+            public boolean canHaveRecipient() {
+                return false;
+            }
+
+        };
+
     }
 
 }
