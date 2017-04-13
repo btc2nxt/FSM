@@ -2063,6 +2063,42 @@ public abstract class TransactionType {
             }
 
         };
+        
+        public static final TransactionType BE_WORKER = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_BE_WORKER;
+            }
+
+            @Override
+            Attachment.GameBeWorker parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBeWorker(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameBeWorker parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBeWorker(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
+                
+            }
+
+            @Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GameBeWorker attachment = (Attachment.GameBeWorker)transaction.getAttachment();
+
+            }
+
+            @Override
+            public boolean canHaveRecipient() {
+                return false;
+            }
+
+        };
 
     }
 

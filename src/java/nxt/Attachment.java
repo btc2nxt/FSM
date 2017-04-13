@@ -2039,4 +2039,64 @@ public interface Attachment extends Appendix {
         }
 
     }
+    
+    public final static class GameBeWorker extends AbstractAttachment {
+
+    	private final short xCoordinate;
+    	private final short yCoordinate;
+
+    	GameBeWorker(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+			this.xCoordinate = buffer.getShort();
+			this.yCoordinate = buffer.getShort();
+        }
+
+    	GameBeWorker(JSONObject attachmentData) {
+            super(attachmentData);
+            this.xCoordinate = ((Long) attachmentData.get("xCoordinate")).shortValue();
+            this.yCoordinate = ((Long) attachmentData.get("yCoordinate")).shortValue();
+        }
+
+        public GameBeWorker(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            this.xCoordinate = xCoordinate;
+            this.yCoordinate = yCoordinate;
+        }
+
+        @Override
+        String getAppendixName() {
+            return "BeWoker";
+        }
+
+        @Override
+        int getMySize() {
+            return 2 + 2;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.putShort(xCoordinate);
+            buffer.putShort(yCoordinate);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+        	attachment.put("xCoordinate", xCoordinate);
+        	attachment.put("yCoordinate", yCoordinate);
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.Game.BE_WORKER;
+        }
+
+        public short getXCoordinate() {
+            return xCoordinate;
+        }
+
+        public short getYCoordinate() {
+            return yCoordinate;
+        }
+
+    }
+
 }
