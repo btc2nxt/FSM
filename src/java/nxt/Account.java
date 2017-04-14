@@ -27,6 +27,10 @@ public final class Account {
         BALANCE, UNCONFIRMED_BALANCE, ASSET_BALANCE, UNCONFIRMED_ASSET_BALANCE,
         LEASE_SCHEDULED, LEASE_STARTED, LEASE_ENDED
     }
+    
+    public static enum PlayerStatus {
+        COLLECTOR, WORKER, OUTSIDER
+    }
 
     public static class AccountAsset {
 
@@ -388,6 +392,15 @@ public final class Account {
     private long nextLesseeId;
     private String name;
     private String description;
+    
+    private int collectPower; 
+    private int attackPower; 
+    private int defenseValue; 
+    private int healthyIndex;
+    private int xCoordinate;
+    private int yCoordinate;
+    private PlayerStatus accountStatus;
+
 
     private Account(long id) {
         if (id != Crypto.rsDecode(Crypto.rsEncode(id))) {
@@ -416,6 +429,15 @@ public final class Account {
         this.nextLeasingHeightFrom = rs.getInt("next_leasing_height_from");
         this.nextLeasingHeightTo = rs.getInt("next_leasing_height_to");
         this.nextLesseeId = rs.getLong("next_lessee_id");
+        
+        this.collectPower = rs.getInt("collect_power");
+        this.attackPower = rs.getInt("attack_power");
+        this.defenseValue = rs.getInt("defense_value");
+        this.healthyIndex = rs.getInt("healthy_index");
+        this.xCoordinate = rs.getInt("x_coordinate");
+        this.yCoordinate = rs.getInt("y_coordinate");
+        this.accountStatus = PlayerStatus.values()[rs.getInt("account_status")];
+        
     }
 
     private void save(Connection con) throws SQLException {
@@ -423,8 +445,9 @@ public final class Account {
                 + "key_height, balance, unconfirmed_balance, forged_balance, name, description, "
                 + "current_leasing_height_from, current_leasing_height_to, current_lessee_id, "
                 + "next_leasing_height_from, next_leasing_height_to, next_lessee_id, "
+                + "collect_power, attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, account_status, "
                 + "height, latest) "
-                + "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+                + "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
             int i = 0;
             pstmt.setLong(++i, this.getId());
             pstmt.setInt(++i, this.getCreationHeight());
@@ -441,6 +464,13 @@ public final class Account {
             DbUtils.setIntZeroToNull(pstmt, ++i, this.getNextLeasingHeightFrom());
             DbUtils.setIntZeroToNull(pstmt, ++i, this.getNextLeasingHeightTo());
             DbUtils.setLongZeroToNull(pstmt, ++i, this.getNextLesseeId());
+            pstmt.setInt(++i, this.getCollectPower());
+            pstmt.setInt(++i, this.getAttackPower());
+            pstmt.setInt(++i, this.getDefenseValue());
+            pstmt.setInt(++i, this.getHealthyIndex());
+            pstmt.setInt(++i, this.getXCoordinate());
+            pstmt.setInt(++i, this.getYCoordinate());
+            pstmt.setInt(++i, this.getAccountStatus().ordinal());
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
             pstmt.executeUpdate();
         }
@@ -646,7 +676,44 @@ public final class Account {
     public int getNextLeasingHeightTo() {
         return nextLeasingHeightTo;
     }
+    
+    public int getCollectPower() {
+        return collectPower;
+    }
 
+    public int getAttackPower() {
+        return attackPower;
+    }
+    
+    public int getDefenseValue() {
+        return defenseValue;
+    }
+    
+    public int getHealthyIndex() {
+        return healthyIndex;
+    }
+    
+    public int getXCoordinate() {
+        return xCoordinate;
+    }
+    
+    public int getYCoordinate() {
+        return yCoordinate;
+    }
+    
+    public PlayerStatus getAccountStatus() {
+        return accountStatus;
+    }
+    
+    void setAccountPlayer(int xCoordinate, int yCoordinate, PlayerStatus ps) {
+        this.xCoordinate = xCoordinate;
+        this.yCoordinate = yCoordinate;
+        this.accountStatus = ps;
+        accountTable.insert(this);
+    }
+    
+    
+    
     void leaseEffectiveBalance(long lesseeId, short period) {
         Account lessee = Account.getAccount(lesseeId);
         if (lessee != null && lessee.getPublicKey() != null) {

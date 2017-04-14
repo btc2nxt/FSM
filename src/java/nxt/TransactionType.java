@@ -1,5 +1,6 @@
 package nxt;
 
+import nxt.Account.PlayerStatus;
 import nxt.Attachment.AbstractAttachment;
 import nxt.Attachment.AutomatedTransactionsCreation;
 import nxt.NxtException.NotValidException;
@@ -2084,12 +2085,48 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
-                
+                senderAccount.setAccountPlayer(attachment.getXCoordinate(), attachment.getXCoordinate(), PlayerStatus.WORKER);               
             }
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker)transaction.getAttachment();
+
+            }
+
+            @Override
+            public boolean canHaveRecipient() {
+                return false;
+            }
+
+        };
+        
+        public static final TransactionType BE_COLLECTOR = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_BE_COLLECTOR;
+            }
+
+            @Override
+            Attachment.GameBeCollector parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBeCollector(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameBeCollector parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBeCollector(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameBeCollector attachment = (Attachment.GameBeCollector) transaction.getAttachment();
+                senderAccount.setAccountPlayer(attachment.getXCoordinate(), attachment.getXCoordinate(), PlayerStatus.COLLECTOR);               
+            }
+
+            @Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GameBeCollector attachment = (Attachment.GameBeCollector)transaction.getAttachment();
 
             }
 
