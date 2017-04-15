@@ -66,7 +66,7 @@ public abstract class TransactionType {
     private static final byte SUBTYPE_GAME_BE_WORKER = 1;
     private static final byte SUBTYPE_GAME_BE_COLLECTOR = 2;
     private static final byte SUBTYPE_GAME_COLLECT = 3;
-    private static final byte SUBTYPE_GAME_CHECKIN = 4;        
+    private static final byte SUBTYPE_GAME_CHECKIN = 4;       
     private static final byte SUBTYPE_GAME_EAT = 5;
     private static final byte SUBTYPE_GAME_ATTACK = 6;
     private static final byte SUBTYPE_GAME_KEEPFIT = 7;
@@ -2136,6 +2136,43 @@ public abstract class TransactionType {
             }
 
         };
+        
+        public static final TransactionType COLLECT = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_COLLECT;
+            }
+
+            @Override
+            Attachment.GameCollect parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameCollect(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameCollect parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameCollect(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameCollect attachment = (Attachment.GameCollect) transaction.getAttachment();
+                senderAccount.playerJumpTo(attachment.getToXCoordinate(), attachment.getToYCoordinate(), PlayerStatus.COLLECTOR);               
+            }
+
+            @Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GameCollect attachment = (Attachment.GameCollect)transaction.getAttachment();
+
+            }
+
+            @Override
+            public boolean canHaveRecipient() {
+                return false;
+            }
+
+        };
+
 
     }
 

@@ -85,6 +85,7 @@ public final class Constants {
 	public static final int AUTOMATED_TRANSACTION_FINISHED = Integer.MAX_VALUE;	
 	public static final int MAX_PLAYERS_PER_COORDINATE = 20;
 	public static final int MAX_PLAYERS_PER_COORDINATE_WITHIN_BUILDING = 1;
+	public static final int MAX_PLAYERS_CAPAITY_OF_BUILDING = 20;
 	public static final int GAME_DISTRIBUTE_PACKAGES = 5;	
 	public static final long GAME_MEAL_RATE = 25 * ONE_NXT;
 	public static final long GAME_ROOM_RATE = 100 * ONE_NXT;

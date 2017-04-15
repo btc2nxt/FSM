@@ -2158,5 +2158,63 @@ public interface Attachment extends Appendix {
 
     }
 
+    public final static class GameCollect extends AbstractAttachment {
+
+    	private final short toXCoordinate;
+    	private final short toYCoordinate;
+
+    	GameCollect(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+			this.toXCoordinate = buffer.getShort();
+			this.toYCoordinate = buffer.getShort();
+        }
+
+    	GameCollect(JSONObject attachmentData) {
+            super(attachmentData);
+            this.toXCoordinate = ((Long) attachmentData.get("toXCoordinate")).shortValue();
+            this.toYCoordinate = ((Long) attachmentData.get("toYCoordinate")).shortValue();
+        }
+
+        public GameCollect(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            this.toXCoordinate = xCoordinate;
+            this.toYCoordinate = yCoordinate;
+        }
+
+        @Override
+        String getAppendixName() {
+            return "Collect";
+        }
+
+        @Override
+        int getMySize() {
+            return 2 + 2;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.putShort(toXCoordinate);
+            buffer.putShort(toYCoordinate);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+        	attachment.put("toXCoordinate", toXCoordinate);
+        	attachment.put("toYCoordinate", toYCoordinate);
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.Game.BE_COLLECTOR;
+        }
+
+        public short getToXCoordinate() {
+            return toXCoordinate;
+        }
+
+        public short getToYCoordinate() {
+            return toYCoordinate;
+        }
+
+    }
 
 }

@@ -372,6 +372,10 @@ public final class Account {
         return accountAssetTable.getManyBy(new DbClause.LongClause("asset_id", assetId), height, from, to, " ORDER BY quantity DESC, account_id ");
     }
 
+    private static DbIterator<Account> getCoordinateAccounts(int xCoordinate, int height, int from, int to) {
+        return accountTable.getManyBy(new DbClause.LongClause("xCoordinate", xCoordinate), height, from, to, " ORDER BY  account_id ");
+    }
+    
     static void init() {}
 
 
@@ -712,7 +716,15 @@ public final class Account {
         accountTable.insert(this);
     }
     
-    
+    void playerJumpTo(int xCoordinate, int yCoordinate, PlayerStatus ps) {
+        this.xCoordinate = xCoordinate;
+        this.yCoordinate = yCoordinate;
+        if (this.attackPower > 1) 
+        	--this.attackPower;
+        accountTable.insert(this);
+    }
+
+     
     
     void leaseEffectiveBalance(long lesseeId, short period) {
         Account lessee = Account.getAccount(lesseeId);
@@ -935,5 +947,4 @@ public final class Account {
             throw new RuntimeException(e.toString(), e);
         }
     }
-
 }

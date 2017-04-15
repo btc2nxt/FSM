@@ -25,11 +25,11 @@ public final class TownMap {
     		this.landType = landType;
     		switch (this.landType) {
     			case COIN_AREA:
-    				this.playersPerPoint = Constants.MAX_PLAYERS_PER_POINT;
+    				this.playersPerPoint = Constants.MAX_PLAYERS_PER_COORDINATE;
     				break;
     			case BUILDING_AREA:
-    				this.playersPerPoint = 1;
-    				this.availablePoints = Constants.MAX_BUILDING_POINT;
+    				this.playersPerPoint = Constants.MAX_PLAYERS_PER_COORDINATE_WITHIN_BUILDING;
+    				this.availablePoints = Constants.MAX_PLAYERS_CAPAITY_OF_BUILDING;
     				break;
     			default:
     				this.playersPerPoint = 0;
