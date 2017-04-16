@@ -2163,6 +2163,9 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameCollect attachment = (Attachment.GameCollect)transaction.getAttachment();
+                if (Account.getCoordinatePlayersCount(attachment.getToXCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
+                
 
             }
 
