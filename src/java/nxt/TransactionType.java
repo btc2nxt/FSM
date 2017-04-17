@@ -2091,6 +2091,13 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker)transaction.getAttachment();
+                if (attachment.getXCoordinate() < TownMap.townX
+                        || attachment.getXCoordinate() > TownMap.townX1
+                        || attachment.getYCoordinate() < TownMap.townY
+                        || attachment.getXCoordinate() > TownMap.townY1
+                        ) {
+                    throw new NxtException.NotValidException("Invalid coordinate: " + attachment.getJSONObject());
+                }
 
             }
 
@@ -2127,7 +2134,13 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameBeCollector attachment = (Attachment.GameBeCollector)transaction.getAttachment();
-
+                if (attachment.getXCoordinate() < TownMap.townX
+                        || attachment.getXCoordinate() > TownMap.townX1
+                        || attachment.getYCoordinate() < TownMap.townY
+                        || attachment.getXCoordinate() > TownMap.townY1
+                        ) {
+                    throw new NxtException.NotValidException("Invalid coordinate: " + attachment.getJSONObject());
+                }               
             }
 
             @Override
