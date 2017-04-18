@@ -66,10 +66,10 @@ public abstract class TransactionType {
     private static final byte SUBTYPE_GAME_BE_WORKER = 1;
     private static final byte SUBTYPE_GAME_BE_COLLECTOR = 2;
     private static final byte SUBTYPE_GAME_COLLECT = 3;
-    private static final byte SUBTYPE_GAME_CHECKIN = 4;       
+    private static final byte SUBTYPE_GAME_CHECK_IN = 4;       
     private static final byte SUBTYPE_GAME_EAT = 5;
     private static final byte SUBTYPE_GAME_ATTACK = 6;
-    private static final byte SUBTYPE_GAME_KEEPFIT = 7;
+    private static final byte SUBTYPE_GAME_KEEP_FIT = 7;
     private static final byte SUBTYPE_GAME_PRACTISE_MARTIAL = 8;
     private static final byte SUBTYPE_GAME_BUY_ARMOR = 9;
     private static final byte SUBTYPE_GAME_IN_COMA = 10;
@@ -2189,6 +2189,44 @@ public abstract class TransactionType {
 
         };
 
+        public static final TransactionType CHECK_IN = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_CHECK_IN;
+            }
+
+            @Override
+            Attachment.GameCheckIn parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameCheckIn(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameCheckIn parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameCheckIn(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameCheckIn attachment = (Attachment.GameCheckIn) transaction.getAttachment();
+                senderAccount.playerJumpTo(attachment.getToXCoordinate(), attachment.getToYCoordinate(), PlayerStatus.COLLECTOR);               
+            }
+
+            @Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GameCheckIn attachment = (Attachment.GameCheckIn)transaction.getAttachment();
+                if (Account.getCoordinatePlayersCount(attachment.getToXCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
+                
+
+            }
+
+            @Override
+            public boolean canHaveRecipient() {
+                return false;
+            }
+
+        };
 
     }
 
