@@ -10,7 +10,7 @@ public final class Constants {
 	public static final int BLOCK_HEADER_LENGTH = 232;
     public static final int MAX_NUMBER_OF_TRANSACTIONS = 1023;
     public static final int MAX_PAYLOAD_LENGTH = MAX_NUMBER_OF_TRANSACTIONS * 176;
-    public static final long MAX_BALANCE_NXT = 5000000000L;
+    public static final long MAX_BALANCE_NXT = 1000000000L;
     public static final long ONE_NXT = 100000000;
     public static final long MAX_BALANCE_NQT = MAX_BALANCE_NXT * ONE_NXT;
     public static final long INITIAL_BASE_TARGET = 153722867;
@@ -58,15 +58,15 @@ public final class Constants {
     
     public static final int TRANSPARENT_FORGING_BLOCK = 0;
     public static final int TRANSPARENT_FORGING_BLOCK_7 = Integer.MAX_VALUE;
-    public static final int TRANSPARENT_FORGING_BLOCK_8 = isTestnet ? 10 : 89000;
+    public static final int TRANSPARENT_FORGING_BLOCK_8 = isTestnet ? 0 : 89000;
     public static final int NQT_BLOCK = 0;
     public static final int ASSET_EXCHANGE_BLOCK = 0;
     public static final int REFERENCED_TRANSACTION_FULL_HASH_BLOCK = isTestnet ? 0 : 1000;
     public static final int VOTING_SYSTEM_BLOCK = Integer.MAX_VALUE;
     public static final int DIGITAL_GOODS_STORE_BLOCK = isTestnet ? 10 : 89000;
     public static final int PUBLIC_KEY_ANNOUNCEMENT_BLOCK = Integer.MAX_VALUE; //never forced
-    public static final int LAST_KNOWN_BLOCK = isTestnet ? 2100 : 185100;
-    public static final String LAST_KNOWN_BLOCK_ID = isTestnet ? "1106568321010003917" : "4559214760898950463";
+    public static final int LAST_KNOWN_BLOCK = isTestnet ? 0 : 185100;
+    public static final String LAST_KNOWN_BLOCK_ID = isTestnet ? "1203667376540169366" : "4559214760898950463";
 	protected static final int AUTOMATED_TRANSACTION_BLOCK = 0;
 	protected static final long MIN_AUTOMATED_TRANSACTION_FEE = 1000;
 	public static final int MAX_AUTOMATED_TRANSACTION_NAME_LENGTH = 30;

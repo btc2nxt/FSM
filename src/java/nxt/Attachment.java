@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -2275,6 +2276,91 @@ public interface Attachment extends Appendix {
         }
 
     }
+    
+    public final static class FinanceTicker extends AbstractAttachment{
+    	
+        private final String market;
+    	private final List<Ticker> tickers;
+    	 	
+    	FinanceTicker(ByteBuffer buffer,
+				byte transactionVersion) throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			
+			this.market = Convert.readString(buffer, buffer.get(), 20);
+			this.tickers = new ArrayList<Ticker>();
+			
+			//records number
+			byte tickersLength = buffer.get();		
+			for ( byte i=0; i < tickersLength ; i++) {
+				Ticker tk = new Ticker( buffer.getLong(), Convert.readString(buffer, buffer.getShort(), 20), Convert.readString(buffer, buffer.getShort(), 20), 
+						(int)buffer.getShort(), buffer.getLong(), buffer.getLong(), buffer.getLong(),
+						buffer.getLong(), buffer.getLong(), buffer.getLong(), buffer.getLong(), (int)buffer.getShort());
+				this.tickers.add(tk);
+			}
+		}
+    	
+    	FinanceTicker(JSONObject attachmentData) {
+            super(attachmentData);
+            
+            this.market = (String) attachmentData.get("name");
+            this.tickers = new ArrayList<Ticker>();
+            
+            JSONArray tickerArray = (JSONArray) attachmentData.get("tickers");
+            Iterator i = tickerArray.iterator();
 
+            while (i.hasNext()) {
+                JSONObject attachmentDataSub = (JSONObject) i.next();
+             	//public Ticker(long id, String name, String symbol, int rank, long price_usd, long price_btc, long volume_usd_24h,
+            	//		long market_cap_usd, long available_supply, long total_supply, long percent_change_1h, int last_updated) {
+                
+                Ticker tk = new Ticker( Convert.parseLong(attachmentDataSub.get("id")), (String) attachmentDataSub.get("name"), (String) attachmentDataSub.get("symbol"), 
+                		(int)attachmentDataSub.get("rank"), Convert.parseLong(attachmentDataSub.get("price_usd")), Convert.parseLong(attachmentDataSub.get("price_btc")),
+                		Convert.parseLong(attachmentDataSub.get("volume_usd_24h")), Convert.parseLong(attachmentDataSub.get("market_cap_usd")), Convert.parseLong(attachmentDataSub.get("available_supply")),
+                		Convert.parseLong(attachmentDataSub.get("total_supply")), Convert.parseLong(attachmentDataSub.get("percent_change_1h")), (int)attachmentDataSub.get("last_updated"));                		
+                		
+				this.tickers.add(tk);
+				
+            }            
+
+        }
+
+        public FinanceTicker(String market, List<Ticker> tickers) {
+            this.market = market;
+            this.tickers = tickers;
+        }
+
+        @Override
+        String getAppendixName() {
+            return "FinanceTicker";
+        }
+
+        @Override
+        int getMySize() {
+            return 1 + Convert.toBytes(market).length + 2 + 8 + 1;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            byte[] name = Convert.toBytes(this.market);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("market", market);
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.ColoredCoins.ASSET_ISSUANCE;
+        }
+
+        public String getMarket() {
+            return market;
+        }
+
+        public List<Ticker> getTickers() {
+            return tickers;
+        }
+    }
 
 }

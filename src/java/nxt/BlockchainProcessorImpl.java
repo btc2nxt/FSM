@@ -574,7 +574,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                             + " current time is " + curTime + ", previous block timestamp is " + previousLastBlock.getTimestamp());
                 }
                 if (block.getId() == 0L || BlockDb.hasBlock(block.getId())) {
-                    throw new BlockNotAcceptedException("Duplicat e block or invalid id");
+                    throw new BlockNotAcceptedException("Duplicate block or invalid id");
                 }
                 if (!block.verifyGenerationSignature() && !Generator.allowsFakeForging(block.getGeneratorPublicKey())) {
                 	throw new BlockNotAcceptedException("Generation signature verification failed");

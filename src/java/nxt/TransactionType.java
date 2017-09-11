@@ -2176,9 +2176,14 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameCollect attachment = (Attachment.GameCollect)transaction.getAttachment();
+                Account senderAccount = Account.getAccount(transaction.getSenderId());
+                double radis = Math.pow(senderAccount.getXCoordinate() - attachment.getToXCoordinate(),2) + Math.pow(senderAccount.getYCoordinate() - attachment.getToYCoordinate(),2);
+                radis = Math.sqrt(radis);
+                
                 if (Account.getCoordinatePlayersCount(attachment.getToXCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
                 	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
-                
+                if ( radis> senderAccount.getCollectPower())
+                	throw new NxtException.NotValidException("jump too far away: " + attachment.getJSONObject());
 
             }
 

@@ -93,12 +93,12 @@ class NxtDbVersion extends DbVersion {
             case 37:
                 if (!Constants.isTestnet) {
                     apply("INSERT INTO peer (address) VALUES " +                
-                    		"('wallet.nfdcoin.com'), ('node1.nfdcoin.com'), ('node2.nfdcoin.com'), ('node3.nfdcoin.com'), " +
-                    		"('node4.nfdcoin.com'), ('node5.nfdcoin.com'), ('node6.nfdcoin.com'), " +
-                    		"('node7.nfdcoin.com'), ('node8.nfdcoin.com'), ('node9.nfdcoin.com')");
+                    		"('wallet.fsmcoin.com'), ('node1.fsmcoin.com'), ('node2.fsmcoin.com'), ('node3.fsmcoin.com'), " +
+                    		"('node4.fsmcoin.com'), ('node5.fsmcoin.com'), ('node6.fsmcoin.com'), " +
+                    		"('node7.fsmcoin.com'), ('node8.fsmcoin.com'), ('node9.fsmcoin.com')");
                 } else {
                     apply("INSERT INTO peer (address) VALUES " +
-                    		"('testnet1.nfdcoin.com'), ('testnet2.nfdcoin.com'), ('testnet3.nfdcoin.com')");
+                    		"('testnet1.fsmcoin.com'), ('testnet2.fsmcoin.com'), ('testnet3.fsmcoin.com')");
                 }
             case 38:
                 apply("ALTER TABLE transaction ADD COLUMN IF NOT EXISTS full_hash BINARY(32)");
@@ -378,7 +378,15 @@ class NxtDbVersion extends DbVersion {
             case 149:
             	apply("CREATE TABLE IF NOT EXISTS at_payment (db_id IDENTITY, at_state_id BIGINT NOT NULL, "            			
             			+ "payment_no SMALLINT NOT NULL, recipient_id BIGINT NOT NULL, amount BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
-            case 150:
+            case 150:            	
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS collect_power SMALLINT NOT NULL");                            
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS attack_power SMALLINT NOT NULL");
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS defense_value SMALLINT NOT NULL");
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS healthy_index SMALLINT NOT NULL");
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS x_coordinate SMALLINT NOT NULL");                
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS y_coordinate SMALLINT NOT NULL");
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS account_status SMALLINT NOT NULL");                
+            case 157:
                 return;
             default:
                 throw new RuntimeException("Blockchain database inconsistent with code, probably trying to run older code on newer database");

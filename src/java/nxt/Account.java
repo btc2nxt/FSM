@@ -419,6 +419,15 @@ public final class Account {
         this.dbKey = accountDbKeyFactory.newKey(this.id);
         this.creationHeight = Nxt.getBlockchain().getHeight();
         currentLeasingHeightFrom = Integer.MAX_VALUE;
+        
+        //init game parameters
+        this.collectPower = 0;
+        this.attackPower = 0;
+        this.defenseValue = 0;
+        this.healthyIndex = 0;
+        this.xCoordinate = 0;
+        this.yCoordinate = 0;
+        this.accountStatus = PlayerStatus.OUTSIDER;        
     }
 
     private Account(ResultSet rs) throws SQLException {
