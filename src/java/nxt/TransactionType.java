@@ -1804,7 +1804,7 @@ public abstract class TransactionType {
                 Account atAccount = Account.getAccount(attachment.getATId());
         		atAccount.addToBalanceNQT(-paymentsAmount);
                 }
-                Logger.logDebugMessage("Applying AT_State attachment succeed, payment no: "+ paymentNo);
+                Logger.logDebugMessage("Applying AT_State attachment succeed, payment count: "+ paymentNo);
 			}
 
 			@Override

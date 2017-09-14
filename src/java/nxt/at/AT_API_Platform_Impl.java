@@ -527,15 +527,16 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		return 1;
 	}
 
-	@Override  //0403
+	@Override  //0403 320304
 	public long send_All_to_Address_in_B( AT_Machine_State state ) {
 		
 		//long atId = AT_API_Helper.getLong( state.getId() );
 		//AT at = AT.getAT( atId );
-		if ( state.getG_balance() >= 0 ) {
-			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null );
+		//bug: G_balance = 0 ,AT has to stop
+		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
+			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() - Constants.ONE_NXT*10, null );
 			state.addTransaction( tx );
-			state.setG_balance( 0L );			
+			state.setG_balance( Constants.ONE_NXT*10 );			
 		}
 
 		return 1;

@@ -592,8 +592,8 @@ public class AT_Machine_State
 	
 	public void setTimeStamp(long timeStamp){
 		this.machineState.timeStamp = timeStamp;
-		//transfer timestamp to ap_data
-		this.ap_data.putLong(0,timeStamp);
+		//transfer timestamp to ap_data. Update ap_data may cause error. 
+		//this.ap_data.putLong(0,timeStamp);
 	}
 	
 	public int getSleepBetween(){

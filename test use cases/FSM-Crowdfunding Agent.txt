@@ -1,0 +1,112 @@
+Use Case: Crowdfunding Agent
+----------------------------
+
+@00 ==> @timestamp
+@01 ==> @decision_time
+@02 ==> @txid
+@03 ==> (unused)
+@04 ==> @tx_info
+@05 ==> @target_amt
+@06 ==> @target_acc
+@07 ==> @balance
+@08 ==> @tx_source
+@09 ==> @timestampRefund
+@10 ==> @comparator
+
+Script Assembly
+---------------
+
+if @timestamp not zero goto loop                         1e000000003d
+set @timestamp to AT creation time                       35010300000000
+
+backup @timestamp to @timestampRefund			 020900000000000000
+set @decision_time  (height=16+0000 0000)                01010000000000000010000000
+set @target_amt     (123.0000 0000)                      0105000000001b23dd02000000
+set @target_acc     (1562462127635514638)                01060000000e45b7dc06fbae15
+
+:loop (0000003d)
+A to tx after @timestamp                                 33040300000000
+get timestamp for tx in A and put in @timestamp          35070300000000
+
+if @timestamp > @decision_time goto decision             1f00000000010000001b
+check if A is zero and store result to @comparator       35250110000000
+if @comparator is zero finish                            2610000000
+
+goto loop                                                1a3d000000
+
+:decision (00000066)
+get balance and store in @balance                        35000407000000
+recatch @timestamp from @timestampRefund		 020000000009000000
+if @target_amt > @balance goto refund                    1f050000000700000019
+
+:funded(82)
+set pcs                                                  30
+Clear_B                   0x0121 EXT_FUN                 322101
+set B1 to @target_account                                33160106000000
+send all balance to addres in B                          320304
+finish                                                   28
+
+:refund (0000008f)
+set pcs                                                  30
+
+:refund loop(90)
+store tx after @timestamp in A                           33040300000000
+get timestamp for tx in A and put in @timestamp          35070300000000
+check if A is zero and store result to @comparator       35250110000000
+if @comparator is zero finish                            2610000000
+
+Get_Type to @tx_info For_Tx_In_A   0x0305 EXT_FUN_RET    35050304000000
+if @tx_info is non-zero goto skip                        1e0400000017
+
+B_To_Address_Of_Tx_In_A   0x030a EXT_FUN                 320a03
+Get_Amount_For_Tx_In_A to @tx_info   0x0306 EXT_FUN_RET  35060304000000
+Send @tx_info To_Address_In_B      0x0402 EXT_FUN_DAT    33020404000000
+
+:skip
+goto refund loop                                         1a90000000
+
+
+machinecode
+----------------
+1e000000003d35010300000000020900000000000000010100000000000000100000000105000000001b23dd0200000001060000000e45b7dc06fbae1533040300000000350703000000001f00000000010000001b3525011000000026100000001a3d000000350004070000000200000000090000001f050000000700000019303221013316010600000032030428303304030000000035070300000000352501100000002610000000350503040000001e0400000017320a0335060304000000330204040000001a90000000
+
+variables
+----------------
+0100000005000000030000000003000000
+
+
+00000000* BNZ $00000000, :0000003d
+00000006  FUN @00000000 769
+0000000d  SET @00000009 $00000000
+00000016  SET @00000001 #0000001000000000
+00000023  SET @00000005 #00000002dd231b00
+00000030  SET @00000006 #15aefb06dcb7450e
+
+0000003d  FUN @00000000 772
+00000044  FUN @00000000 775
+0000004b  BGT $00000000 $00000001 :00000066
+00000055  FUN @00000010 293
+0000005c  FIZ @00000010
+00000061  JMP :      3d
+
+00000066  FUN @00000007 1024
+0000006d  SET @00000001 $00000009
+00000076  BGT $00000005 $00000007 :0000008f
+00000080  PCS
+00000081  FUN 289
+00000084  FUN 278 $00000006
+0000008b  FUN 1027
+0000008e  FIN
+
+0000008f  PCS
+00000090  FUN @00000000 772
+00000097  FUN @00000000 775
+0000009e  FUN @00000010 293
+000000a5  FIZ @00000010
+000000aa  FUN @00000004 773
+000000b1  BNZ $00000004, :000000c8
+000000b7  FUN 778
+000000ba  FUN @00000004 774
+000000c1  FUN 1026 $00000004
+
+000000c8  JMP :      90
