@@ -67,6 +67,7 @@ public final class Constants {
     public static final int PUBLIC_KEY_ANNOUNCEMENT_BLOCK = Integer.MAX_VALUE; //never forced
     public static final int LAST_KNOWN_BLOCK = isTestnet ? 0 : 185100;
     public static final String LAST_KNOWN_BLOCK_ID = isTestnet ? "1203667376540169366" : "4559214760898950463";
+    
 	protected static final int AUTOMATED_TRANSACTION_BLOCK = 0;
 	protected static final long MIN_AUTOMATED_TRANSACTION_FEE = 1000;
 	public static final int MAX_AUTOMATED_TRANSACTION_NAME_LENGTH = 30;
@@ -79,10 +80,11 @@ public final class Constants {
 	public static final long MAX_AUTOMATED_TRANSACTIONS_MINIMUM_FEE_NQT = 10 * ONE_NXT;	
 	public static final int MAX_AUTOMATED_TRANSACTIONS_WAITFORNUMBEROFBLOCKS = 10000;
 	public static final int AT_BLOCK_PAYLOAD = MAX_PAYLOAD_LENGTH/2;
-	public static final int MAX_AUTOMATED_TRANSATIONS_STEPS = 3;
+	public static final int MAX_AUTOMATED_BLOCK_STEPS = 16;
 	public static final long AUTOMATED_TRANSACTIONS_STEP_COST_NQT = 1 * ONE_NXT / 4; 
 	public static final long MAX_AUTOMATED_TRANSATIONS_STEP_FEE_NQT = 2 * ONE_NXT;
-	public static final int AUTOMATED_TRANSACTION_FINISHED = Integer.MAX_VALUE;	
+	public static final int AUTOMATED_TRANSACTION_FINISHED = Integer.MAX_VALUE;
+	
 	public static final int MAX_PLAYERS_PER_COORDINATE = 20;
 	public static final int MAX_PLAYERS_PER_COORDINATE_WITHIN_BUILDING = 1;
 	public static final int MAX_PLAYERS_CAPAITY_OF_BUILDING = 20;

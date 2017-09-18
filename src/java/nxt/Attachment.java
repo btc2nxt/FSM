@@ -1492,9 +1492,10 @@ public interface Attachment extends Appendix {
     	
         private final String name;    
         private final String description;       
+        private final String runType;        
         private final byte[] machineCode;
         private final byte[] machineData;
-        private final byte[] variables;
+        private final byte[] properties;
         private final int totalPages;
     	
     	
@@ -1504,6 +1505,7 @@ public interface Attachment extends Appendix {
 			
 			this.name = Convert.readString( buffer , buffer.get() , Constants.MAX_AUTOMATED_TRANSACTION_NAME_LENGTH );
 			this.description = Convert.readString( buffer , buffer.getShort() , Constants.MAX_AUTOMATED_TRANSACTION_DESCRIPTION_LENGTH );
+			this.runType = Convert.readString( buffer , buffer.getShort() , 20 );			
 			
 			short machineCodeAttachmentSize = buffer.getShort();
 			machineCode = new byte[machineCodeAttachmentSize];
@@ -1513,12 +1515,12 @@ public interface Attachment extends Appendix {
 			machineData = new byte[machineDataAttachmentSize];
 			buffer.get(machineData);
 			
-			short variablesAttachmentSize = buffer.getShort();
-			variables = new byte[variablesAttachmentSize];
-			buffer.get(variables);
+			short propertiesAttachmentSize = buffer.getShort();
+			properties = new byte[propertiesAttachmentSize];
+			buffer.get(properties);
 			
 			try {
-				this.totalPages = AT_Controller.checkCreationBytes( machineCode, machineData, variables , Nxt.getBlockchain().getHeight() );
+				this.totalPages = AT_Controller.checkCreationBytes( machineCode, machineData, properties , Nxt.getBlockchain().getHeight() );
 			} catch (AT_Exception e) {
 				Logger.logErrorMessage( " error checking AT creation Bytes " + e.getMessage() );
 				throw new NxtException.NotValidException( e.getMessage() );
@@ -1529,16 +1531,16 @@ public interface Attachment extends Appendix {
 			super(attachmentData);
 			this.name = (String) attachmentData.get("name");
 			this.description = (String) attachmentData.get("description");
-			//Logger.logDebugMessage("after description");
+			this.runType = (String) attachmentData.get("runType");
 			this.machineCode = Convert.parseHexString((String)attachmentData.get("machineCode"));
 			/*if (machineCode.length > machineCodePages*Constants.AUTOMATED_TRANSACTION_PAGE_SIZE) {
 				throw new NxtException.NotValidException("Max mchine code length exceeded: " + machineCode.length);
 			}*/
 			this.machineData = Convert.parseHexString((String)attachmentData.get("machineData"));
-			this.variables = Convert.parseHexString((String)attachmentData.get("variables"));
+			this.properties = Convert.parseHexString((String)attachmentData.get("properties"));
 			
 			try {
-				this.totalPages = AT_Controller.checkCreationBytes( machineCode, machineData, variables , Nxt.getBlockchain().getHeight() );
+				this.totalPages = AT_Controller.checkCreationBytes( machineCode, machineData, properties , Nxt.getBlockchain().getHeight() );
 			} catch (AT_Exception e) {
 				Logger.logErrorMessage( " error checking AT creation Bytes " + e.getMessage() );
 				throw new NxtException.NotValidException( e.getMessage() );
@@ -1546,15 +1548,16 @@ public interface Attachment extends Appendix {
 
 		}
 		
-		public AutomatedTransactionsCreation(String name, String description, byte[] machineCode, byte[] machineData, byte[] variables) throws NxtException.NotValidException {		
+		public AutomatedTransactionsCreation(String name, String description, String runType, byte[] machineCode, byte[] machineData, byte[] properties) throws NxtException.NotValidException {		
 			this.name = name;
 			this.description = description;
+			this.runType = runType;
 			this.machineCode = machineCode;			
 			this.machineData = machineData;
-			this.variables = variables;
+			this.properties = properties;
 			
 			try {
-				this.totalPages = AT_Controller.checkCreationBytes( machineCode, machineData, variables , Nxt.getBlockchain().getHeight() );
+				this.totalPages = AT_Controller.checkCreationBytes( machineCode, machineData, properties , Nxt.getBlockchain().getHeight() );
 			} catch (AT_Exception e) {
 				Logger.logErrorMessage( " error checking AT creation Bytes " + e.getMessage() );
 				throw new NxtException.NotValidException( e.getMessage() );
@@ -1572,7 +1575,8 @@ public interface Attachment extends Appendix {
         }
 		@Override
 		int getMySize() {
-            return 1 + Convert.toBytes( name ).length + 2 + Convert.toBytes( description ).length + 2 + machineCode.length + 2 + machineData.length+ 2 + variables.length;
+            return 1 + Convert.toBytes( name ).length + 2 + Convert.toBytes( description ).length + 2 + Convert.toBytes( runType ).length 
+            		+ 2 + machineCode.length + 2 + machineData.length+ 2 + properties.length;
 		}
 
 		@Override
@@ -1583,22 +1587,26 @@ public interface Attachment extends Appendix {
             byte[] descriptionBytes = Convert.toBytes( description );
             buffer.putShort( ( short ) descriptionBytes.length );
             buffer.put( descriptionBytes );
+            byte[] runTypeBytes = Convert.toBytes( runType );
+            buffer.putShort( ( short ) runTypeBytes.length );
+            buffer.put( runTypeBytes );
             
             buffer.putShort((short) machineCode.length);
             buffer.put(machineCode);
             buffer.putShort((short) machineData.length);
             buffer.put(machineData);
-            buffer.putShort((short) variables.length);
-            buffer.put(variables);
+            buffer.putShort((short) properties.length);
+            buffer.put(properties);
 		}
 
 		@Override
 		void putMyJSON(JSONObject attachment) {       
 			attachment.put("name", name);
             attachment.put("description", description);
+            attachment.put("runType", runType);            
             attachment.put("machineCode", Convert.toHexString(machineCode));
             attachment.put("machineData", Convert.toHexString(machineData));
-            attachment.put("variables", Convert.toHexString(variables));            
+            attachment.put("properties", Convert.toHexString(properties));            
 		}
 		
 		public int getTotalPages() { return totalPages; }
@@ -1606,12 +1614,14 @@ public interface Attachment extends Appendix {
         public String getName() { return name; }
 
         public String getDescription() { return description; }
+        
+        public String getRunType() { return runType; }
 
 		public byte[] getMachineCode() { return machineCode; }
 		
 		public byte[] getMachineData() { return machineData; }		
 
-        public byte[] getVariables() { return variables;	}
+        public byte[] getProperties() { return properties;	}
     }
     
     public final static class AutomatedTransactionsState extends AbstractAttachment{
@@ -2364,3 +2374,4 @@ public interface Attachment extends Appendix {
     }
 
 }
+

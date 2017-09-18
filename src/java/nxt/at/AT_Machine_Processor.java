@@ -699,7 +699,7 @@ public class AT_Machine_Processor{
 					machineData.getMachineState().pcs = machineData.getMachineState().pc ;												
 
 					machineData.getMachineState().pc += rc;
-					machineData.getMachineState().codeBlock = fun.off;
+					machineData.getMachineState().codeBlockSteps = fun.off;
 				}
 			}
 		}		

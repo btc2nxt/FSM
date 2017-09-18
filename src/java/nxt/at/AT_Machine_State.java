@@ -39,7 +39,7 @@ public class AT_Machine_State
 		transient int opc;
 
 		int steps;
-		int codeBlock;
+		int codeBlockSteps;
 		boolean inCodeBlock;
 		long timeStamp;
         byte[] machineCodeUpdate;
@@ -76,7 +76,7 @@ public class AT_Machine_State
 			pc = pcs;
 			opc = 0;
 			steps = 0;
-			codeBlock =0;
+			codeBlockSteps =0;
 			inCodeBlock = false;
 			timeStamp = 0;
 			machineCodeUpdate = null;
@@ -206,7 +206,7 @@ public class AT_Machine_State
 		this.dsize = dataPages * pageSize;
     }	
 
-	public AT_Machine_State( byte[] atId , byte[] creator ,  byte[] machineCode, byte[] machineData, byte[] creationBytes , int height ) 
+	public AT_Machine_State( byte[] atId , byte[] creator ,  byte[] machineCode, byte[] machineData, byte[] properties , int height ) 
 	{
 		this.version = AT_Constants.getInstance().AT_VERSION( height );
 		this.atId = atId;
@@ -214,10 +214,10 @@ public class AT_Machine_State
 		//256
 		int pageSize = ( int ) AT_Constants.getInstance().PAGE_SIZE( height );
 		
-		ByteBuffer b = ByteBuffer.allocate( creationBytes.length );
+		ByteBuffer b = ByteBuffer.allocate( properties.length );
 		b.order( ByteOrder.LITTLE_ENDIAN );
 		
-		b.put( creationBytes );
+		b.put( properties );
 		b.clear();
 		
 		this.version = b.getShort();

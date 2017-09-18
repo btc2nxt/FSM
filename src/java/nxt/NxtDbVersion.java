@@ -348,7 +348,7 @@ class NxtDbVersion extends DbVersion {
                 apply(null);
             case 138:
             	apply("CREATE TABLE IF NOT EXISTS at (db_id IDENTITY, id BIGINT NOT NULL, account_id BIGINT NOT NULL, name VARCHAR, description VARCHAR, "
-            			+ "version SMALLINT NOT NULL, machinecode BINARY NOT NULL, data BINARY NOT NULL, "
+            			+ "version SMALLINT NOT NULL, runtype VARCHAR, machinecode BINARY NOT NULL, data BINARY NOT NULL, "
             			+ "delay_blocks INT NOT NULL, freeze_when_same_balance BOOLEAN NOT NULL DEFAULT TRUE, sleep_between INT NOT NULL, "
             			+ "start_block INT NOT NULL, Properties VARCHAR, "             			
             			+ "height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");

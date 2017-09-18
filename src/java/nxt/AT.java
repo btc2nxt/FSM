@@ -38,6 +38,10 @@ import java.sql.SQLException;
 
 public final class AT extends AT_Machine_State implements Cloneable  {
 
+    public static enum ATRunType {
+        FOR_ANYONE, CREATEOR_ONLY, SYSTEM_AT
+    }
+    
 	static {
 		Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
 			@Override
@@ -323,7 +327,11 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         return atTable.get(atDbKeyFactory.newKey(AT_API_Helper.getLong(id)));
 	}    
 
-    public static DbIterator<AT> getATsIssuedBy(long accountId, int from, int to) {
+    public static DbIterator<AT> getAT(long id, int from, int to) {
+        return atTable.getManyBy(new DbClause.LongClause("id", id), from, to);
+    }
+	
+	public static DbIterator<AT> getATsIssuedBy(long accountId, int from, int to) {
         return atTable.getManyBy(new DbClause.LongClause("account_id", accountId), from, to);
     }
 
@@ -359,7 +367,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		return this.previousBlock;
 	}
 
-	static void addAT(Long atId, Long senderAccountId, String name, String description, byte[] machineCode ,byte[] machineData ,byte[] creationBytes , int height) {
+	static void addAT(Long atId, Long senderAccountId, String name, String description, String runType, byte[] machineCode ,byte[] machineData ,byte[] properties , int height) {
 
 		ByteBuffer bf = ByteBuffer.allocate( 8 + 8 );
 		bf.order( ByteOrder.LITTLE_ENDIAN );
@@ -374,7 +382,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		bf.clear();
 		bf.get( id , 0 , 8 );
 		bf.get( creator , 0 , 8);
-		AT at = new AT( id , creator , name , description , machineCode, machineData, creationBytes , height );
+		AT at = new AT( id , creator , name , description , ATRunType.valueOf(runType), machineCode, machineData, properties , height );
 
 		AT_Controller.resetMachine(at);
 		
@@ -405,14 +413,16 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 	private final DbKey dbKey;	
 	private final String name;    
 	private final String description;
-	private int previousBlock;	
+	private int previousBlock;
+	private ATRunType runType;
 
-	private AT( byte[] atId , byte[] creator , String name , String description , byte[] machineCode, byte[] machineData, byte[] creationBytes , int height ) {
-		super( atId , creator , machineCode, machineData, creationBytes , height );
+	private AT( byte[] atId , byte[] creator , String name , String description , ATRunType runType, byte[] machineCode, byte[] machineData, byte[] properties , int height ) {
+		super( atId , creator , machineCode, machineData, properties , height );
 		dbKey = atDbKeyFactory.newKey(AT_API_Helper.getLong(atId));		
 		this.name = name;
 		this.description = description;
 		this.previousBlock = 0;
+		this.runType = runType;
 
 	}
 	
@@ -421,12 +431,13 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         this.dbKey = atDbKeyFactory.newKey(AT_API_Helper.getLong(this.getId()));
         this.name = rs.getString("name");
         this.description = rs.getString("description");
+		this.runType = ATRunType.valueOf(rs.getString("runType"));
     }	
 
 	private void save(Connection con)
 	{
         try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO at (id, account_id, name, "
-                + "description, version, machinecode, data, delay_blocks, freeze_when_same_balance, "
+                + "description, runtype, version, machinecode, data, delay_blocks, freeze_when_same_balance, "
         		+ "sleep_between, start_block, Properties, height) "
         		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
@@ -434,6 +445,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			pstmt.setLong( ++i, AT_API_Helper.getLong( this.getCreator() ) );
 			DbUtils.setString( pstmt , ++i , this.getName() );
 			DbUtils.setString( pstmt , ++i , this.getDescription() );
+			DbUtils.setString( pstmt , ++i , this.getRunTypeStr() );			
 			pstmt.setShort( ++i , this.getVersion() );
 			DbUtils.setBytes( pstmt , ++i , this.getAp_code().array() );
 			DbUtils.setBytes( pstmt , ++i , this.getAp_data().array() );			
@@ -459,5 +471,12 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 	public String getDescription() {
 		return description;
 	}
+	
+	public ATRunType getRunType() {
+		return runType;
+	}	
 
+	public String getRunTypeStr() {
+		return runType.name();
+	}	
 }

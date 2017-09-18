@@ -1692,7 +1692,7 @@ public abstract class TransactionType {
                 Attachment.AutomatedTransactionsCreation attachment = (Attachment.AutomatedTransactionsCreation) transaction.getAttachment();
                 Long atId = transaction.getId();
                 Logger.logDebugMessage("Applying AT attachent");
-                AT.addAT( transaction.getId() , transaction.getSenderId() , attachment.getName() , attachment.getDescription() , attachment.getMachineCode(), attachment.getMachineData(), attachment.getVariables() , transaction.getHeight() ); 
+                AT.addAT( transaction.getId() , transaction.getSenderId() , attachment.getName() , attachment.getDescription() , attachment.getRunType(), attachment.getMachineCode(), attachment.getMachineData(), attachment.getProperties() , transaction.getHeight() ); 
                 Logger.logDebugMessage("At with id "+atId+" successfully applied");
 			}
 
