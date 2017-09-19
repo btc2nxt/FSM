@@ -534,9 +534,9 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		//AT at = AT.getAT( atId );
 		//bug: G_balance = 0 ,AT has to stop
 		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
-			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() - Constants.ONE_NXT*10, null );
+			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null );
 			state.addTransaction( tx );
-			state.setG_balance( Constants.ONE_NXT*10 );			
+			state.setG_balance( 0L );			
 		}
 
 		return 1;

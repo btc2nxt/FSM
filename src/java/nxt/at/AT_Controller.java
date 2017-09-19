@@ -337,7 +337,11 @@ public final class AT_Controller {
             try (DbIterator<AT.ATState> atStates = at.getATStates(0, 1)) {
                 if (atStates.hasNext()) {
                    AT.ATState atState = atStates.next(); 
-                   at.getMachineState().pc = atState.getPc();
+                   //the AT has stopped
+                   if (atState.getPc() < 0) 
+                	   continue;
+                   
+                   at.getMachineState().pc = atState.getPc(); 
                    long timeStamp = atState.getTimeStamp();
                    lastStateId = atState.getId();
                    Logger.logDebugMessage("height,pc " + atState.getTimeStamp()+ " "+at.getMachineState().pc);
@@ -513,7 +517,9 @@ public final class AT_Controller {
         else if (attachment.getLastStateId() == 0) {
         	at.setTimeStamp(AT_API_Helper.getLongTimestamp(at.getCreationBlockHeight(),0));        	
         }
-		atCost =getATResult(at,AT_API_Helper.getLong(at.getId()),runBlockHeight, 0,0L );
+        
+        Account sender = Account.getAccount(tx.getSenderId());
+		atCost =getATResult(at,AT_API_Helper.getLong(at.getId()),runBlockHeight, 0, sender );
 		
         /* compare the two at_transactions
          return (atCost >0 && at.getTransactions(). equals(atPayments));

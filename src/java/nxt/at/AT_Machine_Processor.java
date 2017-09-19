@@ -905,11 +905,17 @@ public class AT_Machine_Processor{
 				{
 					if(machineData.getAp_data().getLong( fun.addr1*8) == 0 )
 					{
-						if( op == OpCode.e_op_code_STZ_DAT )
+						if( op == OpCode.e_op_code_STZ_DAT ) {
+							//AT will never run again until it is updated again
+							machineData.getMachineState().pc = -1;
 							machineData.getMachineState().stopped = true;
-						else
-						{
-							//FIZ:Should set pc= pcs of the beginning of its block.
+						}
+						else {
+							/*
+							 * FIZ:This block AT finished,
+							 * In the future the AT will run again when condition meet it
+							 * set pc= pcs, next time will run from pcs
+							 */
 							machineData.getMachineState().pc = machineData.getMachineState().pcs;
 							machineData.getMachineState().finished = true;
 						}

@@ -63,7 +63,7 @@ public final class Constants {
     public static final int ASSET_EXCHANGE_BLOCK = 0;
     public static final int REFERENCED_TRANSACTION_FULL_HASH_BLOCK = isTestnet ? 0 : 1000;
     public static final int VOTING_SYSTEM_BLOCK = Integer.MAX_VALUE;
-    public static final int DIGITAL_GOODS_STORE_BLOCK = isTestnet ? 10 : 89000;
+    public static final int DIGITAL_GOODS_STORE_BLOCK = isTestnet ? 1 : 89000;
     public static final int PUBLIC_KEY_ANNOUNCEMENT_BLOCK = Integer.MAX_VALUE; //never forced
     public static final int LAST_KNOWN_BLOCK = isTestnet ? 0 : 185100;
     public static final String LAST_KNOWN_BLOCK_ID = isTestnet ? "1203667376540169366" : "4559214760898950463";

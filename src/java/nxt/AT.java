@@ -439,7 +439,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO at (id, account_id, name, "
                 + "description, runtype, version, machinecode, data, delay_blocks, freeze_when_same_balance, "
         		+ "sleep_between, start_block, Properties, height) "
-        		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+        		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong( ++i , AT_API_Helper.getLong( this.getId() ) );
 			pstmt.setLong( ++i, AT_API_Helper.getLong( this.getCreator() ) );
