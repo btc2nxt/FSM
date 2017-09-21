@@ -84,6 +84,7 @@ public final class Constants {
 	public static final long AUTOMATED_TRANSACTIONS_STEP_COST_NQT = 1 * ONE_NXT / 4; 
 	public static final long MAX_AUTOMATED_TRANSATIONS_STEP_FEE_NQT = 2 * ONE_NXT;
 	public static final int AUTOMATED_TRANSACTION_FINISHED = Integer.MAX_VALUE;
+	public static final int MAX_AUTOMATED_TRANSACTION_SYSTEM = 10;	
 	
 	public static final int MAX_PLAYERS_PER_COORDINATE = 20;
 	public static final int MAX_PLAYERS_PER_COORDINATE_WITHIN_BUILDING = 1;

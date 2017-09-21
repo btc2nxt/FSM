@@ -944,9 +944,11 @@ public class AT_Machine_Processor{
 						System.out.println("STP");
 				}
 			}
-			else if( op == OpCode.e_op_code_STP_IMD )				
+			else if( op == OpCode.e_op_code_STP_IMD ) {	
+				//AT will never run again until it is updated again
+				machineData.getMachineState().pc = -1;
 				machineData.getMachineState().stopped = true;
-			else if( op == OpCode.e_op_code_HLT_IMD ) {
+			} else if( op == OpCode.e_op_code_HLT_IMD ) {
 				machineData.getMachineState().pc++;				
 				machineData.getMachineState().stopped = true;
 			}

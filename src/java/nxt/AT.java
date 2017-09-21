@@ -15,6 +15,7 @@ package nxt;
 
 
 import nxt.Account.AccountAsset;
+import nxt.BlockchainProcessor.BlockOutOfOrderException;
 import nxt.at.AT_API_Helper;
 import nxt.at.AT_Constants;
 import nxt.at.AT_Controller;
@@ -28,6 +29,7 @@ import nxt.db.EntityDbTable;
 import nxt.util.Listener;
 import nxt.util.Logger;
 import nxt.Account;
+import nxt.NxtException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -65,6 +67,13 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		}, BlockchainProcessor.Event.BLOCK_POPPED);		
 	}    
 
+	public static class ATIdNotAcceptedException extends NxtException {
+
+		ATIdNotAcceptedException(String message) {
+	        super(message);
+	    }
+
+	}
 	public static class ATState {
 
 	    static void init() {}
@@ -327,7 +336,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         return atTable.get(atDbKeyFactory.newKey(AT_API_Helper.getLong(id)));
 	}    
 
-    public static DbIterator<AT> getAT(long id, int from, int to) {
+    public static DbIterator<AT> getATs(long id, int from, int to) {
         return atTable.getManyBy(new DbClause.LongClause("id", id), from, to);
     }
 	
@@ -339,6 +348,28 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         return atTable.search(query, DbClause.EMPTY_CLAUSE, from, to);
     }
 
+    private static final class SystemATClause extends DbClause {
+
+        private final int id;
+
+        private SystemATClause(final int id) {
+            super(" id between ? AND ? ");
+            this.id = id;
+        }
+
+        @Override
+        public int set(PreparedStatement pstmt, int index) throws SQLException {
+            pstmt.setInt(index++, 1);
+            pstmt.setInt(index++, id);
+            return index;
+        }
+
+    }
+
+    public static DbIterator<AT> getSystemATs(final int idValue) {
+        return atTable.getManyBy(new SystemATClause(idValue), 0, -1, " ORDER BY id ");
+    }
+    
     public DbIterator<ATState> getATStates(int from, int to) {
         return atStateTable.getManyBy(new DbClause.LongClause("at_id", AT_API_Helper.getLong(this.atId)), from, to);
     }
@@ -372,7 +403,27 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		ByteBuffer bf = ByteBuffer.allocate( 8 + 8 );
 		bf.order( ByteOrder.LITTLE_ENDIAN );
 
-		bf.putLong( atId );
+		/*
+		 * SYSTEM_AT must less then MAX_AUTOMATED_TRANSACTION_SYSTEM, e.g. 10
+		 * because SytemATs run every several blocks, cost lots of CPU and memory
+		 */
+		long systemATId = Math.abs(atId);
+		systemATId = systemATId % Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM ;
+		try {
+			if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT) {
+				if ( systemATId == 0 )
+					throw new ATIdNotAcceptedException("Invalid AT Id, equals 0" );
+
+				bf.putLong( systemATId );				
+			} else {
+				if (Math.abs(atId) <= Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM )
+					throw new ATIdNotAcceptedException("Invalid AT Id, less then " + Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM );
+                
+				bf.putLong( atId );
+			}
+    	} catch (Exception e) {
+    		//throw e;
+    	}
 
 		byte[] id = new byte[ 8 ];
 
@@ -387,7 +438,12 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		AT_Controller.resetMachine(at);
 		
 		atTable.insert(at);		
-		Account account = Account.addOrGetAccount(atId);
+		
+		Account account;
+		if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT)
+			account = Account.addOrGetAccount(systemATId);
+		else
+			account = Account.addOrGetAccount(atId);
 		account.apply(new byte[32], height);
 		Logger.logDebugMessage("add new AT");		
 	}
