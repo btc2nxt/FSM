@@ -62,6 +62,19 @@ final class TransactionImpl implements Transaction {
             this.type = attachment.getTransactionType();
         }
 
+        BuilderImpl(byte version, byte[] senderPublicKey, long senderId, long amountNQT, long feeNQT, int timestamp, short deadline,
+                Attachment.AbstractAttachment attachment) {
+        this.version = version;
+        this.timestamp = timestamp;
+        this.deadline = deadline;
+        this.senderId = senderId;
+        this.senderPublicKey = senderPublicKey;
+        this.amountNQT = amountNQT;
+        this.feeNQT = feeNQT;
+        this.attachment = attachment;
+        this.type = attachment.getTransactionType();
+        }
+        
         @Override
         public TransactionImpl build() throws NxtException.NotValidException {
             return new TransactionImpl(this);
@@ -395,9 +408,11 @@ final class TransactionImpl implements Transaction {
     @Override
     public long getId() {
         if (id == 0) {
-            if (signature == null) {
+            if (signature == null && type != TransactionType.findTransactionType( (byte)5, (byte) 1)
+            		&& (senderId <= 0 ||  senderId > Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM )) {
                 throw new IllegalStateException("Transaction is not signed yet");
             }
+
             byte[] hash;
             if (useNQT()) {
                 byte[] data = zeroSignature(getBytes());
@@ -437,7 +452,7 @@ final class TransactionImpl implements Transaction {
 
     @Override
     public long getSenderId() {
-        if (senderId == 0) {
+        if (senderId == 0 && senderPublicKey != null) {
             senderId = Account.getId(senderPublicKey);
         }
         return senderId;
@@ -479,6 +494,7 @@ final class TransactionImpl implements Transaction {
             buffer.putInt(timestamp);
             buffer.putShort(deadline);
             buffer.put(senderPublicKey);
+            buffer.putLong(senderId);
             buffer.putLong(type.canHaveRecipient() ? recipientId : Genesis.CREATOR_ID);
             if (useNQT()) {
                 buffer.putLong(amountNQT);
@@ -525,6 +541,7 @@ final class TransactionImpl implements Transaction {
             short deadline = buffer.getShort();
             byte[] senderPublicKey = new byte[32];
             buffer.get(senderPublicKey);
+            long senderId = buffer.getLong();
             long recipientId = buffer.getLong();
             long amountNQT = buffer.getLong();
             long feeNQT = buffer.getLong();
@@ -546,7 +563,7 @@ final class TransactionImpl implements Transaction {
                 ecBlockId = buffer.getLong();
             }
             TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-            TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, senderPublicKey, amountNQT, feeNQT,
+            TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, senderPublicKey, senderId, amountNQT, feeNQT,
                     timestamp, deadline, transactionType.parseAttachment(buffer, version))
                     .referencedTransactionFullHash(referencedTransactionFullHash)
                     .signature(signature)
@@ -603,6 +620,7 @@ final class TransactionImpl implements Transaction {
         json.put("timestamp", timestamp);
         json.put("deadline", deadline);
         json.put("senderPublicKey", Convert.toHexString(senderPublicKey));
+        json.put("senderId", senderId);        
         if (type.canHaveRecipient()) {
             json.put("recipient", Convert.toUnsignedLong(recipientId));
         }
@@ -632,6 +650,7 @@ final class TransactionImpl implements Transaction {
             int timestamp = ((Long) transactionData.get("timestamp")).intValue();
             short deadline = ((Long) transactionData.get("deadline")).shortValue();
             byte[] senderPublicKey = Convert.parseHexString((String) transactionData.get("senderPublicKey"));
+            long senderId = Convert.parseLong(transactionData.get("senderId"));            
             long amountNQT = Convert.parseLong(transactionData.get("amountNQT"));
             long feeNQT = Convert.parseLong(transactionData.get("feeNQT"));
             String referencedTransactionFullHash = (String) transactionData.get("referencedTransactionFullHash");
@@ -644,7 +663,7 @@ final class TransactionImpl implements Transaction {
             if (transactionType == null) {
                 throw new NxtException.NotValidException("Invalid transaction type: " + type + ", " + subtype);
             }
-            TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, senderPublicKey,
+            TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, senderPublicKey, senderId, 
                     amountNQT, feeNQT, timestamp, deadline,
                     transactionType.parseAttachment(attachmentData))
                     .referencedTransactionFullHash(referencedTransactionFullHash)
@@ -678,10 +697,14 @@ final class TransactionImpl implements Transaction {
             short deadline = 100; //for test, set to 1 ,because it is included immediately
             short steps = (short)state.getMachineState().getSteps();
 			
-            byte[] senderPublicKey = Crypto.getPublicKey(secretPhrase);            
+            byte[] senderPublicKey = Crypto.getPublicKey(secretPhrase); 
+            long senderId;
+            if (secretPhrase.substring(0, 20).equals("SIGNED_BY_SYSMTEM_AT")) 
+            	senderId = AT_API_Helper.getLong(state.getId());
+            else
+            	senderId = Account.getId(senderPublicKey);
             long feeNQT = steps * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT> Constants.ONE_NXT ? steps * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT : Constants.ONE_NXT;
-            String referencedTransactionFullHash = null;
-            byte[] signature = null;// will be signed by atId.toString(),// new byte[64];            
+            String referencedTransactionFullHash = null;            
             byte version = (byte)(Nxt.getBlockchain().getHeight() < Constants.DIGITAL_GOODS_STORE_BLOCK ? 1 : 1);
 
             TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
@@ -691,7 +714,7 @@ final class TransactionImpl implements Transaction {
             if (transactionType == null) {
                 throw new NxtException.NotValidException("Invalid transaction type: " + type + ", " + subtype);
             }
-            TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, senderPublicKey,
+            TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, senderPublicKey,senderId,
                     0, feeNQT, timestamp, deadline, (Attachment.AbstractAttachment)attachment)
                     .referencedTransactionFullHash(referencedTransactionFullHash);
             if (transactionType.canHaveRecipient()) {
@@ -726,7 +749,7 @@ final class TransactionImpl implements Transaction {
         if (signature != null) {
             throw new IllegalStateException("Transaction already signed");
         }
-        signature = Crypto.sign(getBytes(), secretPhrase);
+      	signature = Crypto.sign(getBytes(), secretPhrase);
     }
 
     @Override
@@ -744,8 +767,8 @@ final class TransactionImpl implements Transaction {
         return Long.compare(this.getId(), other.getId());
     }
 
-    public boolean verifySignature() {
-        Account account = Account.getAccount(getSenderId());
+    public boolean verifySignature() {      	
+    	Account account = Account.getAccount(getSenderId());
         if (account == null) {
             return false;
         }
@@ -761,7 +784,7 @@ final class TransactionImpl implements Transaction {
     }
 
     private int signatureOffset() {
-        return 1 + 1 + 4 + 2 + 32 + 8 + (useNQT() ? 8 + 8 + 32 : 4 + 4 + 8);
+        return 1 + 1 + 4 + 2 + 32 + + 8 + 8 + (useNQT() ? 8 + 8 + 32 : 4 + 4 + 8);
     }
 
     private boolean useNQT() {

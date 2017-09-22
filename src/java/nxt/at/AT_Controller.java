@@ -63,7 +63,7 @@ public final class AT_Controller {
 				}
                 
 				try {
-					runSystemATs(block.getHeight(), "SYSTEM_AT");
+					runSystemATs(block.getHeight());
 				} catch (NotValidException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -414,7 +414,7 @@ public final class AT_Controller {
 	/*
 	 * atId : 1..MAX_AUTOMATED_TRANSACTION_SYSTEM  
 	 */
-	public static int runSystemATs( int blockHeight, String secretPhrase) throws NotValidException{
+	public static int runSystemATs( int blockHeight) throws NotValidException{
 
 		int atCost;
 		int totalSteps = 0; 
@@ -476,13 +476,15 @@ public final class AT_Controller {
 			//if have txs, must update payload 				
 			atCost =getATResult(at,AT_API_Helper.getLong(at.getId()),blockHeight, orderedATHeight,account );
 			//generate a AT_State tx
+			String atSecretPhrase = "SIGNED_BY_SYSMTEM_AT" + AT_API_Helper.getLong(at.getId());
+			
 			if (atCost >0 ) {
 				try {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
-					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, at, lastStateId);					
+					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId);					
 					transaction.validate();
-					transaction.sign(secretPhrase);
+					transaction.sign(atSecretPhrase);
                     Nxt.getTransactionProcessor().broadcast(transaction);
                     Logger.logDebugMessage("FSM payment transactions success");                    
                 

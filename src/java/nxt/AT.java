@@ -21,6 +21,7 @@ import nxt.at.AT_Constants;
 import nxt.at.AT_Controller;
 import nxt.at.AT_Exception;
 import nxt.at.AT_Machine_State;
+import nxt.crypto.Crypto;
 import nxt.db.DbClause;
 import nxt.db.DbIterator;
 import nxt.db.DbKey;
@@ -440,11 +441,16 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		atTable.insert(at);		
 		
 		Account account;
-		if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT)
+		if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT) {
 			account = Account.addOrGetAccount(systemATId);
-		else
+			String atSecretPhrase = "SIGNED_BY_SYSMTEM_AT" + systemATId;
+			account.apply(Crypto.getPublicKey(atSecretPhrase), height);			
+		}
+		else {
 			account = Account.addOrGetAccount(atId);
-		account.apply(new byte[32], height);
+			account.apply(new byte[32], height);
+		}	
+		
 		Logger.logDebugMessage("add new AT");		
 	}
 
