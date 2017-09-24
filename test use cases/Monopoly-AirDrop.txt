@@ -1,0 +1,75 @@
+Use Case: Airdrop for Game Monopoly
+------------------------------------------
+
+Airdrop for Game Monopoly drops five package coins, every package has 100 coins and situates 
+in different coordinate. Players must go to the sites within eight blocks time, otherwise the 
+coins will disappear.
+Another FSM, that is Distribute for Game Monopoly, which distribute these coins to the players
+who are there.
+The sites are decided by the last block hash, and different with the last sites.
+for example
+[1,4]
+[11,20]
+[35,47]
+[66,65]
+[99,86]
+
+Variables
+---------
+
+@00 ==> @timestamp
+@01 ==> @packages (4)
+@02 ==> @amount (100)
+@03 ==> @rangX
+@04 ==> @rangY
+@05 ==> @rangX1
+@06 ==> @rangY1
+@07 ==> @lowByte (0xff)
+@08 ==> @shiftOneByte (256)
+
+@10 ==> @A1
+@11 ==> @A2
+@12 ==> @dividor
+@13 ==> @x
+@14 ==> @y
+@15 ==> @tmp
+@16 ==> @count
+
+
+Script Assembly
+---------------
+
+if @timestamp not zero goto init                         1e000000003d
+set @timestamp to AT creation time                       35010300000000
+
+:init
+puts the block hash of the previous block in A		 32 0303
+set @dividor to 1					 01 12000000 0100000000000000
+set @count to 0						 01 16000000 0000000000000000
+
+:loop
+begin block ?						 1500
+set @x to A1						 35 0100 13000000
+div @x by @dividor					 09 13000000 12000000
+and @lowByte to @x 					 0b 13000000 07000000
+set @tmp to @x						 02 15000000 13000000
+div @tmp by @rangX					 09 15000000 03000000
+multiply @tmp by @rangX					 08 15000000 03000000
+subtract @x by rangx(x- @tmp * @rangX)			 07 13000000 15000000
+end block 0						 1500
+
+begin block ?						 1500
+set @y to A2						 0101 14000000
+div @y by @dividor					 09 14000000 12000000
+and @lowByte to @y 					 0b 14000000 07000000
+set @tmp to @y						 02 15000000 14000000
+div @tmp by @rangY					 09 15000000 04000000
+multiply @tmp by @rangY					 08 15000000 04000000
+subtract @y by rangx(y- @tmp * @rangY)			 07 14000000 15000000
+end block 0						 1500
+
+inc @count						 04 16000000
+airdrop to coordinate(x,y) with sequence @count		 34 0420 16000000 02000000
+@dividor * @shiftOneByte (x,y will right shift one byte) 08 12000000 08000000
+if @count< @packages then  loop				 20 16000000 01000000 00
+finished						 28
