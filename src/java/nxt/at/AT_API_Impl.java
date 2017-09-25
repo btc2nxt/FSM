@@ -372,6 +372,25 @@ public class AT_API_Impl implements AT_API
 		platform.A_to_Tx_after_Timestamp_with_Type( val , type, state );
 		
 	}
+	
+	@Override
+	public void A_To_Tx_Within_Timestamps( long val , long type, AT_Machine_State state ) {
+		platform.A_To_Tx_Within_Timestamps( val , type, state );
+		
+	}
+
+	@Override
+	public void A_To_TxNum_In_Timestamps( long val , long type, AT_Machine_State state ) {
+		platform.A_To_TxNum_In_Timestamps( val , type, state );
+		
+	}
+
+	@Override
+	public void AirDrop_Coordinate_In_B( long val , long type, AT_Machine_State state ) {
+		platform.AirDrop_Coordinate_In_B( val , type, state );
+		
+	}
+	
 	@Override
 	public long get_Type_for_Tx_in_A( AT_Machine_State state ) {
 		return platform.get_Type_for_Tx_in_A( state );
@@ -408,7 +427,7 @@ public class AT_API_Impl implements AT_API
 		platform.B_to_Address_of_Creator( state );
 		
 	}
-
+	
 	@Override
 	public long get_Current_Balance( AT_Machine_State state ) {
 		return platform.get_Current_Balance( state );

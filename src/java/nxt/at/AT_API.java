@@ -257,11 +257,6 @@ public interface AT_API {
 	public void A_to_Tx_after_Timestamp( long val , AT_Machine_State state );
 	
 	/**
-	 * sets A to zero/tx hash of the first tx after
-	 */
-	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state );
-	
-	/**
 	 * bool if A is a valid tx with @addr to tx type
 	 * 0 -> normal tx
 	 * 1 -> message tx
@@ -301,6 +296,21 @@ public interface AT_API {
 	 */
 	public void B_to_Address_of_Creator( AT_Machine_State state );
 	
+	/**
+	 * sets A to tx hash of the first tx after timestamp with type
+	 */
+	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state );
+
+	/**
+	 *  sets A to tx hash of the first tx between timestamps in B
+	 */
+	public void A_To_Tx_Within_Timestamps( long val , long type, AT_Machine_State state );
+
+	/**
+	 * sets A to tx number of txs between timestamps in B
+	 */
+	public void A_To_TxNum_In_Timestamps( long val , long type, AT_Machine_State state );
+
 	// end range 0x0300..0x03ff
 	// ------------------------
 	
@@ -346,6 +356,10 @@ public interface AT_API {
 	 */
 	public long add_Minutes_to_Timestamp ( long val1 , long val2 , AT_Machine_State state );
 	
+	/**
+	 * airdrop coins to coordinate(B1,B2), sequence= B3,amount = B4
+	 */
+	public void AirDrop_Coordinate_In_B( long val , long type, AT_Machine_State state );
 	
 	// end range 0x0400.0x04ff
 	// -----------------------

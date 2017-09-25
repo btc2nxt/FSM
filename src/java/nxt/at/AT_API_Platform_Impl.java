@@ -91,9 +91,12 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	}
 
 	@Override
-	/*  0x0304 get tx of timestamp(val)
+	/*  0x33(EXT_FUN_DAT) 0x0304(FUN) 
+	 *  330304:get tx sending AT account from timestamp(val)
 	 *  if can not find a tx , store atId -> A3, now height+num -> A4
 	 *  when read timestamp from A,	if A1==0 and A3= atId, then timestamp=A4
+	 *  
+	 *  sometimes there are too many these txs, so need parameters to filter them 
 	 */
 	public void A_to_Tx_after_Timestamp( long val , AT_Machine_State state ) {
 
@@ -148,32 +151,6 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		state.setRetrievedHeight( startHeight);
 		
 		Logger.logInfoMessage("tx with id "+transactionId+" found");
-		clear_A( state );
-		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
-		// can not find a tx
-		if (transactionId == 0) {
-			state.set_A3( AT_API_Helper.getByteArray( atId ) );
-			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
-		}
-	}
-
-	@Override
-	/*  0x0350 get tx of timestamp(val) with the type
-	 */
-	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state ) {
-
-		int height = AT_API_Helper.longToHeight( val );
-		int numOfTx = AT_API_Helper.longToNumOfTx( val );
-
-		Long atId = state.getLongId();		
-		Long transactionId = 0L;
-		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
-		
-	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
-		if (transactionId != 0) {
-		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
-		}
-
 		clear_A( state );
 		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
 		// can not find a tx
@@ -496,6 +473,87 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 
 	}
 
+	@Override
+	/* 0x0350 EXT_FUN_DAT_2
+	 * get tx of timestamp(val) with the type
+	 */
+	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state ) {
+
+		int height = AT_API_Helper.longToHeight( val );
+		int numOfTx = AT_API_Helper.longToNumOfTx( val );
+
+		Long atId = state.getLongId();		
+		Long transactionId = 0L;
+		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		
+	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
+		if (transactionId != 0) {
+		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
+		}
+
+		clear_A( state );
+		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
+		// can not find a tx
+		if (transactionId == 0) {
+			state.set_A3( AT_API_Helper.getByteArray( atId ) );
+			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
+		}
+	}
+	
+	@Override
+	/* 0x0351 EXT_FUN_DAT_2
+	 * get tx between timestamp(B1,B2),val with the type
+	 */
+	public void A_To_Tx_Within_Timestamps( long val , long type, AT_Machine_State state ) {
+
+		int height = AT_API_Helper.longToHeight( val );
+		int numOfTx = AT_API_Helper.longToNumOfTx( val );
+
+		Long atId = state.getLongId();		
+		Long transactionId = 0L;
+		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		
+	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
+		if (transactionId != 0) {
+		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
+		}
+
+		clear_A( state );
+		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
+		// can not find a tx
+		if (transactionId == 0) {
+			state.set_A3( AT_API_Helper.getByteArray( atId ) );
+			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
+		}
+	}
+	
+	@Override
+	/* 0x0352 EXT_FUN_DAT_2
+	 * get number of txs between timestamp(B1,B2),val with the type
+	 */
+	public void A_To_TxNum_In_Timestamps( long val , long type, AT_Machine_State state ) {
+
+		int height = AT_API_Helper.longToHeight( val );
+		int numOfTx = AT_API_Helper.longToNumOfTx( val );
+
+		Long atId = state.getLongId();		
+		Long transactionId = 0L;
+		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		
+	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
+		if (transactionId != 0) {
+		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
+		}
+
+		clear_A( state );
+		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
+		// can not find a tx
+		if (transactionId == 0) {
+			state.set_A3( AT_API_Helper.getByteArray( atId ) );
+			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
+		}
+	}
+	
 	@Override //0x0400
 	public long get_Current_Balance( AT_Machine_State state ) {
 		long balance = Account.getAccount( AT_API_Helper.getLong(state.getId()) ).getBalanceNQT();
@@ -603,7 +661,34 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		return AT_API_Helper.getLongTimestamp( addHeight , numOfTx );
 	}
 
-    //get txs in a block with index > numOfTx
+	@Override
+	/* 0x0450 EXT_FUN_DAT_2
+	 * airdrop coins to coordinate(B1,B2), sequence= B3,amount = B4
+	 */
+	public void AirDrop_Coordinate_In_B( long val , long type, AT_Machine_State state ) {
+
+		int height = AT_API_Helper.longToHeight( val );
+		int numOfTx = AT_API_Helper.longToNumOfTx( val );
+
+		Long atId = state.getLongId();		
+		Long transactionId = 0L;
+		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		
+	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
+		if (transactionId != 0) {
+		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
+		}
+
+		clear_A( state );
+		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
+		// can not find a tx
+		if (transactionId == 0) {
+			state.set_A3( AT_API_Helper.getByteArray( atId ) );
+			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
+		}
+	}
+	
+	//get txs in a block with index > numOfTx
     public static List<Long> findATTransactions(int startHeight ,Long atID, int numOfTx){
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT id FROM transaction WHERE height= ? and recipient_id = ?")){

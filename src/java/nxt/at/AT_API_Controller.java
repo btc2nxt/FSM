@@ -254,6 +254,37 @@ public class AT_API_Controller{
 	{
 		long rc = 0;
 		
+		switch (func_num) {
+        	case 276:
+        		atApi.set_A1_A2( val1 , val2 , state );
+        		break;
+        	case 277:
+        		atApi.set_A3_A4( val1 , val2 , state );
+        		break;
+        	case 282:
+        		atApi.set_B1_B2( val1 , val2 , state );
+        		break;
+        	case 283:
+        		atApi.set_B3_B4( val1 , val2 , state );
+        		break;
+        	case 0x350:
+        		atApi.A_to_Tx_after_Timestamp_with_Type( val1 , val2, state );	
+        		break;
+        	case 0x351:
+        		atApi.A_To_Tx_Within_Timestamps( val1 , val2, state );	
+        		break;	
+        	case 0x352:
+        		atApi.A_To_TxNum_In_Timestamps( val1 , val2, state );	
+        		break;
+        	case 0x450:
+        		atApi.AirDrop_Coordinate_In_B( val1 , val2, state );	
+        		break;	          		
+        	case 1030:
+        		rc = atApi.add_Minutes_to_Timestamp( val1 , val2 , state );
+        		break;
+        		
+		}
+		/*
 		if ( func_num == 276 )
 		{
 			atApi.set_A1_A2( val1 , val2 , state );
@@ -278,7 +309,7 @@ public class AT_API_Controller{
 		{
 			return atApi.add_Minutes_to_Timestamp( val1 , val2 , state );
 		}
-		
+		*/
 		return rc;
 		
 	}
