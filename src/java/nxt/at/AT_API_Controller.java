@@ -271,10 +271,10 @@ public class AT_API_Controller{
         		atApi.A_to_Tx_after_Timestamp_with_Type( val1 , val2, state );	
         		break;
         	case 0x351:
-        		atApi.A_To_Tx_Within_Timestamps( val1 , val2, state );	
+        		atApi.A_To_Tx_between_Timestamps_with_Type( val1 , (int)val2, state );	
         		break;	
         	case 0x352:
-        		atApi.A_To_TxNum_In_Timestamps( val1 , val2, state );	
+        		atApi.A_To_TxsCount_between_Timestamps_with_Type( val1 , (int)val2, state );	
         		break;
         	case 0x450:
         		atApi.AirDrop_Coordinate_In_B( val1 , val2, state );	

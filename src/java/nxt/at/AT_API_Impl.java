@@ -374,14 +374,14 @@ public class AT_API_Impl implements AT_API
 	}
 	
 	@Override
-	public void A_To_Tx_Within_Timestamps( long val , long type, AT_Machine_State state ) {
-		platform.A_To_Tx_Within_Timestamps( val , type, state );
+	public void A_To_Tx_between_Timestamps_with_Type( long val , int type, AT_Machine_State state ) {
+		platform.A_To_Tx_between_Timestamps_with_Type( val , type, state );
 		
 	}
 
 	@Override
-	public void A_To_TxNum_In_Timestamps( long val , long type, AT_Machine_State state ) {
-		platform.A_To_TxNum_In_Timestamps( val , type, state );
+	public void A_To_TxsCount_between_Timestamps_with_Type( long val , int type, AT_Machine_State state ) {
+		platform.A_To_TxsCount_between_Timestamps_with_Type( val , type, state );
 		
 	}
 

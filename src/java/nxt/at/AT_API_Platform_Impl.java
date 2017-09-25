@@ -478,7 +478,6 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	 * get tx of timestamp(val) with the type
 	 */
 	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state ) {
-
 		int height = AT_API_Helper.longToHeight( val );
 		int numOfTx = AT_API_Helper.longToNumOfTx( val );
 
@@ -504,24 +503,34 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	/* 0x0351 EXT_FUN_DAT_2
 	 * get tx between timestamp(B1,B2),val with the type
 	 */
-	public void A_To_Tx_Within_Timestamps( long val , long type, AT_Machine_State state ) {
-
+	public void A_To_Tx_between_Timestamps_with_Type( long val , int type, AT_Machine_State state ) {
 		int height = AT_API_Helper.longToHeight( val );
 		int numOfTx = AT_API_Helper.longToNumOfTx( val );
 
 		Long atId = state.getLongId();		
 		Long transactionId = 0L;
-		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		Logger.logDebugMessage("get tx between timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
 		
-	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
-		if (transactionId != 0) {
-		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
+		//when AT first runs the function, or re-catch the timestamp, e.g. refunding 
+		if (!AT_Controller.getTimeStampRetrieved() || height < state.getRetrievedHeight()){ 
+			startHeight = AT_API_Helper.longToHeight( val );
+			numOfTx = AT_API_Helper.longToNumOfTx( val );
+			timeStampList = findATTransactions(startHeight, endHeight, atId, type, numOfTx);
+			AT_Controller.setTimeStampRetrieved(true);
+			timeStampIndex = 0;
+			
+			AT at =AT.getAT(atId);
 		}
-
-		clear_A( state );
-		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
-		// can not find a tx
-		if (transactionId == 0) {
+			
+		Logger.logDebugMessage("loop.... "+ startHeight + "-" + numOfTx);				
+		if (!timeStampList.isEmpty() && timeStampList.size()>timeStampIndex) {
+			transactionId = timeStampList.get(timeStampIndex++);
+			numOfTx++;
+			Logger.logInfoMessage("tx with id "+transactionId+" found");
+			clear_A( state );
+			state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
+		}
+		else {// can not find a tx
 			state.set_A3( AT_API_Helper.getByteArray( atId ) );
 			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
 		}
@@ -531,27 +540,13 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	/* 0x0352 EXT_FUN_DAT_2
 	 * get number of txs between timestamp(B1,B2),val with the type
 	 */
-	public void A_To_TxNum_In_Timestamps( long val , long type, AT_Machine_State state ) {
-
+	public void A_To_TxsCount_between_Timestamps_with_Type( long val, int type, AT_Machine_State state ) {
 		int height = AT_API_Helper.longToHeight( val );
-		int numOfTx = AT_API_Helper.longToNumOfTx( val );
 
 		Long atId = state.getLongId();		
-		Long transactionId = 0L;
-		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		Logger.logDebugMessage("get number of tx between timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
 		
-	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
-		if (transactionId != 0) {
-		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
-		}
-
-		clear_A( state );
-		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
-		// can not find a tx
-		if (transactionId == 0) {
-			state.set_A3( AT_API_Helper.getByteArray( atId ) );
-			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
-		}
+		state.set_A1( AT_API_Helper.getByteArray( findATTransactionsCount(startHeight, endHeight, atId, type) ) );
 	}
 	
 	@Override //0x0400
@@ -714,6 +709,50 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     	
     }
 
+	//get list of txs with conditions and  index > numOfTx
+    public static List<Long> findATTransactions(int startHeight, int endHeight, Long atID, int type_subType, int numOfTx){
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT id FROM transaction WHERE height between ? and ? and recipient_id = ? and type*100+subtype = ? ")) {
+    		pstmt.setInt(1, startHeight);
+    		pstmt.setInt(2, endHeight);    		
+    		pstmt.setLong(3, atID);
+    		pstmt.setInt(4, type_subType);
+    		ResultSet rs = pstmt.executeQuery();
+    		Long transactionId = 0L;
+    		List<Long> transactionIdList = new ArrayList<>();
+    		
+    		int counter = 1;
+    		while (rs.next()) {
+                if (counter > numOfTx){
+                    transactionId = rs.getLong("id");
+                    transactionIdList.add(transactionId);
+                }
+            }
+            rs.close();
+            return transactionIdList;
+    		
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}
+    	
+    }
+    
+	//get list of txs with conditions and  index > numOfTx
+    public static int findATTransactionsCount(int startHeight, int endHeight, Long atID, int type_subType){
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT id FROM transaction WHERE height between ? and ? and recipient_id = ? and type*100+subtype = ? ")) {
+    		pstmt.setInt(1, startHeight);
+    		pstmt.setInt(2, endHeight);    		
+    		pstmt.setLong(3, atID);
+    		pstmt.setInt(4, type_subType);
+    		ResultSet rs = pstmt.executeQuery();
+    		rs.last();
+    		return rs.getRow();    		
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}    		
+    }
+    
     //get the latest tx in in blockchain with height > , and type= ?
     public static Long findTransactionToAT(int startHeight ,Long atID, int transactionType){
     	Long transactionId;

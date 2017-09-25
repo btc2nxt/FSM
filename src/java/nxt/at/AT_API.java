@@ -304,12 +304,12 @@ public interface AT_API {
 	/**
 	 *  sets A to tx hash of the first tx between timestamps in B
 	 */
-	public void A_To_Tx_Within_Timestamps( long val , long type, AT_Machine_State state );
+	public void A_To_Tx_between_Timestamps_with_Type( long val, int type, AT_Machine_State state );
 
 	/**
 	 * sets A to tx number of txs between timestamps in B
 	 */
-	public void A_To_TxNum_In_Timestamps( long val , long type, AT_Machine_State state );
+	public void A_To_TxsCount_between_Timestamps_with_Type( long val , int type, AT_Machine_State state );
 
 	// end range 0x0300..0x03ff
 	// ------------------------
