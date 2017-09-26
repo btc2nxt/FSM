@@ -277,7 +277,7 @@ public class AT_API_Controller{
         		atApi.A_To_TxsCount_between_Timestamps_with_Type( val1 , (int)val2, state );	
         		break;
         	case 0x450:
-        		atApi.AirDrop_Coordinate_In_B( val1 , val2, state );	
+        		atApi.AirDrop_Coordinate_In_B( val1 , (int)val2, state );	
         		break;	          		
         	case 1030:
         		rc = atApi.add_Minutes_to_Timestamp( val1 , val2 , state );

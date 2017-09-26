@@ -566,12 +566,12 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		if ( state.getG_balance() >= Constants.ONE_NXT ) { 
 			if ( state.getG_balance() >= val ) {
 				//AT_Transaction tx = new AT_Transaction(state.getId(), state.get_B1().clone() , val, null );
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null );
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null, 0, 0 );
 				state.addTransaction( tx );
 				state.setG_balance( state.getG_balance() - val );
 			}
 			else {
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null );			
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null, 0 ,0 );			
 				state.addTransaction( tx );
 				state.setG_balance( 0L );
 				//at.setG_balance( at.getG_balance() - 123 );
@@ -587,7 +587,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		//AT at = AT.getAT( atId );
 		//bug: G_balance = 0 ,AT has to stop
 		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
-			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null );
+			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null,0 ,0 );
 			state.addTransaction( tx );
 			state.setG_balance( 0L );			
 		}
@@ -602,7 +602,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		
 		if ( at.getP_balance() > at.getG_balance()  )
 		{
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getG_balance(), null );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getG_balance(), null, 0, 0 );
 			state.addTransaction( tx );
 			
 			at.setG_balance( 0L );
@@ -611,7 +611,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		}
 		else
 		{
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getP_balance(),null );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getP_balance(),null, 0, 0 );
 			state.addTransaction( tx );
 			
 			at.setG_balance( at.getG_balance() - at.getP_balance() );
@@ -632,7 +632,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		if ( at.getG_balance() > amount )
 		{
 		
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , amount, null );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , amount, null, 0, 0 );
 			state.addTransaction( tx );
 			
 			state.setG_balance( state.getG_balance() - amount );
@@ -640,7 +640,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		}
 		else
 		{
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , at.getG_balance(), null );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , at.getG_balance(), null, 0, 0 );
 			state.addTransaction( tx );
 			
 			state.setG_balance( 0L );
@@ -658,29 +658,35 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 
 	@Override
 	/* 0x0450 EXT_FUN_DAT_2
-	 * airdrop coins to coordinate(B1,B2), sequence= B3,amount = B4
+	 * airdrop coins to coordinate(B1,B2), val= hash 8 bytes, count = 1..5
+	 * x = B1 + val_high4bytes % 30
+	 * y = B2 + val_lowbytes % 31
+	 * 
+	 * B3: Distribute FSM address
 	 */
-	public void AirDrop_Coordinate_In_B( long val , long type, AT_Machine_State state ) {
+	public void AirDrop_Coordinate_In_B( long val , int count, AT_Machine_State state ) {
 
-		int height = AT_API_Helper.longToHeight( val );
-		int numOfTx = AT_API_Helper.longToNumOfTx( val );
+		int x;
+		int y;
 
-		Long atId = state.getLongId();		
-		Long transactionId = 0L;
-		Logger.logDebugMessage("get tx after timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		Logger.logDebugMessage("AirDrop_Coordinate_In_B "+val + " count "+ count);
 		
-	    transactionId = findTransactionToAT(startHeight, atId, (int)type);
-		if (transactionId != 0) {
-		    Logger.logInfoMessage("tx with id "+transactionId+" found");			
-		}
+		x = (int) ((val & 0xffffffff00000000L)>>32 % 30 + AT_API_Helper.getLong(state.get_B1()));
+		y = (int) ((val & 0x00000000ffffffffL) % 30     + AT_API_Helper.getLong(state.get_B2()));
 
-		clear_A( state );
-		state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
-		// can not find a tx
-		if (transactionId == 0) {
-			state.set_A3( AT_API_Helper.getByteArray( atId ) );
-			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
+		if (count == 5 && (val & 0xff00)>>8 % 2 == 0) {
+			int tmp;
+			tmp = x;
+			x = y;
+			y = tmp;
+			
 		}
+		
+		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
+			AT_Transaction tx = new AT_Transaction( state.get_B3().clone() , 0, null ,x ,y );
+			state.addTransaction( tx );			
+		}
+			
 	}
 	
 	//get txs in a block with index > numOfTx

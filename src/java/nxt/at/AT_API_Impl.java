@@ -386,8 +386,8 @@ public class AT_API_Impl implements AT_API
 	}
 
 	@Override
-	public void AirDrop_Coordinate_In_B( long val , long type, AT_Machine_State state ) {
-		platform.AirDrop_Coordinate_In_B( val , type, state );
+	public void AirDrop_Coordinate_In_B( long val , int count, AT_Machine_State state ) {
+		platform.AirDrop_Coordinate_In_B( val , count, state );
 		
 	}
 	

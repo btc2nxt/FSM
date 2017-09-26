@@ -18,22 +18,21 @@ Variables
 ---------
 
 @00 ==> @timestamp
-@01 ==> @packages (4)
-@02 ==> @amount (100)
-@03 ==> @rangX
-@04 ==> @rangY
-@05 ==> @rangX1
-@06 ==> @rangY1
-@07 ==> @lowByte (0xff)
-@08 ==> @shiftOneByte (256)
+@01 ==> @x1
+@02 ==> @y1
+@03 ==> @x2
+@04 ==> @y2
+@05 ==> @x3
+@06 ==> @y3
+@07 ==> @x4
+@08 ==> @y4
+@09 ==> @x5
+@0a ==> @x5
+@0b ==> @address_distribute_AT
 
-@10 ==> @A1
-@11 ==> @A2
-@12 ==> @dividor
-@13 ==> @x
-@14 ==> @y
-@15 ==> @tmp
-@16 ==> @count
+@10 ==> @seed
+@11 ==> @count
+@12 ==> @tmp
 
 
 Script Assembly
@@ -44,32 +43,37 @@ set @timestamp to AT creation time                       35010300000000
 
 :init
 puts the block hash of the previous block in A		 32 0303
-set @dividor to 1					 01 12000000 0100000000000000
-set @count to 0						 01 16000000 0000000000000000
+set @count to 1						 01 11000000 0100000000000000
+sets B3 from @address_distribute_AT			 33 1801 0b000000
 
-:loop
-begin block ?						 1500
-set @x to A1						 35 0100 13000000
-div @x by @dividor					 09 13000000 12000000
-and @lowByte to @x 					 0b 13000000 07000000
-set @tmp to @x						 02 15000000 13000000
-div @tmp by @rangX					 09 15000000 03000000
-multiply @tmp by @rangX					 08 15000000 03000000
-subtract @x by rangx(x- @tmp * @rangX)			 07 13000000 15000000
-end block 0						 1500
+sets B1 from @x1					 33 1601 01000000
+sets B2 from @y1					 33 1701 02000000
+sets @seed to A1					 35 0001 10000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
+inc @count						 04 11000000
 
-begin block ?						 1500
-set @y to A2						 0101 14000000
-div @y by @dividor					 09 14000000 12000000
-and @lowByte to @y 					 0b 14000000 07000000
-set @tmp to @y						 02 15000000 14000000
-div @tmp by @rangY					 09 15000000 04000000
-multiply @tmp by @rangY					 08 15000000 04000000
-subtract @y by rangx(y- @tmp * @rangY)			 07 14000000 15000000
-end block 0						 1500
+sets B1 from @x2					 33 1601 03000000
+sets B2 from @y2					 33 1701 04000000
+sets @seed to A2					 35 0101 10000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
+inc @count						 04 11000000
 
-inc @count						 04 16000000
-airdrop to coordinate(x,y) with sequence @count		 34 0420 16000000 02000000
-@dividor * @shiftOneByte (x,y will right shift one byte) 08 12000000 08000000
-if @count< @packages then  loop				 20 16000000 01000000 00
+sets B1 from @x3					 33 1601 05000000
+sets B2 from @y3					 33 1701 06000000
+sets @seed to A3					 35 0201 10000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
+inc @count						 04 11000000
+
+sets B1 from @x4					 33 1601 07000000
+sets B2 from @y4					 33 1701 08000000
+sets @seed to A4					 35 0301 10000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
+inc @count						 04 11000000
+
+
+sets B1 from @x5					 33 1601 09000000
+sets B2 from @y5					 33 1701 0a000000
+sets @tmp to A1						 35 0001 12000000
+add @tmp to @seed					 06 10000000 12000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
 finished						 28

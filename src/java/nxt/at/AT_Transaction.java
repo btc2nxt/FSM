@@ -1,17 +1,3 @@
-/*
- * Copyright (c) 2014 CIYAM Developers
-
- Distributed under the MIT/X11 software license, please refer to the file license.txt
- in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-
- *
- * Some portion .. Copyright (c) 2015 FSM Developers
-
- Distributed under the MIT/X11 software license, please refer to the file license.txt
- in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-
- */
-
 package nxt.at;
 
 import java.util.SortedMap;
@@ -26,12 +12,16 @@ public class AT_Transaction{
 	private byte[] recipientId = new byte[ AT_Constants.AT_ID_SIZE ];
 	private long amount;
 	private byte[] message;
+	private int x;
+	private int y;
 	
-	public AT_Transaction( byte[] recipientId , long amount , byte[] message ){
+	public AT_Transaction( byte[] recipientId , long amount , byte[] message, int x, int y ){
 		//this.senderId = senderId.clone();
 		this.recipientId = recipientId.clone();
 		this.amount = amount;
 		this.message = (message != null) ? message.clone() : null;
+		this.x = x;
+		this.y = y;
 	}
 	
 	public long getAmount(){
@@ -52,6 +42,14 @@ public class AT_Transaction{
 
 	public byte[] getMessage() {
 		return message;
+	}
+
+	public int geX() {
+		return x;
+	}
+	
+	public int geY() {
+		return y;
 	}
 
 	public void addTransaction( long atId , Long height) {

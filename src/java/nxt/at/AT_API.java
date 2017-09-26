@@ -359,7 +359,7 @@ public interface AT_API {
 	/**
 	 * airdrop coins to coordinate(B1,B2), sequence= B3,amount = B4
 	 */
-	public void AirDrop_Coordinate_In_B( long val , long type, AT_Machine_State state );
+	public void AirDrop_Coordinate_In_B( long val , int count, AT_Machine_State state );
 	
 	// end range 0x0400.0x04ff
 	// -----------------------
