@@ -1,6 +1,5 @@
 /*
  * Some portion .. Copyright (c) 2014 CIYAM Developers
-
  Distributed under the MIT/X11 software license, please refer to the file license.txt
  in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
@@ -404,11 +403,18 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		/*
 		 * SYSTEM_AT must less then MAX_AUTOMATED_TRANSACTION_SYSTEM, e.g. 10
 		 * because SytemATs run every several blocks, cost lots of CPU and memory
+		 * 
+		 * pre-distribute and airdrop have coded FSM Id.
 		 */
 		long systemATId = Math.abs(atId);
 		systemATId = systemATId % Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM ;
 		try {
 			if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT) {
+				if (name == Constants.GAME_PREDISTRIBUTE_FSM_NAME)
+					systemATId = Constants.GAME_PREDISTRIBUTE_FSM_ID;
+				else if (name == Constants.GAME_AIRDROP_FSM_NAME)
+					systemATId = Constants.GAME_AIRDROP_FSM_ID;
+				
 				if ( systemATId == 0 )
 					throw new ATIdNotAcceptedException("Invalid AT Id, equals 0" );
 

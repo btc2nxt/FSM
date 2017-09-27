@@ -93,6 +93,11 @@ public final class Constants {
 	public static final long GAME_MEAL_RATE = 25 * ONE_NXT;
 	public static final long GAME_ROOM_RATE = 100 * ONE_NXT;
 	public static final long GAME_BRICK_RATE = 5 * ONE_NXT;
+	public static final long GAME_PREDISTRIBUTE_FSM_ID = 1;
+	public static final long GAME_AIRDROP_FSM_ID = 2;
+	public static final String GAME_PREDISTRIBUTE_FSM_NAME = "predistributeFSM";
+	public static final String GAME_AIRDROP_FSM_NAME = "airdropFSM";	
+	
 
     public static final int[] MIN_VERSION = new int[] {1, 2};
 

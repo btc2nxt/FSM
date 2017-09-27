@@ -480,6 +480,46 @@ public final class AT_Controller {
 			
 			if (atCost >0 ) {
 				try {
+				if (AT_API_Helper.getLong(at.getId()) != Constants.GAME_PREDISTRIBUTE_FSM_ID) {
+					List<AT_Transaction> atTransactions = at.getTransactions();				
+					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
+					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId);					
+					transaction.validate();
+					transaction.sign(atSecretPhrase);
+                    Nxt.getTransactionProcessor().broadcast(transaction);
+                    Logger.logDebugMessage("FSM payment transactions success");
+				}
+				else {
+					Iterator<AT_Transaction> atTransactions = at.getTransactions().iterator();
+					List<AT_Transaction> atTransactionsTmp = null;
+					while ( atTransactions.hasNext() ) {
+						if (!atTransactionsTmp.isEmpty())
+							atTransactionsTmp.clear();
+						atTransactionsTmp.add(atTransactions.next());
+						Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactionsTmp, atSecretPhrase, at, lastStateId);					
+						transaction.validate();
+						transaction.sign(atSecretPhrase);
+	                    Nxt.getTransactionProcessor().broadcast(transaction);
+	                    Logger.logDebugMessage("FSM predistribute transaction success");					
+					}
+					
+				}
+                
+                //Long Id = transaction.getId();
+                //Logger.logDebugMessage("new transaction id " + Id);
+				}
+				catch ( NxtException.ValidationException e )
+				{
+					//should not reach ever here
+					e.printStackTrace();
+				}				
+				finally {
+					
+				}
+			}
+			
+			if (atCost >0 && AT_API_Helper.getLong(at.getId()) == Constants.GAME_PREDISTRIBUTE_FSM_ID) {
+				try {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
 					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId);					
