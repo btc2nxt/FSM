@@ -350,7 +350,7 @@ class NxtDbVersion extends DbVersion {
             	apply("CREATE TABLE IF NOT EXISTS at (db_id IDENTITY, id BIGINT NOT NULL, account_id BIGINT NOT NULL, name VARCHAR, description VARCHAR, "
             			+ "version SMALLINT NOT NULL, runtype VARCHAR, machinecode BINARY NOT NULL, data BINARY NOT NULL, "
             			+ "delay_blocks INT NOT NULL, freeze_when_same_balance BOOLEAN NOT NULL DEFAULT TRUE, sleep_between INT NOT NULL, "
-            			+ "start_block INT NOT NULL, Properties VARCHAR, "             			
+            			+ "start_block INT NOT NULL, var_bytes INT NOT NULL, "             			
             			+ "height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 139:
             	apply("CREATE UNIQUE INDEX IF NOT EXISTS at_id_height_idx ON at (id, height DESC)");
@@ -359,7 +359,7 @@ class NxtDbVersion extends DbVersion {
             case 141:
             	apply("CREATE TABLE IF NOT EXISTS at_state (db_id IDENTITY, id BIGINT NOT NULL, at_id BIGINT NOT NULL, pc SMALLINT NOT NULL, steps SMALLINT NOT NULL, "
             			//+ "timestamp BIGINT NOT NULL, machinecode BINARY NOT NULL, data BINARY NOT NULL, last_state_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
-    					+ "timestamp BIGINT NOT NULL, last_state_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");            	
+    					+ "timestamp BIGINT NOT NULL, last_state_id BIGINT NOT NULL, last_ran_height INT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");            	
             case 142:
             	apply("CREATE UNIQUE INDEX IF NOT EXISTS at_state_at_id_height_idx ON at_state (at_id, height DESC)");
             case 143:

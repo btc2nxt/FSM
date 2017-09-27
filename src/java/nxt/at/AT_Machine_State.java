@@ -152,6 +152,8 @@ public class AT_Machine_State
 
 	private transient ByteBuffer ap_data;
 	private transient ByteBuffer ap_code;
+	private int constBytes; //must be a multiple of 8, because an address or a value is 8 bytes.
+	private int varBytes;
 
 	private List<AT_Transaction> transactions;
 
@@ -170,6 +172,7 @@ public class AT_Machine_State
 		this.sleepBetween = rs.getInt("sleep_between");
 		this.freezeWhenSameBalance = rs.getBoolean("freeze_when_same_balance");
 		this.startBlock = rs.getInt("start_block");	
+		this.varBytes = rs.getInt("var_bytes");		
 		this.creationBlockHeight = rs.getInt("height");;		
 		
 		this.ap_code = ByteBuffer.allocate( rs.getBytes("machinecode").length );
@@ -190,6 +193,8 @@ public class AT_Machine_State
 		
 		this.csize = codePages * pageSize;
 		this.dsize = dataPages * pageSize;
+		
+		this.constBytes = (int)Math.ceil((float)rs.getBytes("data").length / 8) ;
     }	
 
 	public AT_Machine_State( byte[] atId , byte[] creator ,  byte[] machineCode, byte[] machineData, byte[] properties , int height ) 
@@ -213,6 +218,7 @@ public class AT_Machine_State
 		this.sleepBetween = b.getInt();		
 		this.freezeWhenSameBalance = b.get()== 0 ? false : true;
 		this.startBlock = b.getInt();	
+		this.varBytes = b.getInt();
 		this.retrievedHeight = Integer.MAX_VALUE;
 		this.stepsFeeNQT = 0;
 
@@ -229,6 +235,7 @@ public class AT_Machine_State
 		this.ap_data = ByteBuffer.allocate( this.dsize );
 		this.ap_data.order( ByteOrder.LITTLE_ENDIAN );
 		this.ap_data.put( machineData );
+		this.constBytes = (int)Math.ceil((float)machineData.length / 8) ;
 
 		this.creationBlockHeight = height;
 		this.minimumFee = ( codePages + 
@@ -242,81 +249,90 @@ public class AT_Machine_State
 
 	protected byte[] get_A1()
 	{
+		ap_data.get( machineState.A1, constBytes , 8 );
 		return machineState.A1;
 	}
 
 	protected byte[] get_A2()
 	{
+		ap_data.get( machineState.A1, constBytes + 8 , 8 );
 		return machineState.A2;
 	}
 
 	protected byte[] get_A3()
 	{
+		ap_data.get( machineState.A1, constBytes + 16 , 8 );
 		return machineState.A3;
 	}
 
 	protected byte[] get_A4()
 	{
+		ap_data.get( machineState.A1, constBytes + 24 , 8 );
 		return machineState.A4;
 	}
 
 	protected byte[] get_B1()
 	{
+		ap_data.get( machineState.A1, constBytes + 32 , 8 );
 		return machineState.B1;
 	}
 
 	protected byte[] get_B2()
 	{
+		ap_data.get( machineState.A1, constBytes + 40 , 8 );
 		return machineState.B2;
 	}
 
 	protected byte[] get_B3()
 	{
+		ap_data.get( machineState.A1, constBytes + 48 , 8 );
 		return machineState.B3;
 	}
 
 	protected byte[] get_B4()
 	{
+		ap_data.get( machineState.A1, constBytes + 56 , 8 );
 		return machineState.B4;
 	}
 
 	protected void set_A1( byte[] A1 )
 	{
-		this.machineState.A1 = A1.clone();
+		//this.machineState.A1 = A1.clone();
+		this.ap_data.put(A1, constBytes, A1.length);
 	}
 
 	protected void set_A2( byte[] A2 ){
-		this.machineState.A2 = A2.clone();
+		this.ap_data.put(A2, constBytes + 8, 8);
 	}
 
 	protected void set_A3( byte[] A3 )
 	{
-		this.machineState.A3 = A3.clone();
+		this.ap_data.put(A3, constBytes + 16, 8);
 	}
 
 	protected void set_A4( byte[] A4 )
 	{
-		this.machineState.A4 = A4.clone();
+		this.ap_data.put(A4, constBytes + 24, 8);
 	}
 
 	protected void set_B1( byte[] B1 )
 	{
-		this.machineState.B1 = B1.clone();
+		this.ap_data.put(B1, constBytes + 32, 8);
 	}
 
 	protected void set_B2( byte[] B2 )
 	{
-		this.machineState.B2 = B2.clone();
+		this.ap_data.put(B2, constBytes + 40, 8);
 	}
 
 	protected void set_B3( byte[] B3 )
 	{
-		this.machineState.B3 = B3.clone();
+		this.ap_data.put(B3, constBytes + 48, 8);
 	}
 
 	protected void set_B4( byte[] B4 )
 	{
-		this.machineState.B4 = B4.clone();
+		this.ap_data.put(B4, constBytes + 56, 8);
 	}
 
 	protected void addTransaction(AT_Transaction tx)

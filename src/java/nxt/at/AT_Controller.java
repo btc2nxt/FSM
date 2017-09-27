@@ -345,7 +345,7 @@ public final class AT_Controller {
                 if (atStates.hasNext()) {
                    AT.ATState atState = atStates.next(); 
                    //the AT has stopped
-                   if (atState.getPc() < 0) 
+                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - atState.getLastRanHeight() ) 
                 	   continue;
                    
                    at.getMachineState().pc = atState.getPc(); 
@@ -417,7 +417,7 @@ public final class AT_Controller {
 	public static int runSystemATs( int blockHeight) throws NotValidException{
 
 		int atCost;
-		int totalSteps = 0; 
+		int totalSteps = 0;
 		long lastStateId =0L;
 		
 		Logger.logDebugMessage("System ATs will be  running");
@@ -432,7 +432,8 @@ public final class AT_Controller {
 			 */
 			AT at = ats.next();
 			Account account = Account.getAccount(at.getLongId());
-			if (account.getUnconfirmedBalanceNQT() < AT_Constants.getInstance().MAX_STEPS(blockHeight) * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT)
+			if (account.getUnconfirmedBalanceNQT() < AT_Constants.getInstance().MAX_STEPS(blockHeight) * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT
+					|| at.getStartBlock() < blockHeight && at.getDelayBlocks() < blockHeight - at.getCreationBlockHeight())
 				continue;
 			
 			listCode( at , true , true );
@@ -441,8 +442,8 @@ public final class AT_Controller {
             try (DbIterator<AT.ATState> atStates = at.getATStates(0, 1)) {
                 if (atStates.hasNext()) {
                    AT.ATState atState = atStates.next(); 
-                   //the AT has stopped
-                   if (atState.getPc() < 0) 
+                   //the AT has stopped || sleepbetween
+                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - atState.getLastRanHeight() ) 
                 	   continue;
                    
                    at.getMachineState().pc = atState.getPc(); 
@@ -574,7 +575,10 @@ public final class AT_Controller {
 			Logger.logDebugMessage("atId " + AT_API_Helper.getLong(at.getId()));
             try (DbIterator<AT.ATState> atStates = at.getATStates(0, 1)) {
                 if (atStates.hasNext()) {
-                   AT.ATState atState = atStates.next(); 
+                   AT.ATState atState = atStates.next();
+                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - atState.getLastRanHeight() ) 
+                	   return 0;                   
+                   
                    at.getMachineState().pc = atState.getPc();
                    long timeStamp = atState.getTimeStamp();
                    lastStateId = atState.getId();

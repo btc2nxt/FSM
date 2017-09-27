@@ -1631,6 +1631,7 @@ public interface Attachment extends Appendix {
         private final short steps;
         private final long timeStamp;        
         private final long lastStateId;
+        private final int lastRanHeight;
         private final byte[] machineCode;
         private final byte[] machineData;        
     	private final List<AT_Transaction> atPayments;
@@ -1644,6 +1645,7 @@ public interface Attachment extends Appendix {
 			this.steps = buffer.getShort();			
 			this.timeStamp = buffer.getLong();			
 			this.lastStateId = buffer.getLong();
+			this.lastRanHeight = buffer.getInt();
 			this.atPayments = new ArrayList<AT_Transaction>();
 			
 			byte atPaymentsCount = buffer.get();		
@@ -1669,6 +1671,7 @@ public interface Attachment extends Appendix {
             this.steps = ((Long)attachmentData.get("steps")).shortValue();
             this.timeStamp =  Convert.parseLong(attachmentData.get("timeStamp"));
             this.lastStateId =  Convert.parseLong(attachmentData.get("lastStateId"));
+            this.lastRanHeight = ((Long)attachmentData.get("lastRanHeight")).intValue();
 
 			this.atPayments = new ArrayList<AT_Transaction>();
             JSONArray atPaymentArray = (JSONArray)attachmentData.get("atPayments");            
@@ -1686,12 +1689,13 @@ public interface Attachment extends Appendix {
             
 		}
 		
-		public AutomatedTransactionsState(long atId, short pc, short steps, long timeStamp, long lastStateId, List<AT_Transaction> transactions, byte[] machineCode, byte[] machineData) throws NxtException.NotValidException {		
+		public AutomatedTransactionsState(long atId, short pc, short steps, long timeStamp, long lastStateId, int lastRanHeight, List<AT_Transaction> transactions, byte[] machineCode, byte[] machineData) throws NxtException.NotValidException {		
 			this.atId = atId;
 			this.pc = pc;
 			this.steps = steps;			
 			this.timeStamp = timeStamp;
-			this.lastStateId = lastStateId;			
+			this.lastStateId = lastStateId;
+			this.lastRanHeight = lastRanHeight;
 			this.atPayments = transactions;
 			this.machineCode = machineCode;
 			this.machineData = machineData;						
@@ -1769,6 +1773,8 @@ public interface Attachment extends Appendix {
 		public long getTimeStamp() { return timeStamp; }        
 		
 		public long getLastStateId() { return lastStateId; }
+		
+		public int getLastRanHeight() { return lastRanHeight; }
 		
 		public List<AT_Transaction> getATPayments() { return atPayments; }
 		

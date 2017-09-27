@@ -83,7 +83,8 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		private long timeStamp;
 		private long lastStateId;		
         private final byte[] machineCodeUpdate;
-        private final byte[] machineDataUpdate;        		
+        private final byte[] machineDataUpdate;  
+        private int lastRanHeight;
 
 	    private ATState(Transaction transaction, Attachment.AutomatedTransactionsState attachment) {
 	        this.atStateId = transaction.getId();
@@ -93,8 +94,9 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			this.steps = attachment.getSteps();
 			this.timeStamp = attachment.getTimeStamp();		
 			this.lastStateId = attachment.getLastStateId();
-			this.machineCodeUpdate = attachment.getMachineCode();;			
-			this.machineDataUpdate = attachment.getMachineData();;			
+			this.machineCodeUpdate = attachment.getMachineCode();			
+			this.machineDataUpdate = attachment.getMachineData();
+			this.lastRanHeight = attachment.getLastRanHeight();
 	    }
 
 	    private ATState(ResultSet rs) throws SQLException {
@@ -106,7 +108,8 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			this.timeStamp = rs.getLong("timeStamp");
 			this.lastStateId = rs.getLong("last_State_Id");
 			this.machineCodeUpdate = rs.getBytes("machinecode");
-			this.machineDataUpdate = rs.getBytes("data");			
+			this.machineDataUpdate = rs.getBytes("data");	
+			this.lastRanHeight = rs.getInt("lastRanHeight");
 		}
 
 		private void save(Connection con) throws SQLException {
@@ -150,6 +153,10 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			return lastStateId;
 		}
 		
+		public int getLastRanHeight() {
+			return lastRanHeight;
+		}
+		
 		public byte[] getMachineCode() { 
 			return machineCodeUpdate; 
 		}
@@ -173,7 +180,10 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		public void setLastStateId(long lastStateId) {
 			this.lastStateId = lastStateId;
 		}	
-				
+		
+		public void setLastRanHeight(int lastRanHeight) {
+			this.lastRanHeight = lastRanHeight;
+		}		
 	}
 
 	public static class ATPayment {
