@@ -10,6 +10,7 @@ import nxt.at.AT_Transaction;
 
 import org.json.simple.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -408,8 +409,7 @@ final class TransactionImpl implements Transaction {
     @Override
     public long getId() {
         if (id == 0) {
-            if (signature == null && type != TransactionType.findTransactionType( (byte)5, (byte) 1)
-            		&& (senderId <= 0 ||  senderId > Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM )) {
+            if (signature == null) {
                 throw new IllegalStateException("Transaction is not signed yet");
             }
 
@@ -494,7 +494,7 @@ final class TransactionImpl implements Transaction {
             buffer.putInt(timestamp);
             buffer.putShort(deadline);
             buffer.put(senderPublicKey);
-            buffer.putLong(senderId);
+            buffer.putLong(getSenderId());
             buffer.putLong(type.canHaveRecipient() ? recipientId : Genesis.CREATOR_ID);
             if (useNQT()) {
                 buffer.putLong(amountNQT);
@@ -521,7 +521,7 @@ final class TransactionImpl implements Transaction {
             }
             for (Appendix appendage : appendages) {
                 appendage.putBytes(buffer);
-            }
+            }	
             return buffer.array();
         } catch (RuntimeException e) {
             Logger.logDebugMessage("Failed to get transaction bytes for transaction: " + getJSONObject().toJSONString());
@@ -689,7 +689,7 @@ final class TransactionImpl implements Transaction {
         }
     }
 
-    static TransactionImpl parseTransaction(List<AT_Transaction> transactionDatas, String secretPhrase, AT state, long lastStateId) throws NxtException.NotValidException {
+    static TransactionImpl parseTransaction(List<AT_Transaction> transactionDatas, String secretPhrase, AT state, long lastStateId, int lastRanHeight) throws NxtException.NotValidException {
         try {
             byte type = 5;
             byte subtype = 1;
@@ -709,7 +709,7 @@ final class TransactionImpl implements Transaction {
 
             TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
             //Attachment attachment = new Attachment.AutomatedTransactionsState(atId, pc, steps, timeStamp,lastStateId, transactionDatas);
-            Attachment attachment = new Attachment.AutomatedTransactionsState(AT_API_Helper.getLong(state.getId()),(short)state.getMachineState().getPc(), steps, state.getMachineState().getTimeStamp(),lastStateId, transactionDatas,state.getMachineState().getMachineCodeUpdate(),state.getMachineState().getMachineDataUpdate());
+            Attachment attachment = new Attachment.AutomatedTransactionsState(AT_API_Helper.getLong(state.getId()),(short)state.getMachineState().getPc(), steps, state.getMachineState().getTimeStamp(),lastStateId, lastRanHeight, transactionDatas,state.getMachineState().getMachineCodeUpdate(),state.getMachineState().getMachineDataUpdate());
             
             if (transactionType == null) {
                 throw new NxtException.NotValidException("Invalid transaction type: " + type + ", " + subtype);
@@ -784,7 +784,7 @@ final class TransactionImpl implements Transaction {
     }
 
     private int signatureOffset() {
-        return 1 + 1 + 4 + 2 + 32 + + 8 + 8 + (useNQT() ? 8 + 8 + 32 : 4 + 4 + 8);
+        return 1 + 1 + 4 + 2 + 32 + 8 + 8 + (useNQT() ? 8 + 8 + 32 : 4 + 4 + 8);
     }
 
     private boolean useNQT() {

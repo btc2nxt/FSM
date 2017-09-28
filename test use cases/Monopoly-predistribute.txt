@@ -1,0 +1,96 @@
+Use Case: Pre-distribute for Game Monopoly
+------------------------------------------
+
+Airdrop for Game Monopoly drops five package coins, every package has 100 coins and situates 
+in different coordinate. Players must go to the sites within eight blocks time, otherwise the 
+coins will disappear.
+Another FSM, that is Distribute for Game Monopoly, which distribute these coins to the players
+who are there.
+The sites are decided by the last block hash, and different with the last sites.
+for example
+[1,4]
+[11,20]
+[35,47]
+[66,65]
+[99,86]
+
+Const
+---------
+@00 ==> @timestamp
+@01 ==> 0100000000000000	@x1
+@02 ==> 0100000000000000	@y1
+@03 ==> 0100000000000000	@x2
+@04 ==> 4700000000000000	@y2
+@05 ==> 4700000000000000	@x3
+@06 ==> 4700000000000000	@y3
+@07 ==> 4700000000000000	@x4
+@08 ==> 0100000000000000	@y4
+@09 ==> 0100000000000000	@x5
+@0a ==> 2a00000000000000	@x5
+@0b ==> 0200000000000000	@address_airdropFSM = 2 (hardcoded)
+
+Variables(must saved to blockchain)
+---------
+@0c == A1 block hash
+@0d == A2
+@0e == A3
+@0f == A4
+@10 == B1(x)
+@11 == B2(y)
+@12 == B3(@seed)
+@13 == B4@(count)
+@14 ==> @tmp
+
+
+Script Assembly
+---------------
+
+if @timestamp not zero goto init                         1e000000003d
+set @timestamp to AT creation time                       35010300000000
+
+:init
+puts the block hash of the previous block in A		 32 0303
+set @count to 1						 01 13000000 0100000000000000
+
+sets B1 from @x1					 33 1601 01000000
+sets B2 from @y1					 33 1701 02000000
+sets @seed to A1					 35 0001 12000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 12000000 13000000
+inc @count						 04 13000000
+
+sets B1 from @x2					 33 1601 03000000
+sets B2 from @y2					 33 1701 04000000
+sets @seed to A2					 35 0101 12000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 12000000 13000000
+inc @count						 04 13000000
+
+sets B1 from @x3					 33 1601 05000000
+sets B2 from @y3					 33 1701 06000000
+sets @seed to A3					 35 0201 12000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 12000000 13000000
+inc @count						 04 13000000
+
+sets B1 from @x4					 33 1601 07000000
+sets B2 from @y4					 33 1701 08000000
+sets @seed to A4					 35 0301 12000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 12000000 13000000
+inc @count						 04 11000000
+
+sets B1 from @x5					 33 1601 09000000
+sets B2 from @y5					 33 1701 0a000000
+sets @tmp to A1						 35 0001 14000000
+add @tmp to @seed					 06 12000000 14000000
+airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 12000000 13000000
+finished						 28
+
+machinecode
+----------------
+1e000000003d350103000000003203030113000000010000000000000033160101000000331701020000003500011200000034500412000000130000000413000000331601030000003317010400000035010112000000345004120000001300000004130000003316010500000033170106000000350201120000003450041200000013000000041300000033160107000000331701080000003503011200000034500412000000130000000411000000331601090000003317010a00000035000114000000061200000014000000345004120000001300000028
+
+data
+----------------
+0100000000000000010000000000000001000000000000004700000000000000470000000000000047000000000000004700000000000000010000000000000001000000000000002a000000000000000200000000000000
+
+properties
+----------------
+010000000500000003000000000300000009000000

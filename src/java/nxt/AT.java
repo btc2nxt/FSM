@@ -420,9 +420,9 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		systemATId = systemATId % Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM ;
 		try {
 			if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT) {
-				if (name == Constants.GAME_PREDISTRIBUTE_FSM_NAME)
+				if (name.equals(Constants.GAME_PREDISTRIBUTE_FSM_NAME))
 					systemATId = Constants.GAME_PREDISTRIBUTE_FSM_ID;
-				else if (name == Constants.GAME_AIRDROP_FSM_NAME)
+				else if (name.equals(Constants.GAME_AIRDROP_FSM_NAME))
 					systemATId = Constants.GAME_AIRDROP_FSM_ID;
 				
 				if ( systemATId == 0 )
@@ -513,7 +513,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 	{
         try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO at (id, account_id, name, "
                 + "description, runtype, version, machinecode, data, delay_blocks, freeze_when_same_balance, "
-        		+ "sleep_between, start_block, Properties, height) "
+        		+ "sleep_between, start_block, var_bytes, height) "
         		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong( ++i , AT_API_Helper.getLong( this.getId() ) );
@@ -528,7 +528,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			pstmt.setBoolean( ++i , this.getFreezeWhenSameBalance() );
 			pstmt.setInt( ++i , this.getSleepBetween() );
 			pstmt.setInt( ++i , this.getStartBlock() );
-			DbUtils.setString( pstmt , ++i , this.getProperties() );						
+			pstmt.setInt( ++i , this.getVarBytes() );						
 			pstmt.setInt( ++i , Nxt.getBlockchain().getHeight() );
 
 			pstmt.executeUpdate();

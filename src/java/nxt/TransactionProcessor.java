@@ -31,7 +31,7 @@ public interface TransactionProcessor extends Observable<List<? extends Transact
 
     Transaction parseTransaction(JSONObject json) throws NxtException.ValidationException;
     
-    Transaction parseTransaction(List<AT_Transaction> transactionDatas, String secretPhrase, AT state, long lastStateId) throws NxtException.NotValidException;   
+    Transaction parseTransaction(List<AT_Transaction> transactionDatas, String secretPhrase, AT state, long lastStateId, int lastRanHeight) throws NxtException.NotValidException;   
 
     Transaction.Builder newTransactionBuilder(byte[] senderPublicKey, long amountNQT, long feeNQT, short deadline, Attachment attachment);
 

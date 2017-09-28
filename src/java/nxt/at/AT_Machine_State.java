@@ -606,8 +606,8 @@ public class AT_Machine_State
 		return this.startBlock;
 	}
 	
-	public String getProperties(){
-		return "";//this.Properties;
+	public int getVarBytes(){
+		return this.varBytes;
 	}
 	
 }

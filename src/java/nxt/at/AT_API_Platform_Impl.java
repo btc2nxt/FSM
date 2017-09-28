@@ -683,7 +683,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		}
 		
 		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
-			AT_Transaction tx = new AT_Transaction( state.get_B3().clone() , 0, null ,x ,y );
+			AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(Constants.GAME_AIRDROP_FSM_ID) , 0, null ,x ,y );
 			state.addTransaction( tx );			
 		}
 			

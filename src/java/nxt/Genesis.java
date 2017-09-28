@@ -4,7 +4,7 @@ import java.math.BigInteger;
 
 public final class Genesis {
 
-    public static final long GENESIS_BLOCK_ID = 1203667376540169366L;//1106568321010003917L;
+    public static final long GENESIS_BLOCK_ID = 3754974291626296881L;//1203667376540169366L;
     public static final long CREATOR_ID = new BigInteger("15927676928343209118").longValue() ;
     public static final byte[] CREATOR_PUBLIC_KEY = {
         	-71 ,-95 ,-53 ,116 ,-100 ,-24 ,75 ,-103 ,27 ,17 ,-118 ,82 ,-5 ,-123 ,92 ,15 ,

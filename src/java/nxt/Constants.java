@@ -66,7 +66,7 @@ public final class Constants {
     public static final int DIGITAL_GOODS_STORE_BLOCK = isTestnet ? 1 : 89000;
     public static final int PUBLIC_KEY_ANNOUNCEMENT_BLOCK = Integer.MAX_VALUE; //never forced
     public static final int LAST_KNOWN_BLOCK = isTestnet ? 0 : 185100;
-    public static final String LAST_KNOWN_BLOCK_ID = isTestnet ? "1203667376540169366" : "4559214760898950463";
+    public static final String LAST_KNOWN_BLOCK_ID = isTestnet ? "3754974291626296881" : "4559214760898950463";
     
 	protected static final int AUTOMATED_TRANSACTION_BLOCK = 0;
 	protected static final long MIN_AUTOMATED_TRANSACTION_FEE = 1000;

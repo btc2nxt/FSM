@@ -344,8 +344,8 @@ final class TransactionProcessorImpl implements TransactionProcessor {
     }
     
     @Override
-    public TransactionImpl parseTransaction(List<AT_Transaction> transactionDatas, String secretPhrase, AT state, long lastStateId) throws NxtException.NotValidException {
-    	return TransactionImpl.parseTransaction(transactionDatas, secretPhrase, state, lastStateId);
+    public TransactionImpl parseTransaction(List<AT_Transaction> transactionDatas, String secretPhrase, AT state, long lastStateId, int lastRanHeight) throws NxtException.NotValidException {
+    	return TransactionImpl.parseTransaction(transactionDatas, secretPhrase, state, lastStateId, lastRanHeight);
     }        
 
     @Override

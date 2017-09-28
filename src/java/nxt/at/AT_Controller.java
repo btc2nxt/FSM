@@ -325,6 +325,7 @@ public final class AT_Controller {
 		int atCost;
 		int totalSteps = 0; 
 		long lastStateId =0L;
+		int lastRanHeight = 0;
 		
 		Logger.logDebugMessage("ATs of creator will be  running");
 		int orderedATHeight = 0;
@@ -345,7 +346,8 @@ public final class AT_Controller {
                 if (atStates.hasNext()) {
                    AT.ATState atState = atStates.next(); 
                    //the AT has stopped
-                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - atState.getLastRanHeight() ) 
+                   lastRanHeight = atState.getLastRanHeight();
+                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - lastRanHeight )  
                 	   continue;
                    
                    at.getMachineState().pc = atState.getPc(); 
@@ -383,7 +385,7 @@ public final class AT_Controller {
 				try {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
-					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, at, lastStateId);					
+					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, at, lastStateId, lastRanHeight);					
 					transaction.validate();
 					transaction.sign(secretPhrase);
                     Nxt.getTransactionProcessor().broadcast(transaction);
@@ -419,6 +421,7 @@ public final class AT_Controller {
 		int atCost;
 		int totalSteps = 0;
 		long lastStateId =0L;
+		int lastRanHeight = 0;
 		
 		Logger.logDebugMessage("System ATs will be  running");
 		int orderedATHeight = 0;
@@ -443,7 +446,8 @@ public final class AT_Controller {
                 if (atStates.hasNext()) {
                    AT.ATState atState = atStates.next(); 
                    //the AT has stopped || sleepbetween
-                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - atState.getLastRanHeight() ) 
+                   lastRanHeight = atState.getLastRanHeight();
+                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - lastRanHeight ) 
                 	   continue;
                    
                    at.getMachineState().pc = atState.getPc(); 
@@ -484,7 +488,7 @@ public final class AT_Controller {
 				if (AT_API_Helper.getLong(at.getId()) != Constants.GAME_PREDISTRIBUTE_FSM_ID) {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
-					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId);					
+					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId, lastRanHeight);					
 					transaction.validate();
 					transaction.sign(atSecretPhrase);
                     Nxt.getTransactionProcessor().broadcast(transaction);
@@ -497,7 +501,7 @@ public final class AT_Controller {
 						if (!atTransactionsTmp.isEmpty())
 							atTransactionsTmp.clear();
 						atTransactionsTmp.add(atTransactions.next());
-						Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactionsTmp, atSecretPhrase, at, lastStateId);					
+						Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactionsTmp, atSecretPhrase, at, lastStateId, lastRanHeight);					
 						transaction.validate();
 						transaction.sign(atSecretPhrase);
 	                    Nxt.getTransactionProcessor().broadcast(transaction);
@@ -523,7 +527,7 @@ public final class AT_Controller {
 				try {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
-					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId);					
+					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId, lastRanHeight);					
 					transaction.validate();
 					transaction.sign(atSecretPhrase);
                     Nxt.getTransactionProcessor().broadcast(transaction);
@@ -556,6 +560,7 @@ public final class AT_Controller {
 		int atCost;
 		int totalSteps = 0; 
 		long lastStateId =0L;
+		int lastRanHeight = 0;
 		
 		Logger.logDebugMessage("For Anyone AT will be running");
 		int orderedATHeight = 0;
@@ -576,7 +581,8 @@ public final class AT_Controller {
             try (DbIterator<AT.ATState> atStates = at.getATStates(0, 1)) {
                 if (atStates.hasNext()) {
                    AT.ATState atState = atStates.next();
-                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - atState.getLastRanHeight() ) 
+                   lastRanHeight = atState.getLastRanHeight();
+                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - lastRanHeight ) 
                 	   return 0;                   
                    
                    at.getMachineState().pc = atState.getPc();
@@ -614,7 +620,7 @@ public final class AT_Controller {
 				try {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
-					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, at, lastStateId);					
+					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, at, lastStateId, lastRanHeight);					
 					transaction.validate();
 					transaction.sign(secretPhrase);
                     Nxt.getTransactionProcessor().broadcast(transaction);
