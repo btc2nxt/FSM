@@ -72,6 +72,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		b.order( ByteOrder.LITTLE_ENDIAN );
 
 		b.put( Nxt.getBlockchain().getLastBlock().getPreviousBlockHash() );
+		b.clear();
 
 		byte[] temp = new byte[ 8 ];
 

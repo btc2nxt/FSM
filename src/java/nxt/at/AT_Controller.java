@@ -90,6 +90,7 @@ public final class AT_Controller {
 		AT_Machine_Processor processor = new AT_Machine_Processor( state );
 
 		int height = Nxt.getBlockchain().getHeight();
+		state.setLastRanBlock(height);
 
 		while ( state.getMachineState().steps < (AT_Constants.getInstance().MAX_STEPS( height )) )
 		{
@@ -436,7 +437,7 @@ public final class AT_Controller {
 			AT at = ats.next();
 			Account account = Account.getAccount(at.getLongId());
 			if (account.getUnconfirmedBalanceNQT() < AT_Constants.getInstance().MAX_STEPS(blockHeight) * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT
-					|| at.getStartBlock() < blockHeight && at.getDelayBlocks() < blockHeight - at.getCreationBlockHeight())
+					|| at.getStartBlock() > blockHeight || at.getDelayBlocks() >= blockHeight - at.getCreationBlockHeight())
 				continue;
 			
 			listCode( at , true , true );
@@ -447,7 +448,7 @@ public final class AT_Controller {
                    AT.ATState atState = atStates.next(); 
                    //the AT has stopped || sleepbetween
                    lastRanHeight = atState.getLastRanHeight();
-                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - lastRanHeight ) 
+                   if (atState.getPc() < 0 || at.getSleepBetween() > blockHeight - lastRanHeight ) 
                 	   continue;
                    
                    at.getMachineState().pc = atState.getPc(); 
@@ -482,21 +483,22 @@ public final class AT_Controller {
 			atCost =getATResult(at,AT_API_Helper.getLong(at.getId()),blockHeight, orderedATHeight,account );
 			//generate a AT_State tx
 			String atSecretPhrase = "SIGNED_BY_SYSMTEM_AT" + AT_API_Helper.getLong(at.getId());
+			lastRanHeight = blockHeight;
 			
 			if (atCost >0 ) {
 				try {
-				if (AT_API_Helper.getLong(at.getId()) != Constants.GAME_PREDISTRIBUTE_FSM_ID) {
+				//if (AT_API_Helper.getLong(at.getId()) != Constants.GAME_PREDISTRIBUTE_FSM_ID) {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
 					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId, lastRanHeight);					
 					transaction.validate();
 					transaction.sign(atSecretPhrase);
                     Nxt.getTransactionProcessor().broadcast(transaction);
-                    Logger.logDebugMessage("FSM payment transactions success");
-				}
-				else {
+                    Logger.logDebugMessage("FSM transactions broadcast succeed");
+				//}
+				/*else {
 					Iterator<AT_Transaction> atTransactions = at.getTransactions().iterator();
-					List<AT_Transaction> atTransactionsTmp = null;
+					List<AT_Transaction> atTransactionsTmp = new ArrayList<AT_Transaction>();
 					while ( atTransactions.hasNext() ) {
 						if (!atTransactionsTmp.isEmpty())
 							atTransactionsTmp.clear();
@@ -505,10 +507,11 @@ public final class AT_Controller {
 						transaction.validate();
 						transaction.sign(atSecretPhrase);
 	                    Nxt.getTransactionProcessor().broadcast(transaction);
-	                    Logger.logDebugMessage("FSM predistribute transaction success");					
+	                    Logger.logDebugMessage("FSM predistribute transaction success. ");
+	                    //break;//test use
 					}
 					
-				}
+				}*/
                 
                 //Long Id = transaction.getId();
                 //Logger.logDebugMessage("new transaction id " + Id);
@@ -522,30 +525,7 @@ public final class AT_Controller {
 					
 				}
 			}
-			
-			if (atCost >0 && AT_API_Helper.getLong(at.getId()) == Constants.GAME_PREDISTRIBUTE_FSM_ID) {
-				try {
-					List<AT_Transaction> atTransactions = at.getTransactions();				
-					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
-					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId, lastRanHeight);					
-					transaction.validate();
-					transaction.sign(atSecretPhrase);
-                    Nxt.getTransactionProcessor().broadcast(transaction);
-                    Logger.logDebugMessage("FSM payment transactions success");                    
-                
-                //Long Id = transaction.getId();
-                //Logger.logDebugMessage("new transaction id " + Id);
-				}
-				catch ( NxtException.ValidationException e )
-				{
-					//should not reach ever here
-					e.printStackTrace();
-				}				
-				finally {
 					
-				}
-			}
-			
 			if (totalSteps >= AT_Constants.getInstance().MAX_STEPS( blockHeight )) {
 				break;
 			}

@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
+
+import nxt.util.Convert;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -178,9 +181,6 @@ public class AT_Machine_State
 		this.ap_code = ByteBuffer.allocate( rs.getBytes("machinecode").length );
 		this.ap_code.order( ByteOrder.LITTLE_ENDIAN );
 		this.ap_code.put( rs.getBytes("machinecode"));
-		this.ap_data = ByteBuffer.allocate( rs.getBytes("data").length);
-		this.ap_data.order( ByteOrder.LITTLE_ENDIAN );
-		this.ap_data.put( rs.getBytes("data"));		
 		
 		this.transactions = new ArrayList<AT_Transaction>();
 		this.g_balance = 0;
@@ -189,12 +189,18 @@ public class AT_Machine_State
 		
 		int pageSize = ( int ) AT_Constants.getInstance().PAGE_SIZE( creationBlockHeight );
 		int codePages = (int)Math.ceil((float)rs.getBytes("machinecode").length / pageSize) +1;
-		int dataPages = (int)Math.ceil((float)rs.getBytes("data").length / pageSize) ;
+		int dataPages = (int)Math.ceil((float)(rs.getBytes("data").length + varBytes) / pageSize) ;
 		
 		this.csize = codePages * pageSize;
 		this.dsize = dataPages * pageSize;
 		
-		this.constBytes = (int)Math.ceil((float)rs.getBytes("data").length / 8) ;
+		this.ap_data = ByteBuffer.allocate( this.dsize );
+		//this.ap_data = ByteBuffer.allocate( rs.getBytes("data").length);
+		this.ap_data.order( ByteOrder.LITTLE_ENDIAN );
+		this.ap_data.put(rs.getBytes("data"));		
+		
+		this.constBytes = (int)rs.getBytes("data").length;
+		
     }	
 
 	public AT_Machine_State( byte[] atId , byte[] creator ,  byte[] machineCode, byte[] machineData, byte[] properties , int height ) 
@@ -221,9 +227,10 @@ public class AT_Machine_State
 		this.varBytes = b.getInt();
 		this.retrievedHeight = Integer.MAX_VALUE;
 		this.stepsFeeNQT = 0;
+		this.constBytes = machineData.length;
 
 		int codePages = (int)Math.ceil((float)machineCode.length / pageSize) +1;
-		int dataPages = (int)Math.ceil((float)machineData.length / pageSize) ;
+		int dataPages = (int)Math.ceil((float)(machineData.length + varBytes) / pageSize) ;
 		
 		this.csize = codePages * pageSize;
 		this.dsize = dataPages * pageSize;
@@ -235,7 +242,6 @@ public class AT_Machine_State
 		this.ap_data = ByteBuffer.allocate( this.dsize );
 		this.ap_data.order( ByteOrder.LITTLE_ENDIAN );
 		this.ap_data.put( machineData );
-		this.constBytes = (int)Math.ceil((float)machineData.length / 8) ;
 
 		this.creationBlockHeight = height;
 		this.minimumFee = ( codePages + 
@@ -249,90 +255,122 @@ public class AT_Machine_State
 
 	protected byte[] get_A1()
 	{
-		ap_data.get( machineState.A1, constBytes , 8 );
-		return machineState.A1;
+		ap_data.clear();
+		ap_data.position(constBytes);
+		ap_data.get( machineState.A1, 0 , 8 );		
+		return this.machineState.A1;
 	}
 
 	protected byte[] get_A2()
 	{
-		ap_data.get( machineState.A1, constBytes + 8 , 8 );
+		ap_data.clear();
+		ap_data.position(constBytes + 8);
+		ap_data.get( machineState.A2, 0 , 8 );	
 		return machineState.A2;
 	}
 
 	protected byte[] get_A3()
 	{
-		ap_data.get( machineState.A1, constBytes + 16 , 8 );
+		ap_data.clear();
+		ap_data.position(constBytes + 16);
+		ap_data.get( machineState.A3, 0 , 8 );	
 		return machineState.A3;
 	}
 
 	protected byte[] get_A4()
 	{
-		ap_data.get( machineState.A1, constBytes + 24 , 8 );
+		ap_data.clear();
+		ap_data.position(constBytes + 24);
+		ap_data.get( machineState.A4, 0 , 8 );	
 		return machineState.A4;
 	}
 
 	protected byte[] get_B1()
 	{
-		ap_data.get( machineState.A1, constBytes + 32 , 8 );
+		ap_data.clear();
+		ap_data.position(constBytes + 32);
+		ap_data.get( machineState.B1, 0 , 8 );	
 		return machineState.B1;
 	}
 
 	protected byte[] get_B2()
 	{
-		ap_data.get( machineState.A1, constBytes + 40 , 8 );
+		ap_data.clear();
+		ap_data.position(constBytes + 40);
+		ap_data.get( machineState.B2, 0 , 8 );	
 		return machineState.B2;
 	}
 
 	protected byte[] get_B3()
 	{
-		ap_data.get( machineState.A1, constBytes + 48 , 8 );
+		ap_data.clear();
+		ap_data.position(constBytes + 48);
+		ap_data.get( machineState.B3, 0 , 8 );	
 		return machineState.B3;
 	}
 
 	protected byte[] get_B4()
 	{
-		ap_data.get( machineState.A1, constBytes + 56 , 8 );
+		ap_data.clear();
+		ap_data.position(constBytes + 56);
+		ap_data.get( machineState.B4, 0 , 8 );	
 		return machineState.B4;
 	}
 
 	protected void set_A1( byte[] A1 )
 	{
 		//this.machineState.A1 = A1.clone();
-		this.ap_data.put(A1, constBytes, A1.length);
+		ap_data.clear();
+		ap_data.position(constBytes);		
+		ap_data.put (A1, 0, A1.length);
 	}
 
 	protected void set_A2( byte[] A2 ){
-		this.ap_data.put(A2, constBytes + 8, 8);
+		ap_data.clear();
+		ap_data.position(constBytes + 8);		
+		ap_data.put (A2, 0, A2.length);		
 	}
 
 	protected void set_A3( byte[] A3 )
 	{
-		this.ap_data.put(A3, constBytes + 16, 8);
+		ap_data.clear();
+		ap_data.position(constBytes + 16);		
+		ap_data.put (A3, 0, A3.length);		
 	}
 
 	protected void set_A4( byte[] A4 )
 	{
-		this.ap_data.put(A4, constBytes + 24, 8);
+		ap_data.clear();
+		ap_data.position(constBytes + 24);		
+		ap_data.put (A4, 0, A4.length);		
 	}
 
 	protected void set_B1( byte[] B1 )
 	{
-		this.ap_data.put(B1, constBytes + 32, 8);
+		ap_data.clear();
+		ap_data.position(constBytes + 32);		
+		ap_data.put (B1, 0, B1.length);		
 	}
 
 	protected void set_B2( byte[] B2 )
 	{
-		this.ap_data.put(B2, constBytes + 40, 8);
+		ap_data.clear();
+		ap_data.position(constBytes + 40);		
+		ap_data.put (B2, 0, B2.length);		
 	}
 
 	protected void set_B3( byte[] B3 )
 	{
-		this.ap_data.put(B3, constBytes + 48, 8);
+		ap_data.clear();
+		ap_data.position(constBytes + 48);		
+		ap_data.put (B3, 0, B3.length);		
 	}
 
 	protected void set_B4( byte[] B4 )
 	{
-		this.ap_data.put(B4, constBytes + 56, 8);
+		ap_data.clear();
+		ap_data.position(constBytes + 56);		
+		ap_data.put (B4, 0, B4.length);		
 	}
 
 	protected void addTransaction(AT_Transaction tx)
@@ -604,6 +642,10 @@ public class AT_Machine_State
 	
 	public int getStartBlock(){
 		return this.startBlock;
+	}
+	
+	public int getConstBytes(){
+		return this.constBytes;
 	}
 	
 	public int getVarBytes(){

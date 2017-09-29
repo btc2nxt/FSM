@@ -10,7 +10,6 @@ import nxt.at.AT_Transaction;
 
 import org.json.simple.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -496,6 +495,7 @@ final class TransactionImpl implements Transaction {
             buffer.put(senderPublicKey);
             buffer.putLong(getSenderId());
             buffer.putLong(type.canHaveRecipient() ? recipientId : Genesis.CREATOR_ID);
+                        
             if (useNQT()) {
                 buffer.putLong(amountNQT);
                 buffer.putLong(feeNQT);
@@ -513,7 +513,12 @@ final class TransactionImpl implements Transaction {
                     buffer.putLong(0L);
                 }
             }
+            
+            //String result = new BigInteger(1, buffer.array()).toString(16);
+            //System.out.println(result);
+            
             buffer.put(signature != null ? signature : new byte[64]);
+                       
             if (version > 0) {
                 buffer.putInt(getFlags());
                 buffer.putInt(ecBlockHeight);

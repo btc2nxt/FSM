@@ -44,11 +44,11 @@ public class AT_Transaction{
 		return message;
 	}
 
-	public int geX() {
+	public int getX() {
 		return x;
 	}
 	
-	public int geY() {
+	public int getY() {
 		return y;
 	}
 

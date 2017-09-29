@@ -109,12 +109,12 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			this.lastStateId = rs.getLong("last_State_Id");
 			this.machineCodeUpdate = rs.getBytes("machinecode");
 			this.machineDataUpdate = rs.getBytes("data");	
-			this.lastRanHeight = rs.getInt("lastRanHeight");
+			this.lastRanHeight = rs.getInt("last_Ran_Height");
 		}
 
 		private void save(Connection con) throws SQLException {
-			try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO at_state (id, at_id, pc, steps, timeStamp, machinecode,data, last_state_id, height, latest) "
-					+ "KEY (at_id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+			try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO at_state (id, at_id, pc, steps, timeStamp, machinecode,data, last_state_id, LAST_RAN_HEIGHT, height, latest) "
+					+ "KEY (at_id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 				int i = 0;
 	            pstmt.setLong(++i, this.getId());				
 				pstmt.setLong(++i, atId);
@@ -124,6 +124,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 				pstmt.setBytes(++i, machineCodeUpdate);
 				pstmt.setBytes(++i, machineDataUpdate);				
 				pstmt.setLong(++i, lastStateId);				
+				pstmt.setLong(++i, lastRanHeight);
 				pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
 				pstmt.executeUpdate();
 			}
@@ -516,6 +517,10 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         		+ "sleep_between, start_block, var_bytes, height) "
         		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
+			ByteBuffer ap_machinedata = ByteBuffer.allocate( this.getConstBytes() );
+			ap_machinedata.order( ByteOrder.LITTLE_ENDIAN );
+			ap_machinedata.put( this.getAp_data().array(),0, this.getConstBytes());
+			
 			pstmt.setLong( ++i , AT_API_Helper.getLong( this.getId() ) );
 			pstmt.setLong( ++i, AT_API_Helper.getLong( this.getCreator() ) );
 			DbUtils.setString( pstmt , ++i , this.getName() );
@@ -523,7 +528,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			DbUtils.setString( pstmt , ++i , this.getRunTypeStr() );			
 			pstmt.setShort( ++i , this.getVersion() );
 			DbUtils.setBytes( pstmt , ++i , this.getAp_code().array() );
-			DbUtils.setBytes( pstmt , ++i , this.getAp_data().array() );			
+			DbUtils.setBytes( pstmt , ++i , ap_machinedata.array() );			
 			pstmt.setInt( ++i , this.getDelayBlocks() );
 			pstmt.setBoolean( ++i , this.getFreezeWhenSameBalance() );
 			pstmt.setInt( ++i , this.getSleepBetween() );

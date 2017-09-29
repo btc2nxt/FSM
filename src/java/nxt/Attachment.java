@@ -1650,7 +1650,7 @@ public interface Attachment extends Appendix {
 			
 			byte atPaymentsCount = buffer.get();		
 			for ( byte i=0; i < atPaymentsCount ; i++) {
-				AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(buffer.getLong()), buffer.getLong(), null, 0, 0);
+				AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(buffer.getLong()), buffer.getLong(), null, buffer.getInt(), buffer.getInt());
 				this.atPayments.add(tx);
 			}
 
@@ -1678,7 +1678,7 @@ public interface Attachment extends Appendix {
             if (atPaymentArray.size() >0) {
                 for (Object o : atPaymentArray) {
                     JSONObject atPayment = (JSONObject) o;
-                	AT_Transaction tx = new AT_Transaction(AT_API_Helper.getByteArray(Convert.parseLong(atPayment.get("recipientId"))), Convert.parseLong(atPayment.get("amount")), null, 0, 0);
+                	AT_Transaction tx = new AT_Transaction(AT_API_Helper.getByteArray(Convert.parseLong(atPayment.get("recipientId"))), Convert.parseLong(atPayment.get("amount")), null, ((Long)attachmentData.get("x")).intValue(), ((Long)attachmentData.get("y")).intValue());
     				this.atPayments.add(tx);
                 }
     			
@@ -1712,7 +1712,7 @@ public interface Attachment extends Appendix {
         }
 		@Override
 		int getMySize() {
-            return 8 + 2 + 2 + 8 + 8 + 1 + (atPayments == null ? 0 : atPayments.size()) *16 + 2 + (machineCode ==null ? 0 : machineCode.length) + 2 + (machineData ==null ? 0 : machineData.length);
+            return 8 + 2 + 2 + 8 + 8 + 4 + 1 + (atPayments == null ? 0 : atPayments.size()) *24 + 2 + (machineCode ==null ? 0 : machineCode.length) + 2 + (machineData ==null ? 0 : machineData.length);
 		}
 
 		@Override
@@ -1722,12 +1722,15 @@ public interface Attachment extends Appendix {
             buffer.putShort((short) steps);
             buffer.putLong((long) timeStamp);            
             buffer.putLong((long) lastStateId);
+            buffer.putInt((int) lastRanHeight);            
     		if ( atPayments != null){            
     			buffer.put((byte) atPayments.size());            
     			for (AT_Transaction tx : atPayments )
     			{
     				buffer.putLong((long) tx.getRecipientIdLong());
     				buffer.putLong((long) tx.getAmount());		    			
+    				buffer.putInt((int) tx.getX());
+    				buffer.putInt((int) tx.getY());
     			}
     		}
             buffer.putShort((short) (machineCode == null ? 0 :machineCode.length));
@@ -1747,7 +1750,8 @@ public interface Attachment extends Appendix {
             attachment.put("pc", pc);
             attachment.put("steps", steps);
             attachment.put("timeStamp", timeStamp);           
-            attachment.put("lastStateId", lastStateId);  
+            attachment.put("lastStateId", lastStateId);
+            attachment.put("lastRanHeight", lastRanHeight);  
             JSONArray atPaymentJSONArray = new JSONArray();
             attachment.put("atPayments", atPaymentJSONArray);
     		if ( atPayments != null){
@@ -1756,6 +1760,8 @@ public interface Attachment extends Appendix {
                 	JSONObject json = new JSONObject();
                 	json.put("recipientId", tx.getRecipientIdLong());
                 	json.put("amount", tx.getAmount());
+                	json.put("x", tx.getX());
+                	json.put("y", tx.getY());
         			atPaymentJSONArray.add(json);                	
     			}
     		}
