@@ -177,29 +177,31 @@ public class AT_Machine_State
 		this.startBlock = rs.getInt("start_block");	
 		this.varBytes = rs.getInt("var_bytes");		
 		this.creationBlockHeight = rs.getInt("height");;		
+			
+		int pageSize = ( int ) AT_Constants.getInstance().PAGE_SIZE( creationBlockHeight );
+		int nLength = rs.getBytes("machinecode").length;
+		int codePages = (int)Math.ceil((float)nLength / pageSize) +1;
+		this.csize =  nLength < pageSize ? nLength : codePages * pageSize;
+
+		nLength = rs.getBytes("data").length + varBytes;	
+		int dataPages = (int)Math.ceil((float)nLength / pageSize); 
+		this.dsize = nLength < pageSize ? nLength : dataPages  * pageSize;;
 		
-		this.ap_code = ByteBuffer.allocate( rs.getBytes("machinecode").length );
+		this.ap_code = ByteBuffer.allocate( this.csize );
 		this.ap_code.order( ByteOrder.LITTLE_ENDIAN );
 		this.ap_code.put( rs.getBytes("machinecode"));
-		
-		this.transactions = new ArrayList<AT_Transaction>();
-		this.g_balance = 0;
-		this.p_balance = 0;
-		this.machineState = new Machine_State();
-		
-		int pageSize = ( int ) AT_Constants.getInstance().PAGE_SIZE( creationBlockHeight );
-		int codePages = (int)Math.ceil((float)rs.getBytes("machinecode").length / pageSize) +1;
-		int dataPages = (int)Math.ceil((float)(rs.getBytes("data").length + varBytes) / pageSize) ;
-		
-		this.csize = codePages * pageSize;
-		this.dsize = dataPages * pageSize;
-		
+
 		this.ap_data = ByteBuffer.allocate( this.dsize );
-		//this.ap_data = ByteBuffer.allocate( rs.getBytes("data").length);
 		this.ap_data.order( ByteOrder.LITTLE_ENDIAN );
 		this.ap_data.put(rs.getBytes("data"));		
 		
 		this.constBytes = (int)rs.getBytes("data").length;
+		this.minimumFee = ( codePages + 
+				dataPages) * AT_Constants.getInstance().COST_PER_PAGE(rs.getInt("height"));
+		this.transactions = new ArrayList<AT_Transaction>();
+		this.g_balance = 0;
+		this.p_balance = 0;
+		this.machineState = new Machine_State();		
 		
     }	
 
@@ -232,8 +234,11 @@ public class AT_Machine_State
 		int codePages = (int)Math.ceil((float)machineCode.length / pageSize) +1;
 		int dataPages = (int)Math.ceil((float)(machineData.length + varBytes) / pageSize) ;
 		
-		this.csize = codePages * pageSize;
-		this.dsize = dataPages * pageSize;
+		int nLength = machineCode.length;	
+		this.csize =  nLength < pageSize ? nLength : codePages * pageSize;
+
+		nLength = machineData.length + varBytes;	
+		this.dsize = nLength < pageSize ? nLength : dataPages  * pageSize;;
 
 		this.ap_code = ByteBuffer.allocate( csize );
 		this.ap_code.order( ByteOrder.LITTLE_ENDIAN );
