@@ -2006,7 +2006,7 @@ public interface Attachment extends Appendix {
 
         @Override
         String getAppendixName() {
-            return "BeWoker";
+            return "BeCollector";
         }
 
         @Override

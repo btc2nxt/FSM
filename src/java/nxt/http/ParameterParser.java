@@ -517,21 +517,33 @@ final class ParameterParser {
         }
     }
     
-    static int getSleepBetween(HttpServletRequest req) throws ParameterException {
-        String sleepBetweenString = Convert.emptyToNull(req.getParameter("sleepBetween"));
+    static short getCoordinateX(HttpServletRequest req) throws ParameterException {
+        String xString = Convert.emptyToNull(req.getParameter("x"));
         try {
-            int sleepBetween = Integer.parseInt(sleepBetweenString);
-            if (sleepBetween < 0 || sleepBetween > Constants.MAX_AUTOMATED_TRANSACTIONS_WAITORSLEEPBLOCKS) {
-                throw new ParameterException(INCORRECT_QUANTITY);
+            short x = (short)Integer.parseInt(xString);
+            if (x < 0 || x > Constants.MAX_TOWN_XY) {
+                throw new ParameterException(INCORRECT_COORDINATE);
             }
-            return sleepBetween;
+            return x;
         } catch (NumberFormatException e) {
-            throw new ParameterException(INCORRECT_QUANTITY);
+            throw new ParameterException(INCORRECT_COORDINATE);
         }
     }
     
-	
-	static AT getAT(HttpServletRequest req) throws ParameterException {
+    static short getCoordinateY(HttpServletRequest req) throws ParameterException {
+        String yString = Convert.emptyToNull(req.getParameter("y"));
+        try {
+        	short y = (short)Integer.parseInt(yString);
+            if (y < 0 || y > Constants.MAX_TOWN_XY) {
+                throw new ParameterException(INCORRECT_COORDINATE);
+            }
+            return y;
+        } catch (NumberFormatException e) {
+            throw new ParameterException(INCORRECT_COORDINATE);
+        }
+    }
+    
+    static AT getAT(HttpServletRequest req) throws ParameterException {
         String atValue = Convert.emptyToNull(req.getParameter("at"));
         if (atValue == null) {
             throw new ParameterException(MISSING_AT);

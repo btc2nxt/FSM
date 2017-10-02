@@ -3,14 +3,12 @@ package nxt.http;
 import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_NAME;
 import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_NAME_LENGTH;
 import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_DESCRIPTION;
-import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_DESCRIPTION_LENGTH;
-import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_MACHINECODE_LENGTH;
-import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_MACHINEDATA_LENGTH;
-import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_STACK_LENGTH;
 import static nxt.http.JSONResponses.MISSING_NAME;
+import static nxt.http.JSONResponses.INCORRECT_AT_RUN_TYPE;
 
 import javax.servlet.http.HttpServletRequest;
 
+import nxt.AT;
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
@@ -31,6 +29,7 @@ public final class CreateATProgram extends CreateTransaction {
 		//String atVersion = req.getParameter("atVersion");		
 		String name = req.getParameter("name");
 		String description = req.getParameter("description");
+		String runType = req.getParameter("runType");		
 		
 		if (name == null) {
             return MISSING_NAME;
@@ -51,45 +50,22 @@ public final class CreateATProgram extends CreateTransaction {
             return INCORRECT_AUTOMATED_TRANSACTION_DESCRIPTION;
         }
         
-        byte[] variables = ParameterParser.getVariables( req );
+        runType = runType.toUpperCase().trim();
+        try {
+            AT.ATRunType.valueOf(runType);
+        } 
+        catch (Exception e) {
+            return INCORRECT_AT_RUN_TYPE;
+        }      
         
-        
-        /*short machineCodePages = ParameterParser.getMachineCodePages(req);
-        if (machineCodePages * Constants.AUTOMATED_TRANSACTION_PAGE_SIZE > Constants.MAX_AUTOMATED_TRANSACTIONS_MACHINECODE_LENGTH) {
-			return INCORRECT_AUTOMATED_TRANSACTION_MACHINECODE_LENGTH;
-		}*/
-        
+        byte[] properties = ParameterParser.getVariables( req );       
 		byte[] machineCode = ParameterParser.getMachineCode(req);
-		//if (machineCode.length > machineCodePages*Constants.AUTOMATED_TRANSACTION_PAGE_SIZE) {
-		//	return INCORRECT_AUTOMATED_TRANSACTION_MACHINECODE_LENGTH;
-		//}
-		
-		/*short machineDataPages = ParameterParser.getMachineDataPages(req);
-		if (machineDataPages * Constants.AUTOMATED_TRANSACTION_PAGE_SIZE > Constants.MAX_AUTOMATED_TRANSACTIONS_MACHINEDATA_LENGTH) {
-			return INCORRECT_AUTOMATED_TRANSACTION_MACHINEDATA_LENGTH;
-		}*/
-		
 		byte[] machineData = ParameterParser.getMachineData(req);
-		//if (machineData.length > machineDataPages*Constants.AUTOMATED_TRANSACTION_PAGE_SIZE) {
-		//	return INCORRECT_AUTOMATED_TRANSACTION_MACHINEDATA_LENGTH;
-		//}
-		
-		/*short machineStackPages = ParameterParser.getMachineStackPages(req);
-		
-		if (machineStackPages*Constants.AUTOMATED_TRANSACTION_PAGE_SIZE > Constants.MAX_AUTOMATED_TRANSACTIONS_STACK_LENGTH){
-			return INCORRECT_AUTOMATED_TRANSACTION_STACK_LENGTH;
-		}
 			
-
-		int waitForNumberOfBlocks = ParameterParser.getWaitForNumberOfBlocks(req);
-		long minimunFee = ParameterParser.getMinimumFee(req);		
-		int sleepBetween = ParameterParser.getSleepBetween(req);	
-		
-		*/
         Account account = ParameterParser.getSenderAccount(req);
-		Attachment attachment = new Attachment.AutomatedTransactionsCreation( name, description, machineCode, machineData, variables );
+		Attachment attachment = new Attachment.AutomatedTransactionsCreation( name, description, runType, machineCode, machineData, properties );
 		
-		Logger.logDebugMessage("AT "+ name +" added succesfully ..");
+		Logger.logDebugMessage("AT "+ name +" created succesfully ..");
 		return createTransaction(req,account,attachment);
 	}
 	

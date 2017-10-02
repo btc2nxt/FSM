@@ -140,7 +140,8 @@ public final class JSONResponses {
     public static final JSONStreamAware UNKNOWN_AT = unknown("at");
     public static final JSONStreamAware INCORRECT_AT = incorrect("at");
     public static final JSONStreamAware INCORRECT_CREATION_BYTES = incorrect("incorrect creation bytes");
-    
+    public static final JSONStreamAware INCORRECT_AT_RUN_TYPE = incorrect("incorrect run type, must be: FOR_ANYONE, CREATEOR_ONLY, SYSTEM_AT");
+    public static final JSONStreamAware INCORRECT_COORDINATE = incorrect("incorrect coordinate x or y");    
     
     
     public static final JSONStreamAware NOT_ENOUGH_FUNDS;
