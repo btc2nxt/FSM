@@ -1,6 +1,6 @@
 package nxt;
 
-import nxt.Account.PlayerStatus;
+import nxt.game.Move.PlayerMove;
 import nxt.Attachment.AbstractAttachment;
 import nxt.Attachment.AutomatedTransactionsCreation;
 import nxt.NxtException.NotValidException;
@@ -10,6 +10,7 @@ import nxt.at.AT_Constants;
 import nxt.at.AT_Transaction;
 import nxt.util.Convert;
 import nxt.util.Logger;
+import nxt.game.TownMap;
 
 import org.json.simple.JSONObject;
 
@@ -2085,7 +2086,7 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
-                senderAccount.setAccountPlayer(attachment.getXCoordinate(), attachment.getXCoordinate(), PlayerStatus.WORKER);               
+                senderAccount.setAccountPlayer(attachment.getXCoordinate(), attachment.getXCoordinate(), PlayerMove.WORKER);               
             }
 
             @Override

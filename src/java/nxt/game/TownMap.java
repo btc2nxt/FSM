@@ -1,4 +1,4 @@
-package nxt;
+package nxt.game;
 
 import nxt.Constants;
 

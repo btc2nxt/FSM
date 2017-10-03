@@ -1923,31 +1923,25 @@ public interface Attachment extends Appendix {
 
     }
     
-    public final static class GameBeWorker extends AbstractAttachment {
-
+    abstract static class GameMove extends AbstractAttachment {
     	private final short xCoordinate;
     	private final short yCoordinate;
 
-    	GameBeWorker(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+    	GameMove(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
 			this.xCoordinate = buffer.getShort();
 			this.yCoordinate = buffer.getShort();
         }
 
-    	GameBeWorker(JSONObject attachmentData) {
+    	GameMove(JSONObject attachmentData) {
             super(attachmentData);
             this.xCoordinate = ((Long) attachmentData.get("xCoordinate")).shortValue();
             this.yCoordinate = ((Long) attachmentData.get("yCoordinate")).shortValue();
         }
 
-        public GameBeWorker(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+        public GameMove(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
             this.xCoordinate = xCoordinate;
             this.yCoordinate = yCoordinate;
-        }
-
-        @Override
-        String getAppendixName() {
-            return "BeWoker";
         }
 
         @Override
@@ -1965,6 +1959,35 @@ public interface Attachment extends Appendix {
         void putMyJSON(JSONObject attachment) {
         	attachment.put("xCoordinate", xCoordinate);
         	attachment.put("yCoordinate", yCoordinate);
+        }
+
+        @Override
+        public String getAppendixName() {
+            return "";
+        }
+        
+        public short getXCoordinate() {
+            return xCoordinate;
+        }
+
+        public short getYCoordinate() {
+            return yCoordinate;
+        }    	
+    }
+    
+    public final static class GameBeWorker extends GameMove {
+
+    	GameBeWorker(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+        }
+
+    	GameBeWorker(JSONObject attachmentData) {
+            super(attachmentData);
+        }
+
+        @Override
+        public String getAppendixName() {
+            return "Worker";
         }
 
         @Override
@@ -1972,58 +1995,20 @@ public interface Attachment extends Appendix {
             return TransactionType.Game.BE_WORKER;
         }
 
-        public short getXCoordinate() {
-            return xCoordinate;
-        }
-
-        public short getYCoordinate() {
-            return yCoordinate;
-        }
-
     }
     
-    public final static class GameBeCollector extends AbstractAttachment {
-
-    	private final short xCoordinate;
-    	private final short yCoordinate;
-
+    public final static class GameBeCollector extends GameMove {
     	GameBeCollector(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
-			this.xCoordinate = buffer.getShort();
-			this.yCoordinate = buffer.getShort();
         }
 
     	GameBeCollector(JSONObject attachmentData) {
             super(attachmentData);
-            this.xCoordinate = ((Long) attachmentData.get("xCoordinate")).shortValue();
-            this.yCoordinate = ((Long) attachmentData.get("yCoordinate")).shortValue();
-        }
-
-        public GameBeCollector(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
-            this.xCoordinate = xCoordinate;
-            this.yCoordinate = yCoordinate;
         }
 
         @Override
-        String getAppendixName() {
-            return "BeCollector";
-        }
-
-        @Override
-        int getMySize() {
-            return 2 + 2;
-        }
-
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putShort(xCoordinate);
-            buffer.putShort(yCoordinate);
-        }
-
-        @Override
-        void putMyJSON(JSONObject attachment) {
-        	attachment.put("xCoordinate", xCoordinate);
-        	attachment.put("yCoordinate", yCoordinate);
+        public String getAppendixName() {
+            return "Collector";
         }
 
         @Override
@@ -2031,130 +2016,47 @@ public interface Attachment extends Appendix {
             return TransactionType.Game.BE_COLLECTOR;
         }
 
-        public short getXCoordinate() {
-            return xCoordinate;
-        }
-
-        public short getYCoordinate() {
-            return yCoordinate;
-        }
-
     }
 
-    public final static class GameCollect extends AbstractAttachment {
-
-    	private final short toXCoordinate;
-    	private final short toYCoordinate;
+    public final static class GameCollect extends GameMove {
 
     	GameCollect(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
-			this.toXCoordinate = buffer.getShort();
-			this.toYCoordinate = buffer.getShort();
         }
 
     	GameCollect(JSONObject attachmentData) {
             super(attachmentData);
-            this.toXCoordinate = ((Long) attachmentData.get("toXCoordinate")).shortValue();
-            this.toYCoordinate = ((Long) attachmentData.get("toYCoordinate")).shortValue();
         }
-
-        public GameCollect(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
-            this.toXCoordinate = xCoordinate;
-            this.toYCoordinate = yCoordinate;
-        }
-
+    	
         @Override
-        String getAppendixName() {
+        public String getAppendixName() {
             return "Collect";
         }
 
         @Override
-        int getMySize() {
-            return 2 + 2;
-        }
-
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putShort(toXCoordinate);
-            buffer.putShort(toYCoordinate);
-        }
-
-        @Override
-        void putMyJSON(JSONObject attachment) {
-        	attachment.put("toXCoordinate", toXCoordinate);
-        	attachment.put("toYCoordinate", toYCoordinate);
-        }
-
-        @Override
         public TransactionType getTransactionType() {
-            return TransactionType.Game.BE_COLLECTOR;
+            return TransactionType.Game.COLLECT;
         }
-
-        public short getToXCoordinate() {
-            return toXCoordinate;
-        }
-
-        public short getToYCoordinate() {
-            return toYCoordinate;
-        }
-
     }
     
-    public final static class GameCheckIn extends AbstractAttachment {
-
-    	private final short toXCoordinate;
-    	private final short toYCoordinate;
+    public final static class GameCheckIn extends GameMove {
 
     	GameCheckIn(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
-			this.toXCoordinate = buffer.getShort();
-			this.toYCoordinate = buffer.getShort();
         }
 
     	GameCheckIn(JSONObject attachmentData) {
             super(attachmentData);
-            this.toXCoordinate = ((Long) attachmentData.get("toXCoordinate")).shortValue();
-            this.toYCoordinate = ((Long) attachmentData.get("toYCoordinate")).shortValue();
         }
 
-        public GameCheckIn(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
-            this.toXCoordinate = xCoordinate;
-            this.toYCoordinate = yCoordinate;
-        }
-
-        @Override
-        String getAppendixName() {
+    	@Override
+        public String getAppendixName() {
             return "CheckIn";
-        }
-
-        @Override
-        int getMySize() {
-            return 2 + 2;
-        }
-
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putShort(toXCoordinate);
-            buffer.putShort(toYCoordinate);
-        }
-
-        @Override
-        void putMyJSON(JSONObject attachment) {
-        	attachment.put("toXCoordinate", toXCoordinate);
-        	attachment.put("toYCoordinate", toYCoordinate);
         }
 
         @Override
         public TransactionType getTransactionType() {
             return TransactionType.Game.CHECK_IN;
-        }
-
-        public short getToXCoordinate() {
-            return toXCoordinate;
-        }
-
-        public short getToYCoordinate() {
-            return toYCoordinate;
         }
 
     }

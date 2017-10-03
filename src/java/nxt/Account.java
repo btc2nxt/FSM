@@ -27,10 +27,6 @@ public final class Account {
         BALANCE, UNCONFIRMED_BALANCE, ASSET_BALANCE, UNCONFIRMED_ASSET_BALANCE,
         LEASE_SCHEDULED, LEASE_STARTED, LEASE_ENDED
     }
-    
-    public static enum PlayerStatus {
-        COLLECTOR, WORKER, OUTSIDER
-    }
 
     public static class AccountAsset {
 
@@ -127,7 +123,7 @@ public final class Account {
         }
 
     }
-
+   
     static {
 
         Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
@@ -402,15 +398,6 @@ public final class Account {
     private String name;
     private String description;
     
-    private int collectPower; 
-    private int attackPower; 
-    private int defenseValue; 
-    private int healthyIndex;
-    private int xCoordinate;
-    private int yCoordinate;
-    private PlayerStatus accountStatus;
-
-
     private Account(long id) {
         if (id != Crypto.rsDecode(Crypto.rsEncode(id))) {
             Logger.logMessage("CRITICAL ERROR: Reed-Solomon encoding fails for " + id);
@@ -418,16 +405,7 @@ public final class Account {
         this.id = id;
         this.dbKey = accountDbKeyFactory.newKey(this.id);
         this.creationHeight = Nxt.getBlockchain().getHeight();
-        currentLeasingHeightFrom = Integer.MAX_VALUE;
-        
-        //init game parameters
-        this.collectPower = 0;
-        this.attackPower = 0;
-        this.defenseValue = 0;
-        this.healthyIndex = 0;
-        this.xCoordinate = 0;
-        this.yCoordinate = 0;
-        this.accountStatus = PlayerStatus.OUTSIDER;        
+        currentLeasingHeightFrom = Integer.MAX_VALUE;        
     }
 
     private Account(ResultSet rs) throws SQLException {
@@ -447,15 +425,6 @@ public final class Account {
         this.nextLeasingHeightFrom = rs.getInt("next_leasing_height_from");
         this.nextLeasingHeightTo = rs.getInt("next_leasing_height_to");
         this.nextLesseeId = rs.getLong("next_lessee_id");
-        
-        this.collectPower = rs.getInt("collect_power");
-        this.attackPower = rs.getInt("attack_power");
-        this.defenseValue = rs.getInt("defense_value");
-        this.healthyIndex = rs.getInt("healthy_index");
-        this.xCoordinate = rs.getInt("x_coordinate");
-        this.yCoordinate = rs.getInt("y_coordinate");
-        this.accountStatus = PlayerStatus.values()[rs.getInt("account_status")];
-        
     }
 
     private void save(Connection con) throws SQLException {
@@ -482,13 +451,6 @@ public final class Account {
             DbUtils.setIntZeroToNull(pstmt, ++i, this.getNextLeasingHeightFrom());
             DbUtils.setIntZeroToNull(pstmt, ++i, this.getNextLeasingHeightTo());
             DbUtils.setLongZeroToNull(pstmt, ++i, this.getNextLesseeId());
-            pstmt.setInt(++i, this.getCollectPower());
-            pstmt.setInt(++i, this.getAttackPower());
-            pstmt.setInt(++i, this.getDefenseValue());
-            pstmt.setInt(++i, this.getHealthyIndex());
-            pstmt.setInt(++i, this.getXCoordinate());
-            pstmt.setInt(++i, this.getYCoordinate());
-            pstmt.setInt(++i, this.getAccountStatus().ordinal());
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
             pstmt.executeUpdate();
         }
@@ -693,52 +655,7 @@ public final class Account {
 
     public int getNextLeasingHeightTo() {
         return nextLeasingHeightTo;
-    }
-    
-    public int getCollectPower() {
-        return collectPower;
-    }
-
-    public int getAttackPower() {
-        return attackPower;
-    }
-    
-    public int getDefenseValue() {
-        return defenseValue;
-    }
-    
-    public int getHealthyIndex() {
-        return healthyIndex;
-    }
-    
-    public int getXCoordinate() {
-        return xCoordinate;
-    }
-    
-    public int getYCoordinate() {
-        return yCoordinate;
-    }
-    
-    public PlayerStatus getAccountStatus() {
-        return accountStatus;
-    }
-    
-    void setAccountPlayer(int xCoordinate, int yCoordinate, PlayerStatus ps) {
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        this.accountStatus = ps;
-        accountTable.insert(this);
-    }
-    
-    void playerJumpTo(int xCoordinate, int yCoordinate, PlayerStatus ps) {
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        if (this.attackPower > 1) 
-        	--this.attackPower;
-        accountTable.insert(this);
-    }
-
-     
+    }    
     
     void leaseEffectiveBalance(long lesseeId, short period) {
         Account lessee = Account.getAccount(lesseeId);
