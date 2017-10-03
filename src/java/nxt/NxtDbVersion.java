@@ -379,14 +379,11 @@ class NxtDbVersion extends DbVersion {
             	apply("CREATE TABLE IF NOT EXISTS at_payment (db_id IDENTITY, at_state_id BIGINT NOT NULL, "            			
             			+ "payment_no SMALLINT NOT NULL, recipient_id BIGINT NOT NULL, amount BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 150:            	
-                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS collect_power SMALLINT NOT NULL");                            
-                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS attack_power SMALLINT NOT NULL");
-                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS defense_value SMALLINT NOT NULL");
-                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS healthy_index SMALLINT NOT NULL");
-                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS x_coordinate SMALLINT NOT NULL");                
-                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS y_coordinate SMALLINT NOT NULL");
-                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS account_status SMALLINT NOT NULL");                
-            case 157:
+                apply("CREATE TABLE IF NOT EXISTS move (db_id IDENTITY, account_id BIGINT NOT NULL, collect_power SMALLINT NOT NULL,"                            
+                + " attack_power SMALLINT NOT NULL, defense_value SMALLINT NOT NULL, healthy_index SMALLINT NOT NULL,"
+                + " x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, step VARCHAR NOT NULL, "
+                + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
+            case 151:
                 return;
             default:
                 throw new RuntimeException("Blockchain database inconsistent with code, probably trying to run older code on newer database");

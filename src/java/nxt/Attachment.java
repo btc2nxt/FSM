@@ -1939,7 +1939,7 @@ public interface Attachment extends Appendix {
             this.yCoordinate = ((Long) attachmentData.get("yCoordinate")).shortValue();
         }
 
-        public GameMove(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+        GameMove(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
             this.xCoordinate = xCoordinate;
             this.yCoordinate = yCoordinate;
         }
@@ -1985,7 +1985,11 @@ public interface Attachment extends Appendix {
             super(attachmentData);
         }
 
-        @Override
+    	public GameBeWorker(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+
+    	@Override
         public String getAppendixName() {
             return "Worker";
         }
@@ -2006,7 +2010,11 @@ public interface Attachment extends Appendix {
             super(attachmentData);
         }
 
-        @Override
+    	public GameBeCollector(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+        
+    	@Override
         public String getAppendixName() {
             return "Collector";
         }
@@ -2028,7 +2036,11 @@ public interface Attachment extends Appendix {
             super(attachmentData);
         }
     	
-        @Override
+    	public GameCollect(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+
+    	@Override
         public String getAppendixName() {
             return "Collect";
         }
@@ -2049,6 +2061,10 @@ public interface Attachment extends Appendix {
             super(attachmentData);
         }
 
+      	public GameCheckIn(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+    	
     	@Override
         public String getAppendixName() {
             return "CheckIn";

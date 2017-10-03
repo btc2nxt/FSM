@@ -1,5 +1,6 @@
 package nxt;
 
+import nxt.game.Move;
 import nxt.game.Move.PlayerMove;
 import nxt.Attachment.AbstractAttachment;
 import nxt.Attachment.AutomatedTransactionsCreation;
@@ -2086,7 +2087,7 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
-                senderAccount.setAccountPlayer(attachment.getXCoordinate(), attachment.getXCoordinate(), PlayerMove.WORKER);               
+                Move.addOrUpdateMove(transaction, attachment);
             }
 
             @Override
@@ -2129,7 +2130,7 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameBeCollector attachment = (Attachment.GameBeCollector) transaction.getAttachment();
-                senderAccount.setAccountPlayer(attachment.getXCoordinate(), attachment.getXCoordinate(), PlayerStatus.COLLECTOR);               
+                Move.addOrUpdateMove(transaction, attachment);               
             }
 
             @Override
@@ -2171,7 +2172,7 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameCollect attachment = (Attachment.GameCollect) transaction.getAttachment();
-                senderAccount.playerJumpTo(attachment.getToXCoordinate(), attachment.getToYCoordinate(), PlayerStatus.COLLECTOR);               
+                Move.addOrUpdateMove(transaction, attachment);               
             }
 
             @Override
@@ -2185,7 +2186,7 @@ public abstract class TransactionType {
                 	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
                 if ( radis> senderAccount.getCollectPower())
                 	throw new NxtException.NotValidException("jump too far away: " + attachment.getJSONObject());
-
+                Move.addOrUpdateMove(transaction, attachment);
             }
 
             @Override
@@ -2215,13 +2216,13 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameCheckIn attachment = (Attachment.GameCheckIn) transaction.getAttachment();
-                senderAccount.playerJumpTo(attachment.getToXCoordinate(), attachment.getToYCoordinate(), PlayerStatus.COLLECTOR);               
+                Move.addOrUpdateMove(transaction, attachment);               
             }
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameCheckIn attachment = (Attachment.GameCheckIn)transaction.getAttachment();
-                if (Account.getCoordinatePlayersCount(attachment.getToXCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                if (Account.getCoordinatePlayersCount(attachment.getXCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
                 	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
                 
 
