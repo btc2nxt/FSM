@@ -29,7 +29,7 @@ public final class Move {
 
     };
 
-    private static final EntityDbTable<Move> moveTable = new EntityDbTable<Move>("playing", moveDbKeyFactory) {
+    private static final EntityDbTable<Move> moveTable = new EntityDbTable<Move>("move", moveDbKeyFactory) {
 
         @Override
         protected Move load(Connection con, ResultSet rs) throws SQLException {
@@ -43,10 +43,37 @@ public final class Move {
 
     };
 
-	public static DbIterator<Move> getMovesByPlayer(long accountId, int from, int to) {
+    public static Move getMove(long accountId) {
+        return accountId == 0 ? null : moveTable.get(moveDbKeyFactory.newKey(accountId));
+    }
+    
+    public static DbIterator<Move> getMovesByPlayer(long accountId, int from, int to) {
         return moveTable.getManyBy(new DbClause.LongClause("account_id", accountId), from, to);
     }
    
+    private static final class getCoordinateXYClause extends DbClause {
+    	private final int x;
+    	private final int y;
+
+        private getCoordinateXYClause(final int x, int y) {
+        	super(" x= ? AND y = ? ");
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public int set(PreparedStatement pstmt, int index) throws SQLException {
+        	pstmt.setInt(index++, x);
+            pstmt.setInt(index++, y);
+            return index;
+        }
+
+    }
+
+    public static int  getCoordinatePlayersCount( int x, int y) {
+            return moveTable.getCount(new getCoordinateXYClause(x,y));
+    }
+
     static void addMove(Transaction transaction, Attachment.GameMove attachment) {
         moveTable.insert(new Move(transaction, attachment));
     }
@@ -62,6 +89,7 @@ public final class Move {
             move.xCoordinate = attachment.getXCoordinate();
             move.yCoordinate = attachment.getYCoordinate();
             move.step = MoveType.valueOf(attachment.getAppendixName());
+            --move.collectPower;
         }
         moveTable.insert(move);
     }

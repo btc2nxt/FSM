@@ -196,7 +196,9 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		private short paymentNo;
 		private long recipientId;		
 		private long amount;
-	
+		private int x;
+		private int y;
+		
 	    /*private ATPayment(Transaction transaction, Attachment.AutomatedTransactionsState attachment) {
 	        this.atPaymentId = transaction.getId();
 			this.dbKey = atStateDbKeyFactory.newKey(this.atPaymentId);
@@ -205,29 +207,35 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			this.steps = attachment.getSteps();				
 	    }*/
 	    
-		private ATPayment(long atStateId, short paymentNo, long recipientId, long amount ) {
+		private ATPayment(long atStateId, short paymentNo, long recipientId, long amount, int x, int y ) {
 			this.atStateId = atStateId;			
 			this.paymentNo = paymentNo;			
 			this.dbKey = atPaymentDbKeyFactory.newKey(this.atStateId, this.paymentNo);
 			this.recipientId = recipientId;
 			this.amount = amount;
+			this.x = x;
+			this.y = y;
 		}
 		
 		private ATPayment(ResultSet rs) throws SQLException {			
 			this.dbKey = atPaymentDbKeyFactory.newKey(this.atStateId, this.paymentNo);
 			this.atStateId = rs.getLong("at_state_id");			
-			this.recipientId = rs.getShort("recipient_id");
-			this.amount = rs.getShort("amount");
+			this.recipientId = rs.getLong("recipient_id");
+			this.amount = rs.getLong("amount");
+			this.x = rs.getInt("x");
+			this.y = rs.getInt("y");
 		}
 
 		private void save(Connection con) throws SQLException {
-			try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO at_payment (at_state_id, payment_no, recipient_id, amount, height, latest) "
-					+ "KEY (at_state_id, payment_no) VALUES (?, ?, ?, ?, ?, TRUE)")) {
+			try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO at_payment (at_state_id, payment_no, recipient_id, amount, x,y,height, latest) "
+					+ "KEY (at_state_id, payment_no) VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 				int i = 0;			
 				pstmt.setLong(++i, atStateId);
 				pstmt.setShort(++i, paymentNo);				
 				pstmt.setLong( ++i , recipientId);
 				pstmt.setLong(++i, amount);
+				pstmt.setInt(++i, x);
+				pstmt.setInt(++i, y);				
 				pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
 				pstmt.executeUpdate();
 			}
@@ -319,8 +327,8 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         atStateTable.insert(new ATState(transaction, attachment));
     }
     
-    static void addATPayment(long atStateId, short paymentNo, long recipientId, long amount ) {
-        atPaymentTable.insert(new ATPayment( atStateId,  paymentNo,  recipientId,  amount ) );
+    static void addATPayment(long atStateId, short paymentNo, long recipientId, long amount, int x, int y ) {
+        atPaymentTable.insert(new ATPayment( atStateId,  paymentNo,  recipientId,  amount, x, y ) );
     }
 
     

@@ -17,7 +17,7 @@ public final class GameEnter extends CreateTransaction {
     static final GameEnter instance = new GameEnter();
 
     private GameEnter() {
-        super(new APITag[] {APITag.GAME, APITag.CREATE_TRANSACTION}, "x", "y", "statusName");
+        super(new APITag[] {APITag.GAME, APITag.CREATE_TRANSACTION}, "x", "y", "statusName","map");
     }
 
     @Override
@@ -25,6 +25,7 @@ public final class GameEnter extends CreateTransaction {
         short x = ParameterParser.getCoordinateX(req);
         short y = ParameterParser.getCoordinateY(req);  
 		String name = req.getParameter("name");
+		String map = req.getParameter("map");
 		
 		if (name == null) {
             return MISSING_NAME;

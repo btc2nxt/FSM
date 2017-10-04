@@ -1,7 +1,7 @@
 package nxt;
 
 import nxt.game.Move;
-import nxt.game.Move.PlayerMove;
+import nxt.game.Move.MoveType;
 import nxt.Attachment.AbstractAttachment;
 import nxt.Attachment.AutomatedTransactionsCreation;
 import nxt.NxtException.NotValidException;
@@ -9,6 +9,7 @@ import nxt.NxtException.ValidationException;
 import nxt.at.AT_API_Helper;
 import nxt.at.AT_Constants;
 import nxt.at.AT_Transaction;
+import nxt.db.DbIterator;
 import nxt.util.Convert;
 import nxt.util.Logger;
 import nxt.game.TownMap;
@@ -1798,7 +1799,7 @@ public abstract class TransactionType {
                 if (atPayments != null) {
         		for (AT_Transaction tx : atPayments )
         		{
-                    AT.addATPayment(atStateId, ++paymentNo, tx.getRecipientIdLong(), tx.getAmount());
+                    AT.addATPayment(atStateId, ++paymentNo, tx.getRecipientIdLong(), tx.getAmount(), tx.getX(), tx.getY());
                     Account recipientAccountOfPayment = Account.addOrGetAccount(tx.getRecipientIdLong());                   
                     recipientAccountOfPayment.addToBalanceAndUnconfirmedBalanceNQT(tx.getAmount());
             		paymentsAmount +=tx.getAmount();                    
@@ -2178,15 +2179,21 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameCollect attachment = (Attachment.GameCollect)transaction.getAttachment();
-                Account senderAccount = Account.getAccount(transaction.getSenderId());
+                
+            	long senderId = transaction.getSenderId();
+            	Move move = Move.getMove(senderId);
+
+                if (move == null)
+                	throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+                
+                /*
                 double radis = Math.pow(senderAccount.getXCoordinate() - attachment.getToXCoordinate(),2) + Math.pow(senderAccount.getYCoordinate() - attachment.getToYCoordinate(),2);
                 radis = Math.sqrt(radis);
-                
-                if (Account.getCoordinatePlayersCount(attachment.getToXCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                */
+                if (Move.getCoordinatePlayersCount(attachment.getXCoordinate(), attachment.getYCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
                 	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
-                if ( radis> senderAccount.getCollectPower())
+                if ( Math.abs(move.getXCoordinate() - attachment.getXCoordinate()) +  Math.abs(move.getYCoordinate() - attachment.getYCoordinate())  > move.getCollectPower())
                 	throw new NxtException.NotValidException("jump too far away: " + attachment.getJSONObject());
-                Move.addOrUpdateMove(transaction, attachment);
             }
 
             @Override

@@ -675,6 +675,9 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		x = (int) ((val & 0xffffffff00000000L)>>32 % 30 + AT_API_Helper.getLong(state.get_B1()));
 		y = (int) ((val & 0x00000000ffffffffL) % 30     + AT_API_Helper.getLong(state.get_B2()));
 
+		x = x & 0xFF;
+		y = y & 0xFF;
+				
 		if (count == 5 && (val & 0xff00)>>8 % 2 == 0) {
 			int tmp;
 			tmp = x;

@@ -358,32 +358,23 @@ class NxtDbVersion extends DbVersion {
             	apply("CREATE INDEX IF NOT EXISTS at_account_id_height_idx ON at (account_id, height DESC)");
             case 141:
             	apply("CREATE TABLE IF NOT EXISTS at_state (db_id IDENTITY, id BIGINT NOT NULL, at_id BIGINT NOT NULL, pc SMALLINT NOT NULL, steps SMALLINT NOT NULL, "
-            			//+ "timestamp BIGINT NOT NULL, machinecode BINARY NOT NULL, data BINARY NOT NULL, last_state_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
+            			+ "machinecode BINARY DEFAULT NULL, data BINARY DEFAULT NULL,"
     					+ "timestamp BIGINT NOT NULL, last_state_id BIGINT NOT NULL, last_ran_height INT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");            	
             case 142:
             	apply("CREATE UNIQUE INDEX IF NOT EXISTS at_state_at_id_height_idx ON at_state (at_id, height DESC)");
             case 143:
-                apply("CREATE TABLE IF NOT EXISTS at_payment (db_id IDENTITY, at_state_id BIGINT NOT NULL, FOREIGN KEY (at_state_id) REFERENCES at_state (id) ON DELETE CASCADE, "            			
-            			+ "payment_no SMALLINT NOT NULL, recipient_id BIGINT NOT NULL, amount BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
+                apply("CREATE TABLE IF NOT EXISTS at_payment (db_id IDENTITY, at_state_id BIGINT NOT NULL, "            			
+            			+ "payment_no SMALLINT NOT NULL, recipient_id BIGINT NOT NULL, amount BIGINT NOT NULL, x SMALLINT not null, y SMALLINT not null,height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 144:
             	apply("CREATE UNIQUE INDEX IF NOT EXISTS at_payment_at_state_id_payment_no ON at_payment (at_state_id, payment_no DESC)");
             case 145:
             	apply("CREATE INDEX IF NOT EXISTS at_payment_id_height_idx ON at_payment (height, at_state_id DESC)");
             case 146:            	
-                apply("ALTER TABLE at_state ADD COLUMN IF NOT EXISTS machinecode BINARY DEFAULT NULL");
-            case 147:            	
-                apply("ALTER TABLE at_state ADD COLUMN IF NOT EXISTS data BINARY DEFAULT NULL");                            
-            case 148:
-            	apply("DROP TABLE IF EXISTS at_payment");
-            case 149:
-            	apply("CREATE TABLE IF NOT EXISTS at_payment (db_id IDENTITY, at_state_id BIGINT NOT NULL, "            			
-            			+ "payment_no SMALLINT NOT NULL, recipient_id BIGINT NOT NULL, amount BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
-            case 150:            	
                 apply("CREATE TABLE IF NOT EXISTS move (db_id IDENTITY, account_id BIGINT NOT NULL, collect_power SMALLINT NOT NULL,"                            
                 + " attack_power SMALLINT NOT NULL, defense_value SMALLINT NOT NULL, healthy_index SMALLINT NOT NULL,"
                 + " x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, step VARCHAR NOT NULL, "
                 + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
-            case 151:
+            case 147:
                 return;
             default:
                 throw new RuntimeException("Blockchain database inconsistent with code, probably trying to run older code on newer database");
