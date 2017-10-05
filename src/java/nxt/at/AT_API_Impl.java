@@ -368,6 +368,18 @@ public class AT_API_Impl implements AT_API
 	}
 
 	@Override
+	public void A_to_Payment_in_State_with_PaymentNO( long val , int paymentNO, AT_Machine_State state ) {
+		platform.A_to_Payment_in_State_with_PaymentNO( val , paymentNO, state );
+		
+	}
+	
+	@Override
+	public long get_StateId_after_Timestamp_from_FSM( long val , long atId, AT_Machine_State state ) {
+		return platform.get_StateId_after_Timestamp_from_FSM( val , atId, state );
+		
+	}
+	
+	@Override
 	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state ) {
 		platform.A_to_Tx_after_Timestamp_with_Type( val , type, state );
 		
@@ -462,11 +474,5 @@ public class AT_API_Impl implements AT_API
 	public long add_Minutes_to_Timestamp( long val1 , long val2 , AT_Machine_State state ) {
 		return platform.add_Minutes_to_Timestamp( val1 , val2 , state );
 	}
-
-	
-	
-	
-	
-	
 
 }

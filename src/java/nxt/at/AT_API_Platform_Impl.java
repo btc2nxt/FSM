@@ -475,8 +475,57 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	}
 
 	@Override
+	/* 0x0348 EXT_FUN_DAT_2
+	 * get payment to A, @addr1=stateId, @addr2=paymentNO 
+	 * return: A1=amount, A2=x, A3=y
+	 */
+	public void A_to_Payment_in_State_with_PaymentNO( long val , int paymentNO, AT_Machine_State state ) {
+
+		Logger.logDebugMessage("get payment with stateId "+val + " paymentNO "+ paymentNO);
+		clear_A( state );
+		
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 id FROM AT_State WHERE at_state_id = ? and paymentNo = ? ")) {
+    		pstmt.setLong(1, val);
+    		pstmt.setInt(2, paymentNO);   		
+    		ResultSet rs = pstmt.executeQuery();
+    		
+    		if (rs.next()) {
+    			state.set_A1( AT_API_Helper.getByteArray( rs.getLong("amount") ) );
+    			state.set_A2( AT_API_Helper.getByteArray( rs.getLong("x") ) );
+    			state.set_A3( AT_API_Helper.getByteArray( rs.getLong("y") ) );
+            }
+    			
+            rs.close();
+    		
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}
+	}
+	
+	@Override
+	/* 0x0349 EXT_FUN_RET_DAT_2
+	 * get AT_State Id of timestamp(val) from FSM
+	 */
+	public long get_StateId_after_Timestamp_from_FSM( long val , long atId, AT_Machine_State state ) {
+		int height = AT_API_Helper.longToHeight( val );
+		int numOfTx = AT_API_Helper.longToNumOfTx( val );
+	
+		Long stateId = 0L;
+		Logger.logDebugMessage("get state after timestamp "+val + " height: "+ height+" atId: "+ atId);
+		
+		stateId = findStateFromAT(height, atId);
+		if (stateId != 0) {
+		    Logger.logInfoMessage("state with id "+stateId+" found");			
+		}
+
+		return stateId;
+	}
+	
+	@Override
 	/* 0x0350 EXT_FUN_DAT_2
 	 * get tx of timestamp(val) with the type
+	 * recipient  = AT.id
 	 */
 	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state ) {
 		int height = AT_API_Helper.longToHeight( val );
@@ -672,11 +721,11 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 
 		Logger.logDebugMessage("AirDrop_Coordinate_In_B "+val + " count "+ count);
 		
-		x = (int) ((val & 0xffffffff00000000L)>>32 % 30 + AT_API_Helper.getLong(state.get_B1()));
-		y = (int) ((val & 0x00000000ffffffffL) % 30     + AT_API_Helper.getLong(state.get_B2()));
+		x = (int) ((val & 0xffffffff00000000L)>>32) % 30;
+		y = (int) ((val & 0x00000000ffffffffL) % 30    );
 
-		x = x & 0xFF;
-		y = y & 0xFF;
+		x = (x & 0xFF) % 30 + (int)AT_API_Helper.getLong(state.get_B1());
+		y = (y & 0xFF) % 30 + (int)AT_API_Helper.getLong(state.get_B2());
 				
 		if (count == 5 && (val & 0xff00)>>8 % 2 == 0) {
 			int tmp;
@@ -788,6 +837,32 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     		throw new RuntimeException(e.toString(), e);
     	}
     	
+    }
+    
+    /*
+     * fine state id 
+     */
+    public static Long findStateFromAT(int startHeight ,Long atID){
+    	Long transactionId;
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 id FROM AT_State WHERE height >= ? and at_id = ? order by height desc")){
+    		pstmt.setInt(1, startHeight);
+    		pstmt.setLong(2, atID);   		
+    		ResultSet rs = pstmt.executeQuery();
+    		
+    		if (rs.next()) {
+                transactionId = rs.getLong("id");
+            }
+    		else {
+        		transactionId = 0L;    			
+    		}
+    			
+            rs.close();
+            return transactionId;
+    		
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}	
     }
     protected static int findTransactionHeight(Long transactionId, int height, Long atID){
 		try (Connection con = Db.db.getConnection();

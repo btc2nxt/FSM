@@ -296,8 +296,18 @@ public interface AT_API {
 	 */
 	public void B_to_Address_of_Creator( AT_Machine_State state );
 	
+	/*
+	 * get amount,x,y to A1-A3 with @State, @paymentNO
+	 */
+	public void A_to_Payment_in_State_with_PaymentNO( long val , int paymentNO, AT_Machine_State state );
+	
+	/*
+	 * get stateId of the first state after timestamp of atId
+	 */
+	public long get_StateId_after_Timestamp_from_FSM( long val , long atId, AT_Machine_State state );
+	
 	/**
-	 * sets A to tx hash of the first tx after timestamp with type
+	 * sets A to tx hash of the first tx after timestamp with type, to atIde
 	 */
 	public void A_to_Tx_after_Timestamp_with_Type( long val , long type, AT_Machine_State state );
 
