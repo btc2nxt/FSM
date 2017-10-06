@@ -4,76 +4,72 @@ Use Case: Airdrop for Game Monopoly
 Airdrop for Game Monopoly drops five package coins, every package has 100 coins and situates 
 in different coordinate. Players must go to the sites within eight blocks time, otherwise the 
 coins will disappear.
-Another FSM, that is Distribute for Game Monopoly, which distribute these coins to the players
-who are there.
-The sites are decided by the last block hash, and different with the last sites.
-for example
-[1,4]
-[11,20]
-[35,47]
-[66,65]
-[99,86]
+Airdrop search from block N+2  to block N+9  when Predistribute FSM ran at block N, then sends 
+to collectors who are in the same site with coordinates the Predistribute FSM announced.
 
 Variables
 ---------
 
 @00 ==> @timestamp
-@01 ==> @x1
-@02 ==> @y1
-@03 ==> @x2
-@04 ==> @y2
-@05 ==> @x3
-@06 ==> @y3
-@07 ==> @x4
-@08 ==> @y4
-@09 ==> @x5
-@0a ==> @x5
-@0b ==> @address_distribute_AT
+@01 ==> @heightRange (7)
+@02 ==> @packageAmt (100)
+@03 ==> @predistributeFSM
+@04 ==> @MaxPaymentNO (5)
+@05 ==> @HaltSteps
+@06 ==> 
 
-@10 ==> @seed
-@11 ==> @count
-@12 ==> @tmp
+
+Variables(must saved to blockchain)
+---------
+@07 == A1 
+@08 == A2 (x)
+@09 == A3 (y)
+@0a == A4 (state.record number)
+@0b == B1 (recipient)
+@0c == B2
+@0d == B3
+@0e == B4
+@0f ==> @timestampBegin
+@10 ==> @timestampEnd
+@12 ==> @stateId
+@12 ==> @count
+@12 ==> @airdropAmt
+@12 ==> @paymentNo
 
 
 Script Assembly
 ---------------
 
 if @timestamp not zero goto init                         1e000000003d
-set @timestamp to AT creation time                       35010300000000
+set @timestamp to the timestamp of the current block     35010300000000
 
 :init
-puts the block hash of the previous block in A		 32 0303
-set @count to 1						 01 11000000 0100000000000000
-sets B3 from @address_distribute_AT			 33 1801 0b000000
+get StateId after @timestamp with sender= @predistribute 33490300000000
+if @stateId =0 finished
+set @timestamp to A1
+set @timestampBegin to @timestamp
+inc @timestampBegin
+set @timestampEnd to @timestamp
+add @heightRange to @timestampEnd
+set @PaymentNO  to 0
 
-sets B1 from @x1					 33 1601 01000000
-sets B2 from @y1					 33 1701 02000000
-sets @seed to A1					 35 0001 10000000
-airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
-inc @count						 04 11000000
+:loop_payment
+inc @PaymentNO
+A to AT_Payment for StateId, @PaymentNO		         35070300000000
+@Count to get move count between @timestamps with @x, @y 33040300000000
+if @count == 0 goto :loop_payment
+set @airdropAmt to @packageAmt
+divide @airdropAmt by @count
+set @recodeNumber to 0 (@A4 =0)
 
-sets B1 from @x2					 33 1601 03000000
-sets B2 from @y2					 33 1701 04000000
-sets @seed to A2					 35 0101 10000000
-airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
-inc @count						 04 11000000
+:loop_airdrop
+inc @recodeNumber ( @no )
+get next Move to B between @timestamp with @x, @y, @nO   33040300000000
+send @airdropAmt  to address in B1
+@count -1
+if @count>0 goto loop_airdrop
 
-sets B1 from @x3					 33 1601 05000000
-sets B2 from @y3					 33 1701 06000000
-sets @seed to A3					 35 0201 10000000
-airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
-inc @count						 04 11000000
-
-sets B1 from @x4					 33 1601 07000000
-sets B2 from @y4					 33 1701 08000000
-sets @seed to A4					 35 0301 10000000
-airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
-inc @count						 04 11000000
-
-
-sets B1 from @x5					 33 1601 09000000
-sets B2 from @y5					 33 1701 0a000000
-sets @tmp to A1						 35 0001 12000000
-add @tmp to @seed					 06 10000000 12000000
-airdrop to coordinate(B1,B2) with @seed, @count		 34 5004 10000000 11000000
-finished						 28
+halt							 2a
+inc @paymentNotmp
+if < @MaxPaymentNO goto loop_payment
+finished
