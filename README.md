@@ -1,5 +1,5 @@
-There are some computer games using crypto-currencies, like Cryptokingdom, Vox, Augur and so on.  Huntercoin is a game on blockchain launched in 2014 based on bitcoin source code. Cutting edge of the Huntercoin is human mining. In this introduction, I will introduce Monopoly like game powered by Nxt chain.
-	Nearly all coins will be distributed by FSM which is similar to AT( automated machine), after players jump to the location of the coins in next block, they will share the coins. There are lands in the game too, so players can buy lands to build hotel, restaurants, healthy club and weapon factory, which can be traded in asset market in the game also.
+There are some computer games using crypto-currencies, like Cryptokingdom, Vox, Augur and so on.  Huntercoin is a game on blockchain launched in 2014 based on bitcoin source code. Cutting edge of the Huntercoin is human mining. In this introduction, I will introduce Monopoly like game developed on Nxt 1.3.5 codebase with smart contract named FSM(Final State Machine),which is based on AT(Automated Machine). 
+	Nearly all coins will be distributed by FSM , after players jump to the location of the coins in next block, they will share the coins. There are lands in the game too, so players can buy lands to build hotel, restaurants, healthy club and weapon factory, which can be traded in asset market in the game also.
 
 Features:
 Total supply: 1 000 000 000
