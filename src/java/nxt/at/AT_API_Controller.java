@@ -267,6 +267,9 @@ public class AT_API_Controller{
         	case 283:
         		atApi.set_B3_B4( val1 , val2 , state );
         		break;
+        	case 0x347:
+        		atApi.B_to_Move_Account_between_Timestamps_with_X_Y( val1, val2, state );	
+        		break;        		
         	case 0x348:
         		atApi.A_to_Payment_in_State_with_PaymentNO( val1 , (int)val2, state );	
         		break;
@@ -279,7 +282,7 @@ public class AT_API_Controller{
         		atApi.A_To_Tx_between_Timestamps_with_Type( val1 , (int)val2, state );	
         		break;	
         	case 0x352:
-        		atApi.A_To_TxsCount_between_Timestamps_with_Type( val1 , (int)val2, state );	
+        		atApi.get_MovesCount_between_Timestamps_with_X_Y( val1 , val2, state );	
         		break;
         	case 0x450:
         		atApi.AirDrop_Coordinate_In_B( val1 , (int)val2, state );	

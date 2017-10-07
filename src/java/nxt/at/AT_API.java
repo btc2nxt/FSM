@@ -297,6 +297,11 @@ public interface AT_API {
 	public void B_to_Address_of_Creator( AT_Machine_State state );
 	
 	/*
+	 * get account from move by ,x,y to A1-A3 with
+	 */
+	public void B_to_Move_Account_between_Timestamps_with_X_Y( long val , long  val1, AT_Machine_State state );
+
+	/*
 	 * get amount,x,y to A1-A3 with @State, @paymentNO
 	 */
 	public void A_to_Payment_in_State_with_PaymentNO( long val , int paymentNO, AT_Machine_State state );
@@ -319,7 +324,7 @@ public interface AT_API {
 	/**
 	 * sets A to tx number of txs between timestamps in B
 	 */
-	public void A_To_TxsCount_between_Timestamps_with_Type( long val , int type, AT_Machine_State state );
+	public int get_MovesCount_between_Timestamps_with_X_Y( long val , long val1, AT_Machine_State state );
 
 	// end range 0x0300..0x03ff
 	// ------------------------

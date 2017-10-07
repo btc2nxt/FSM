@@ -10,66 +10,64 @@ to collectors who are in the same site with coordinates the Predistribute FSM an
 Variables
 ---------
 
-@00 ==> @timestamp
-@01 ==> @heightRange (7)
-@02 ==> @packageAmt (100)
-@03 ==> @predistributeFSM
-@04 ==> @MaxPaymentNO (5)
-@05 ==> @HaltSteps
-@06 ==> 
-
+@00 ==> 0000000000000000	@timestamp
+@01 ==> 0100000000000000	@predistributeFSM
+@02 ==> 6400000000000000	@packageAmt (100)
+@03 ==> 0500000000000000	@MaxPaymentNO (5)
+@04 ==> 0000000001000000	@heightRange1 (0x 01 00000000)
+@05 ==> 0000000007000000	@heightRange2 (0x 07 00000000)
+@06 ==> 0000000000000000	@HaltSteps
 
 Variables(must saved to blockchain)
 ---------
 @07 == A1 
 @08 == A2 (x)
 @09 == A3 (y)
-@0a == A4 (state.record number)
-@0b == B1 (recipient)
+@0a == A4 (move. @rownum)
+@0b == B1 (@recipient)
 @0c == B2
 @0d == B3
 @0e == B4
 @0f ==> @timestampBegin
 @10 ==> @timestampEnd
-@12 ==> @stateId
+@11 ==> @stateId
 @12 ==> @count
-@12 ==> @airdropAmt
-@12 ==> @paymentNo
+@13 ==> @airdropAmt
+@14 ==> @paymentNo
 
 
 Script Assembly
 ---------------
 
 if @timestamp not zero goto init                         1e000000003d
-set @timestamp to the timestamp of the current block     35010300000000
+set @timestamp to the timestamp of the current block     35000300000000
 
 :init
-get StateId after @timestamp with sender= @predistribute 33490300000000
-if @stateId =0 finished
-set @timestamp to A1
-set @timestampBegin to @timestamp
-inc @timestampBegin
-set @timestampEnd to @timestamp
-add @heightRange to @timestampEnd
-set @PaymentNO  to 0
+get StateId after @timestamp with sender= @predistribute 37 4903 11000000 00000000 01000000
+if @stateId =0 finished					 26 11000000
+set @timestamp to A1 (hegith of the stateId)		 35 0100 00000000	
+set @timestampBegin to @timestamp			 02 0f000000 00000000
+add @heightRange1 to @timestampBegin			 06 0f000000 04000000			
+set @timestampEnd to @timestamp				 02 10000000 00000000
+add @heightRange2 to @timestampEnd			 06 10000000 05000000
+set @PaymentNO  to 0					 01 14000000 0000000000000000
 
 :loop_payment
-inc @PaymentNO
-A to AT_Payment for StateId, @PaymentNO		         35070300000000
-@Count to get move count between @timestamps with @x, @y 33040300000000
-if @count == 0 goto :loop_payment
-set @airdropAmt to @packageAmt
-divide @airdropAmt by @count
-set @recodeNumber to 0 (@A4 =0)
+inc @PaymentNO						 04 14000000
+A(x,y) to AT_Payment for StateId, @PaymentNO		 34 4803 11000000 14000000
+get move's @count between @timestamps with @x, @y        37 5203 12000000 0f000000 10000000
+if @count == 0 goto :loop_payment			 1b 12000000 ff
+set @airdropAmt to @packageAmt				 02 13000000 02000000
+divide @airdropAmt by @count				 09 13000000 12000000
+set @rownum to 0 (@A4 =0)				 01 0a000000 0000000000000000
 
 :loop_airdrop
-inc @recodeNumber ( @no )
-get next Move to B between @timestamp with @x, @y, @nO   33040300000000
-send @airdropAmt  to address in B1
-@count -1
-if @count>0 goto loop_airdrop
+inc @rownum						 04 0a000000
+get next Move to B1 between @timestamp with @x, @y, @row 34 4703 0f000000 10000000
+send @airdropAmt  to address in B1			 330204 1300000
+@count -1						 05 12000000
+if @count>0 goto loop_airdrop				 1e 12000000 ff
 
 halt							 2a
-inc @paymentNotmp
-if < @MaxPaymentNO goto loop_payment
-finished
+if @PaymentNO < @MaxPaymentNO goto loop_payment		 06 14000000 03000000 ff
+finished						 28

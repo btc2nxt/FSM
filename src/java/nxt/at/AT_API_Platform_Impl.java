@@ -475,6 +475,25 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	}
 
 	@Override
+	/* 0x0347 EXT_FUN_DAT_2
+	 * get move's account get count of moves between timestamp(@val,val1), A2=x, A3=y, A4=rownum 
+	 * return: B1=account
+	 */
+	public void B_to_Move_Account_between_Timestamps_with_X_Y( long val, long val1, AT_Machine_State state ) {
+		startHeight = AT_API_Helper.longToHeight( val );
+		endHeight = AT_API_Helper.longToHeight( val1 );
+		int x = (int) AT_API_Helper.getLong(state.get_A2());
+		int y = (int) AT_API_Helper.getLong(state.get_A3());
+		int rownum = (int) AT_API_Helper.getLong(state.get_A4());
+
+		Long atId = state.getLongId();		
+		Logger.logDebugMessage("get moves count between height "+val + " height: "+ val1 + " x:" + x + " y:" + y );
+		
+		long  accountId = getAccountIdFromMoveByRownum(startHeight, endHeight, x, y, rownum);
+		state.set_B1( AT_API_Helper.getByteArray( accountId) );
+	}
+	
+	@Override
 	/* 0x0348 EXT_FUN_DAT_2
 	 * get payment to A, @addr1=stateId, @addr2=paymentNO 
 	 * return: A1=amount, A2=x, A3=y
@@ -587,16 +606,19 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	}
 	
 	@Override
-	/* 0x0352 EXT_FUN_DAT_2
-	 * get number of txs between timestamp(B1,B2),val with the type
+	/* 0x0352 EXT_FUN_RET_DAT_2
+	 * get count of moves between timestamp(@val,val1), A2=x, 3=y
 	 */
-	public void A_To_TxsCount_between_Timestamps_with_Type( long val, int type, AT_Machine_State state ) {
-		int height = AT_API_Helper.longToHeight( val );
+	public int get_MovesCount_between_Timestamps_with_X_Y( long val, long val1, AT_Machine_State state ) {
+		startHeight = AT_API_Helper.longToHeight( val );
+		endHeight = AT_API_Helper.longToHeight( val1 );
+		int x = (int) AT_API_Helper.getLong(state.get_A2());
+		int y = (int) AT_API_Helper.getLong(state.get_A3());
 
 		Long atId = state.getLongId();		
-		Logger.logDebugMessage("get number of tx between timestamp "+val + " height: "+ height+" atId: "+ atId+ " type "+ type);
+		Logger.logDebugMessage("get moves count between height "+val + " height: "+ val1 + " x:" + x + " y:" + y );
 		
-		state.set_A1( AT_API_Helper.getByteArray( findATTransactionsCount(startHeight, endHeight, atId, type) ) );
+		return getMovesCount(startHeight, endHeight, x, y);
 	}
 	
 	@Override //0x0400
@@ -812,6 +834,46 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     	}    		
     }
     
+	//get distinct account's count by x,y 
+    public static int getMovesCount(int startHeight, int endHeight, int x, int y){
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT count(distinct account_id) as account_count FROM move m "
+    					+ " WHERE height between ? and ? and x = ? and y = ?  "
+    					+ " and height = (select max(height) from move where account= m.account)")) {
+    		pstmt.setInt(1, startHeight);
+    		pstmt.setInt(2, endHeight);    		
+    		pstmt.setLong(3, x);
+    		pstmt.setInt(4, y);
+    		ResultSet rs = pstmt.executeQuery();
+    		if (rs.next())
+    			return rs.getInt("account_count");
+    		else
+    			return 0;
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}    		
+    }
+    
+	//get next account's count by x,y 
+    public static long getAccountIdFromMoveByRownum(int startHeight, int endHeight, int x, int y, int rownum){
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT distinct account_id FROM move m "
+    					+ " WHERE height between ? and ? and x = ? and y = ?  "
+    					+ " and height = (select max(height) from move where account= m.account)"
+    					+ " and rownum()= ? order by height,account_Id" )) {
+    		pstmt.setInt(1, startHeight);
+    		pstmt.setInt(2, endHeight);    		
+    		pstmt.setLong(3, x);
+    		pstmt.setInt(4, y);
+    		ResultSet rs = pstmt.executeQuery();
+    		if (rs.next())
+    			return rs.getInt("account_id");
+    		else
+    			return 0;
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}    		
+    }   
     //get the latest tx in in blockchain with height > , and type= ?
     public static Long findTransactionToAT(int startHeight ,Long atID, int transactionType){
     	Long transactionId;

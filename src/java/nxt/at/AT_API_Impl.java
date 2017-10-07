@@ -368,6 +368,12 @@ public class AT_API_Impl implements AT_API
 	}
 
 	@Override
+	public void B_to_Move_Account_between_Timestamps_with_X_Y( long val , long val1, AT_Machine_State state ) {
+		platform.B_to_Move_Account_between_Timestamps_with_X_Y( val , val1, state );
+		
+	}
+	
+	@Override
 	public void A_to_Payment_in_State_with_PaymentNO( long val , int paymentNO, AT_Machine_State state ) {
 		platform.A_to_Payment_in_State_with_PaymentNO( val , paymentNO, state );
 		
@@ -392,8 +398,8 @@ public class AT_API_Impl implements AT_API
 	}
 
 	@Override
-	public void A_To_TxsCount_between_Timestamps_with_Type( long val , int type, AT_Machine_State state ) {
-		platform.A_To_TxsCount_between_Timestamps_with_Type( val , type, state );
+	public int get_MovesCount_between_Timestamps_with_X_Y( long val , long val1, AT_Machine_State state ) {
+		return platform.get_MovesCount_between_Timestamps_with_X_Y( val , val1, state );
 		
 	}
 
