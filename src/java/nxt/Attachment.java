@@ -2016,7 +2016,7 @@ public interface Attachment extends Appendix {
         
     	@Override
         public String getAppendixName() {
-            return "Collector";
+            return "Be_Collector";
         }
 
         @Override

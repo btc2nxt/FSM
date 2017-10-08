@@ -17,7 +17,7 @@ public final class GameMove extends CreateTransaction {
     static final GameMove instance = new GameMove();
 
     private GameMove() {
-        super(new APITag[] {APITag.GAME, APITag.CREATE_TRANSACTION}, "x", "y", "action");
+        super(new APITag[] {APITag.GAME, APITag.CREATE_TRANSACTION}, "x", "y", "actionName");
     }
 
     @Override

@@ -1,5 +1,6 @@
 package nxt;
 
+import nxt.game.Move;
 import nxt.http.API;
 import nxt.peer.Peers;
 import nxt.upnp.UPnP;
@@ -176,7 +177,8 @@ public final class Nxt {
                 Account.init();
                 Alias.init();
                 Asset.init();
-                AT.init();                
+                AT.init();  
+                Move.init();
                 DigitalGoodsStore.init();
                 Hub.init();
                 Order.init();

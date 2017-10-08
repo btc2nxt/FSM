@@ -180,7 +180,9 @@ public final class APIServlet extends HttpServlet {
         map.put("getLongFromHex",GetATLong.instance);
         map.put("getRichList", GetRichList.instance);
         map.put("searchAssets", SearchAssets.instance);
-        map.put("startAT",StartAT.instance);        
+        map.put("startAT",StartAT.instance);
+        map.put("gameEnter",GameEnter.instance); 
+        map.put("gameMove",GameMove.instance);        
 
         if (API.enableDebugAPI) {
             map.put("clearUnconfirmedTransactions", ClearUnconfirmedTransactions.instance);

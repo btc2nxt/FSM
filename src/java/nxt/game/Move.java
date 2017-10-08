@@ -3,6 +3,7 @@ package nxt.game;
 import nxt.db.DbClause;
 import nxt.db.DbIterator;
 import nxt.db.DbKey;
+import nxt.db.DbUtils;
 import nxt.db.EntityDbTable;
 import nxt.Attachment;
 import nxt.Constants;
@@ -56,7 +57,7 @@ public final class Move {
     	private final int y;
 
         private getCoordinateXYClause(final int x, int y) {
-        	super(" x= ? AND y = ? ");
+        	super(" x_coordinate = ? AND y_coordinate = ? ");
             this.x = x;
             this.y = y;
         }
@@ -88,14 +89,14 @@ public final class Move {
             move = moves.next();
             move.xCoordinate = attachment.getXCoordinate();
             move.yCoordinate = attachment.getYCoordinate();
-            move.step = MoveType.valueOf(attachment.getAppendixName());
+            move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
             --move.collectPower;
         }
         moveTable.insert(move);
     }
 
     
-    static void init() {}    
+    public static void init() {}    
     
     private final long accountId;
     private final DbKey dbKey;        
@@ -113,7 +114,7 @@ public final class Move {
         this.dbKey = moveDbKeyFactory.newKey(this.accountId);
         this.xCoordinate = attachment.getXCoordinate();
         this.yCoordinate = attachment.getYCoordinate();
-        this.step = MoveType.valueOf(attachment.getAppendixName());
+        this.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
         
         this.collectPower = Constants.GAME_INIT_COLLECT_POWER;
         this.attackPower = Constants.GAME_INIT_ATTACK_POWER;
@@ -151,13 +152,15 @@ public final class Move {
                 + "attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, step, height) "
         		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
-            pstmt.setInt(++i, this.getCollectPower());
+            pstmt.setLong(++i, this.getAccountId());
+			pstmt.setInt(++i, this.getCollectPower());
             pstmt.setInt(++i, this.getAttackPower());
             pstmt.setInt(++i, this.getDefenseValue());
             pstmt.setInt(++i, this.getHealthyIndex());
             pstmt.setInt(++i, this.getXCoordinate());
             pstmt.setInt(++i, this.getYCoordinate());
-            pstmt.setInt(++i, this.getMoveType().ordinal());
+            //pstmt.setInt(++i, this.getMoveType().ordinal());
+            DbUtils.setString( pstmt , ++i , this.getMoveTypeStr() );            
 			pstmt.setInt( ++i , Nxt.getBlockchain().getHeight() );
 
 			pstmt.executeUpdate();
@@ -168,7 +171,11 @@ public final class Move {
 
 	}
 	
-    public int getCollectPower() {
+    public long getAccountId() {
+        return accountId;
+    }
+    
+	public int getCollectPower() {
         return collectPower;
     }
 
@@ -192,6 +199,10 @@ public final class Move {
         return yCoordinate;
     }
     
+    public String getMoveTypeStr() {
+        return step.name();
+    }
+
     public MoveType getMoveType() {
         return step;
     }

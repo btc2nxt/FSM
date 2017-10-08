@@ -63,8 +63,7 @@ public abstract class TransactionType {
     
     private static final byte SUBTYPE_AT_CREATION = 0;
     private static final byte SUBTYPE_AT_STATE = 1;
-    private static final byte SUBTYPE_AT_ASSET_PAYMENT = 2;
-    
+        
     private static final byte SUBTYPE_GAME_PREDISTRIBUTE = 0;
     private static final byte SUBTYPE_GAME_BE_WORKER = 1;
     private static final byte SUBTYPE_GAME_BE_COLLECTOR = 2;
@@ -176,12 +175,42 @@ public abstract class TransactionType {
             		default:
             			return null;
             	}
-            	
+            case TYPE_GAME:
+            	switch (subtype) {
+            		case SUBTYPE_GAME_PREDISTRIBUTE:
+            			return Game.PREDISTRIBUTE;
+            		case SUBTYPE_GAME_BE_WORKER:
+            			return Game.BE_WORKER;
+            		case SUBTYPE_GAME_BE_COLLECTOR:
+            			return Game.BE_COLLECTOR;
+            		case SUBTYPE_GAME_COLLECT:
+            			return Game.COLLECT;
+            		case SUBTYPE_GAME_CHECK_IN:
+            			return Game.CHECK_IN;
+            		case SUBTYPE_GAME_EAT:
+            			return Game.CHECK_IN;
+            		case SUBTYPE_GAME_ATTACK:
+            			return Game.CHECK_IN;
+            		case SUBTYPE_GAME_KEEP_FIT:
+            			return Game.CHECK_IN;            			
+            		case SUBTYPE_GAME_PRACTISE_MARTIAL:
+            			return Game.CHECK_IN;
+            		case SUBTYPE_GAME_BUY_ARMOR:
+            			return Game.CHECK_IN;
+            		case SUBTYPE_GAME_IN_COMA:
+            			return Game.CHECK_IN;
+            		case SUBTYPE_GAME_WAKEUP:
+            			return Game.CHECK_IN;
+            		case SUBTYPE_GAME_QUIT:
+            			return Game.CHECK_IN;            			            		
+            		default:
+            			return null;
+            	}	
             default:
                 return null;
         }
     }
-
+   
     private TransactionType() {
     }
 
@@ -2094,10 +2123,10 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker)transaction.getAttachment();
-                if (attachment.getXCoordinate() < TownMap.townX
-                        || attachment.getXCoordinate() > TownMap.townX1
-                        || attachment.getYCoordinate() < TownMap.townY
-                        || attachment.getXCoordinate() > TownMap.townY1
+                if (attachment.getXCoordinate() < TownMap.getInstance().getTownX()
+                        || attachment.getXCoordinate() > TownMap.getInstance().getTownX1()
+                        || attachment.getYCoordinate() < TownMap.getInstance().getTownY()
+                        || attachment.getXCoordinate() > TownMap.getInstance().getTownY1()
                         ) {
                     throw new NxtException.NotValidException("Invalid coordinate: " + attachment.getJSONObject());
                 }
@@ -2131,16 +2160,17 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameBeCollector attachment = (Attachment.GameBeCollector) transaction.getAttachment();
+                Logger.logDebugMessage("Applying be Collector attachent");
                 Move.addOrUpdateMove(transaction, attachment);               
             }
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameBeCollector attachment = (Attachment.GameBeCollector)transaction.getAttachment();
-                if (attachment.getXCoordinate() < TownMap.townX
-                        || attachment.getXCoordinate() > TownMap.townX1
-                        || attachment.getYCoordinate() < TownMap.townY
-                        || attachment.getXCoordinate() > TownMap.townY1
+                if (attachment.getXCoordinate() < TownMap.getInstance().getTownX()
+                        || attachment.getXCoordinate() > TownMap.getInstance().getTownX1()
+                        || attachment.getYCoordinate() < TownMap.getInstance().getTownY()
+                        || attachment.getXCoordinate() > TownMap.getInstance().getTownY1()
                         ) {
                     throw new NxtException.NotValidException("Invalid coordinate: " + attachment.getJSONObject());
                 }               

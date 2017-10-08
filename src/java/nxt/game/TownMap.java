@@ -1,6 +1,7 @@
 package nxt.game;
 
 import nxt.Constants;
+import nxt.at.AT_Constants;
 
 public final class TownMap {
     public static enum LandDescription {
@@ -39,11 +40,13 @@ public final class TownMap {
     	}
     }
     
-    public static Land[] lands;
-    public static int townX;
-    public static int townY;
-    public static int townX1;
-    public static int townY1;
+    static Land[] lands;
+    static int townX;
+    static int townY;
+    static int townX1;
+    static int townY1;
+    
+    private final static TownMap instance = new TownMap();
     
     private TownMap() {
     	townX = 0;
@@ -153,5 +156,23 @@ public final class TownMap {
     	
     }
     
+	public static TownMap getInstance( ){
+		return instance;
+	}
+	
+    public int getTownX() {
+        return townX;
+    }
+    
+    public int getTownX1() {
+        return townX1;
+    }
 
+    public int getTownY() {
+        return townY;
+    }
+    
+    public int getTownY1() {
+        return townY1;
+    }
 }

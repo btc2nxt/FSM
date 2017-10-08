@@ -24,8 +24,8 @@ public final class GameEnter extends CreateTransaction {
     JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
         short x = ParameterParser.getCoordinateX(req);
         short y = ParameterParser.getCoordinateY(req);  
-		String name = req.getParameter("name");
-		String map = req.getParameter("map");
+		String name = req.getParameter("statusName");
+		String townMap = req.getParameter("map");
 		
 		if (name == null) {
             return MISSING_NAME;
