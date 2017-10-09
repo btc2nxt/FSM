@@ -375,6 +375,8 @@ class NxtDbVersion extends DbVersion {
                 + " x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, step VARCHAR NOT NULL, "
                 + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 147:
+                apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS player VARCHAR");                
+            case 148:
                 return;
             default:
                 throw new RuntimeException("Blockchain database inconsistent with code, probably trying to run older code on newer database");

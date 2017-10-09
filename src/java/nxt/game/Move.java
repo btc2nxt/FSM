@@ -20,7 +20,7 @@ import java.sql.SQLException;
 public final class Move {
 
     public static enum MoveType {
-        OUTSIDER, BE_COLLECTOR, BE_WORKER, COLLECT, CHECK_IN, EAT, ATTACK, KEEP_FIT, PRACTISE_MARTIAL, BUY_ARMOR, IN_COMA, WAKEUP 
+        OUTSIDER, BE_COLLECTOR, BE_WORKER, COLLECT, CHECK_IN, EAT, BUILD, ATTACK, KEEP_FIT, PRACTISE_MARTIAL, BUY_ARMOR, IN_COMA, WAKEUP, QUIT_GAME 
     }
     
 	private static final DbKey.LongKeyFactory<Move> moveDbKeyFactory = new DbKey.LongKeyFactory<Move>("account_id") {
@@ -102,6 +102,7 @@ public final class Move {
             --move.collectPower;
         }
         moveTable.insert(move);
+        setPlayerStatus(move.getAccountId(), move.getMoveType());
     }
 
     
@@ -109,15 +110,36 @@ public final class Move {
     
     private final long accountId;
     private final DbKey dbKey;        
-	public int collectPower; 
-    public int attackPower; 
-    public int defenseValue; 
-    public int healthyIndex;
-    public int xCoordinate;
-    public int yCoordinate;
-    public MoveType step;
+    private int collectPower; 
+	private int attackPower; 
+    private int defenseValue; 
+    private int healthyIndex;
+    private int xCoordinate;
+    private int yCoordinate;
+    private MoveType step;
 
-
+    public static void setPlayerStatus(long accountId, MoveType step) {
+    	Account.PlayerType player = null;
+    	switch(step) {
+    	case QUIT_GAME: 
+    		player = Account.PlayerType.OUTSIDER;
+    		break;
+    	case BE_WORKER: 
+    		player = Account.PlayerType.WORKER;
+    		break;
+    	case BE_COLLECTOR:
+    		player = Account.PlayerType.COLLECTOR;
+        }
+    	
+    	if (player == null) 
+    		return;
+    	else {
+    		Account account = Account.getAccount(accountId);
+    		if (account.getPlayer() != player)
+    			account.setPlayer(player);
+    	}
+    }
+        
     private Move(Transaction transaction, Attachment.GameMove attachment) {
         this.accountId = transaction.getSenderId();
         this.dbKey = moveDbKeyFactory.newKey(this.accountId);
@@ -128,7 +150,9 @@ public final class Move {
         this.collectPower = Constants.GAME_INIT_COLLECT_POWER;
         this.attackPower = Constants.GAME_INIT_ATTACK_POWER;
         this.defenseValue = Constants.GAME_INIT_DEFENSE_VALUE;
-        this.healthyIndex = Constants.GAME_INIT_HEALTHY_INDEX;        
+        this.healthyIndex = Constants.GAME_INIT_HEALTHY_INDEX;
+        
+        //setPlayerStatus(this.step);
     }
     
     private Move(long accountId, int collectPower, int attackPower, int defenseValue, int healthyIndex, int xCoordinate, int yCoordinate, String step) {
@@ -140,7 +164,7 @@ public final class Move {
         this.healthyIndex = healthyIndex;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
-        this.step = MoveType.valueOf(step);        
+        this.step = MoveType.valueOf(step);          
     }
 	
     private Move(ResultSet rs) throws SQLException {
@@ -152,7 +176,7 @@ public final class Move {
         this.healthyIndex = rs.getInt("healthy_index");
         this.xCoordinate = rs.getInt("x_coordinate");
         this.yCoordinate = rs.getInt("y_coordinate");
-		this.step = MoveType.valueOf(rs.getString("step"));
+		this.step = MoveType.valueOf(rs.getString("step"));		
     }	
 
 	private void save(Connection con)

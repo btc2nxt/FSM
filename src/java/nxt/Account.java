@@ -8,6 +8,7 @@ import nxt.db.DbKey;
 import nxt.db.DbUtils;
 import nxt.db.DerivedDbTable;
 import nxt.db.VersionedEntityDbTable;
+import nxt.game.Move.MoveType;
 import nxt.util.Convert;
 import nxt.util.Listener;
 import nxt.util.Listeners;
@@ -28,6 +29,10 @@ public final class Account {
         LEASE_SCHEDULED, LEASE_STARTED, LEASE_ENDED
     }
 
+    public static enum PlayerType {
+        OUTSIDER, COLLECTOR, WORKER 
+    }
+    
     public static class AccountAsset {
 
         private final long accountId;
@@ -388,6 +393,7 @@ public final class Account {
     private long nextLesseeId;
     private String name;
     private String description;
+    private PlayerType player;    
     
     private Account(long id) {
         if (id != Crypto.rsDecode(Crypto.rsEncode(id))) {
@@ -416,15 +422,19 @@ public final class Account {
         this.nextLeasingHeightFrom = rs.getInt("next_leasing_height_from");
         this.nextLeasingHeightTo = rs.getInt("next_leasing_height_to");
         this.nextLesseeId = rs.getLong("next_lessee_id");
+		if (rs.getString("player") != null)
+			this.player = PlayerType.valueOf(rs.getString("player"));
+		else
+			this.player = PlayerType.OUTSIDER;
     }
 
     private void save(Connection con) throws SQLException {
         try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO account (id, creation_height, public_key, "
                 + "key_height, balance, unconfirmed_balance, forged_balance, name, description, "
                 + "current_leasing_height_from, current_leasing_height_to, current_lessee_id, "
-                + "next_leasing_height_from, next_leasing_height_to, next_lessee_id, "
+                + "next_leasing_height_from, next_leasing_height_to, next_lessee_id, player, "
                 + "height, latest) "
-                + "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+                + "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
             int i = 0;
             pstmt.setLong(++i, this.getId());
             pstmt.setInt(++i, this.getCreationHeight());
@@ -441,6 +451,7 @@ public final class Account {
             DbUtils.setIntZeroToNull(pstmt, ++i, this.getNextLeasingHeightFrom());
             DbUtils.setIntZeroToNull(pstmt, ++i, this.getNextLeasingHeightTo());
             DbUtils.setLongZeroToNull(pstmt, ++i, this.getNextLesseeId());
+            DbUtils.setString( pstmt , ++i , this.getPlayerStr() ); 
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
             pstmt.executeUpdate();
         }
@@ -464,6 +475,22 @@ public final class Account {
         accountTable.insert(this);
     }
 
+    public void setPlayer(PlayerType player) {
+        this.player = player;
+        accountTable.insert(this);
+    }
+    
+    public PlayerType getPlayer() {
+        if (this.player == null)
+        	return PlayerType.OUTSIDER;
+        else
+        	return this.player;
+    }
+
+    public String getPlayerStr() {
+        return player.name();
+    }
+    
     public byte[] getPublicKey() {
         if (this.keyHeight == -1) {
             return null;

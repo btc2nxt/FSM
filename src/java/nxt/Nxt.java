@@ -1,6 +1,7 @@
 package nxt;
 
 import nxt.game.Move;
+import nxt.game.TownMap;
 import nxt.http.API;
 import nxt.peer.Peers;
 import nxt.upnp.UPnP;
@@ -191,6 +192,7 @@ public final class Nxt {
                 API.init();
                 Users.init();
                 DebugTrace.init();
+                TownMap.init();
                 int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
                 ThreadPool.start(timeMultiplier);
                 if (timeMultiplier > 1) {

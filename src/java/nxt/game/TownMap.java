@@ -38,6 +38,22 @@ public final class TownMap {
     				
     		this.accountId = accountId;
     	}
+    	
+    	public int getX() {
+    		return x;
+    	}
+
+    	public int getX1() {
+    		return x1;
+    	}
+    	
+    	public int getY() {
+    		return y;
+    	}
+
+    	public int getY1() {
+    		return y1;
+    	}    	
     }
     
     static Land[] lands;
@@ -47,6 +63,8 @@ public final class TownMap {
     static int townY1;
     
     private final static TownMap instance = new TownMap();
+    
+    public static void init() {}
     
     private TownMap() {
     	townX = 0;
@@ -168,11 +186,15 @@ public final class TownMap {
         return townX1;
     }
 
-    public int getTownY() {
+    public static int getTownY() {
         return townY;
     }
     
     public int getTownY1() {
         return townY1;
+    }
+    
+    public static Land getLand(int nLand) {
+        return lands[nLand];
     }
 }

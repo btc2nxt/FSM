@@ -71,13 +71,14 @@ public abstract class TransactionType {
     private static final byte SUBTYPE_GAME_COLLECT = 3;
     private static final byte SUBTYPE_GAME_CHECK_IN = 4;       
     private static final byte SUBTYPE_GAME_EAT = 5;
-    private static final byte SUBTYPE_GAME_ATTACK = 6;
-    private static final byte SUBTYPE_GAME_KEEP_FIT = 7;
-    private static final byte SUBTYPE_GAME_PRACTISE_MARTIAL = 8;
-    private static final byte SUBTYPE_GAME_BUY_ARMOR = 9;
-    private static final byte SUBTYPE_GAME_IN_COMA = 10;
-    private static final byte SUBTYPE_GAME_WAKEUP = 11;
-    private static final byte SUBTYPE_GAME_QUIT = 12;    
+    private static final byte SUBTYPE_GAME_BUILD = 6;    
+    private static final byte SUBTYPE_GAME_ATTACK = 7;
+    private static final byte SUBTYPE_GAME_KEEP_FIT = 8;
+    private static final byte SUBTYPE_GAME_PRACTISE_MARTIAL = 9;
+    private static final byte SUBTYPE_GAME_BUY_ARMOR = 10;
+    private static final byte SUBTYPE_GAME_IN_COMA = 11;
+    private static final byte SUBTYPE_GAME_WAKEUP = 12;
+    private static final byte SUBTYPE_GAME_QUIT = 13;    
 
     private static final byte SUBTYPE_ACCOUNT_CONTROL_EFFECTIVE_BALANCE_LEASING = 0;
 
@@ -2134,7 +2135,174 @@ public abstract class TransactionType {
             }
         };
         
-        public static final TransactionType BE_WORKER = new Game() {
+
+
+            @Override
+            public boolean canHaveRecipient() {
+                return false;
+            }
+
+        };
+        
+        abstract static class GameCollectorBase extends Game {
+
+        	@Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GameMove attachment = (Attachment.GameMove)transaction.getAttachment();
+            	long senderId = transaction.getSenderId();
+            	int x = attachment.getXCoordinate();
+            	int y = attachment.getYCoordinate();         
+                boolean  inCollectArea = false;
+                
+                for ( int i = 72; i <79; i++) {
+                	if (x >= TownMap.getLand(i).getX() && x <= TownMap.getLand(i).getX1()
+                			&& y >= TownMap.getLand(i).getY() & y <= TownMap.getLand(i).getY1()) {
+                		inCollectArea = true;
+                		break;
+                	}
+                }
+                if (!inCollectArea)	
+                	throw new NxtException.NotValidException("not in collection area: ");
+
+                if (Move.getCoordinatePlayersCount(x, y) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
+                
+            	Account account = Account.getAccount(senderId);
+            	Account.PlayerType player = account.getPlayer();
+
+            	if (player == Account.PlayerType.OUTSIDER) {
+                	if (transaction.getType().getSubtype() == SUBTYPE_GAME_COLLECT)
+                		throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+            	}
+            	else if (player == Account.PlayerType.COLLECTOR) {
+                    if (transaction.getType().getSubtype() == SUBTYPE_GAME_BE_COLLECTOR)
+                    	throw new NxtException.NotValidException("Player is a collector already. " + attachment.getJSONObject());
+                }
+            	else 
+                   	throw new NxtException.NotValidException("Worker cannot be a collector or collect. " + attachment.getJSONObject());
+                    	
+            	Move move = Move.getMove(senderId);
+            	if (move != null) {
+                	if (move.getXCoordinate() == x && move.getYCoordinate() == y)
+                		throw new NxtException.NotValidException("Player can't move to site of itself. " + attachment.getJSONObject());
+                	
+                	if (transaction.getType().getSubtype() == SUBTYPE_GAME_COLLECT)
+                		if ( Math.abs(move.getXCoordinate() - x) +  Math.abs(move.getYCoordinate() - y)  > move.getCollectPower())
+                			throw new NxtException.NotValidException("jump too far away: " + attachment.getJSONObject());
+                }
+                
+            }
+
+            @Override
+            final public boolean canHaveRecipient() {
+                return false;
+            }
+
+        }
+        
+        abstract static class GameWorkerBase extends Game {
+
+        	@Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GameMove attachment = (Attachment.GameMove)transaction.getAttachment();
+            	long senderId = transaction.getSenderId();
+            	int x = attachment.getXCoordinate();
+            	int y = attachment.getYCoordinate();         
+                boolean  inCollectArea = false;
+                
+                for ( int i = 0; i <8; i++) {
+                	if (x >= TownMap.getLand(i).getX() && x <= TownMap.getLand(i).getX1()
+                			&& y >= TownMap.getLand(i).getY() & y <= TownMap.getLand(i).getY1()) {
+                		inCollectArea = true;
+                		break;
+                	}
+                }
+                if (!inCollectArea)	
+                	throw new NxtException.NotValidException("not in building area: ");
+
+                if (Move.getCoordinatePlayersCount(x, y) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
+                
+            	Account account = Account.getAccount(senderId);
+            	Account.PlayerType player = account.getPlayer();
+
+            	if (player == Account.PlayerType.OUTSIDER) {
+                	if (transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD)
+                		throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+            	}
+            	else if (player == Account.PlayerType.WORKER) {
+                    if (transaction.getType().getSubtype() == SUBTYPE_GAME_BE_WORKER)
+                    	throw new NxtException.NotValidException("Player is a worker already. " + attachment.getJSONObject());
+                }
+            	else 
+                   	throw new NxtException.NotValidException("Collector cannot be a worker or build. " + attachment.getJSONObject());
+                    	
+            	Move move = Move.getMove(senderId);
+            	if (move != null && transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD) {
+                	if (move.getXCoordinate() != x && move.getYCoordinate() != y)
+                		throw new NxtException.NotValidException("Worker needn't move . " + attachment.getJSONObject());                	
+                }
+                
+            }
+
+            @Override
+            final public boolean canHaveRecipient() {
+                return false;
+            }
+
+        }
+        
+        public static final TransactionType BE_COLLECTOR = new Game.GameCollectorBase() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_BE_COLLECTOR;
+            }
+
+            @Override
+            Attachment.GameBeCollector parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBeCollector(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameBeCollector parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBeCollector(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameBeCollector attachment = (Attachment.GameBeCollector) transaction.getAttachment();
+                Logger.logDebugMessage("Applying be Collector attachent");
+                Move.addOrUpdateMove(transaction, attachment);   
+            }
+
+        };
+        
+        public static final TransactionType COLLECT = new Game.GameCollectorBase() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_COLLECT;
+            }
+
+            @Override
+            Attachment.GameCollect parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameCollect(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameCollect parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameCollect(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameCollect attachment = (Attachment.GameCollect) transaction.getAttachment();
+               	Move.addOrUpdateMove(transaction, attachment);
+            }
+        };
+
+        public static final TransactionType BE_WORKER = new Game.GameWorkerBase() {
 
             @Override
             public final byte getSubtype() {
@@ -2157,121 +2325,8 @@ public abstract class TransactionType {
                 Move.addOrUpdateMove(transaction, attachment);
             }
             
-            @Override
-            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                Attachment.GameBeWorker attachment = (Attachment.GameBeWorker)transaction.getAttachment();
-                if (attachment.getXCoordinate() < TownMap.getInstance().getTownX()
-                        || attachment.getXCoordinate() > TownMap.getInstance().getTownX1()
-                        || attachment.getYCoordinate() < TownMap.getInstance().getTownY()
-                        || attachment.getXCoordinate() > TownMap.getInstance().getTownY1()
-                        ) {
-                    throw new NxtException.NotValidException("Invalid coordinate: " + attachment.getJSONObject());
-                }
-
-            }
-
-            @Override
-            public boolean canHaveRecipient() {
-                return false;
-            }
-
         };
         
-        public static final TransactionType BE_COLLECTOR = new Game() {
-
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_GAME_BE_COLLECTOR;
-            }
-
-            @Override
-            Attachment.GameBeCollector parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.GameBeCollector(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.GameBeCollector parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.GameBeCollector(attachmentData);
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.GameBeCollector attachment = (Attachment.GameBeCollector) transaction.getAttachment();
-                Logger.logDebugMessage("Applying be Collector attachent");
-                Move.addOrUpdateMove(transaction, attachment);               
-            }
-
-            @Override
-            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                Attachment.GameBeCollector attachment = (Attachment.GameBeCollector)transaction.getAttachment();
-                if (attachment.getXCoordinate() < TownMap.getInstance().getTownX()
-                        || attachment.getXCoordinate() > TownMap.getInstance().getTownX1()
-                        || attachment.getYCoordinate() < TownMap.getInstance().getTownY()
-                        || attachment.getXCoordinate() > TownMap.getInstance().getTownY1()
-                        ) {
-                    throw new NxtException.NotValidException("Invalid coordinate: " + attachment.getJSONObject());
-                }               
-            }
-
-            @Override
-            public boolean canHaveRecipient() {
-                return false;
-            }
-
-        };
-        
-        public static final TransactionType COLLECT = new Game() {
-
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_GAME_COLLECT;
-            }
-
-            @Override
-            Attachment.GameCollect parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.GameCollect(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.GameCollect parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.GameCollect(attachmentData);
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.GameCollect attachment = (Attachment.GameCollect) transaction.getAttachment();
-               	Move.addOrUpdateMove(transaction, attachment);
-            }
-
-            @Override
-            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                Attachment.GameCollect attachment = (Attachment.GameCollect)transaction.getAttachment();
-                
-            	long senderId = transaction.getSenderId();
-            	Move move = Move.getMove(senderId);
-
-                if (move == null)
-                	throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
-                else if (move.getXCoordinate() == attachment.getXCoordinate() && move.getYCoordinate() == attachment.getYCoordinate())
-                	throw new NxtException.NotValidException("Player can't move to site of itself. " + attachment.getJSONObject());
-                
-                /*
-                double radis = Math.pow(senderAccount.getXCoordinate() - attachment.getToXCoordinate(),2) + Math.pow(senderAccount.getYCoordinate() - attachment.getToYCoordinate(),2);
-                radis = Math.sqrt(radis);
-                */
-                if (Move.getCoordinatePlayersCount(attachment.getXCoordinate(), attachment.getYCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
-                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
-                if ( Math.abs(move.getXCoordinate() - attachment.getXCoordinate()) +  Math.abs(move.getYCoordinate() - attachment.getYCoordinate())  > move.getCollectPower())
-                	throw new NxtException.NotValidException("jump too far away: " + attachment.getJSONObject());
-            }
-
-            @Override
-            public boolean canHaveRecipient() {
-                return false;
-            }
-
-        };
-
         public static final TransactionType CHECK_IN = new Game() {
 
             @Override
@@ -2299,8 +2354,7 @@ public abstract class TransactionType {
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameCheckIn attachment = (Attachment.GameCheckIn)transaction.getAttachment();
                 if (Move.getCoordinatePlayersCount(attachment.getXCoordinate(), attachment.getYCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
-                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
-                
+                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());                
 
             }
 
@@ -2309,8 +2363,6 @@ public abstract class TransactionType {
                 return false;
             }
 
-        };
-
-    }
+    };
 
 }
