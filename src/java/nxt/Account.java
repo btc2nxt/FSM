@@ -367,16 +367,7 @@ public final class Account {
         }
         return accountAssetTable.getManyBy(new DbClause.LongClause("asset_id", assetId), height, from, to, " ORDER BY quantity DESC, account_id ");
     }
-
-    private static DbIterator<Account> getCoordinatePlayers(int xCoordinate, int height, int from, int to) {
-        return accountTable.getManyBy(new DbClause.LongClause("xCoordinate", xCoordinate), height, from, to, " ORDER BY  account_id ");
-    }
-    
-    public static int getCoordinatePlayersCount(int xCoordinate) {
-        return accountTable.getCount(new DbClause.LongClause("xCoordinate", xCoordinate));
-
-    }
-    
+   
     static void init() {}
 
 

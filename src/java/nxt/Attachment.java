@@ -1914,7 +1914,7 @@ public interface Attachment extends Appendix {
 
         @Override
         public TransactionType getTransactionType() {
-            return TransactionType.Game.PREDISTRIBUTE;
+            return TransactionType.AutomatedTransactions.PREDISTRIBUTE;
         }
 
         public byte[] getCoordinate() {
@@ -2067,7 +2067,7 @@ public interface Attachment extends Appendix {
     	
     	@Override
         public String getAppendixName() {
-            return "CheckIn";
+            return "Check_In";
         }
 
         @Override

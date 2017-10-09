@@ -5,6 +5,8 @@ import nxt.db.DbIterator;
 import nxt.db.DbKey;
 import nxt.db.DbUtils;
 import nxt.db.EntityDbTable;
+import nxt.db.VersionedEntityDbTable;
+import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
 import nxt.Nxt;
@@ -30,7 +32,7 @@ public final class Move {
 
     };
 
-    private static final EntityDbTable<Move> moveTable = new EntityDbTable<Move>("move", moveDbKeyFactory) {
+    private static final VersionedEntityDbTable<Move> moveTable = new VersionedEntityDbTable<Move>("move", moveDbKeyFactory) {
 
         @Override
         protected Move load(Connection con, ResultSet rs) throws SQLException {
@@ -74,7 +76,14 @@ public final class Move {
     public static int  getCoordinatePlayersCount( int x, int y) {
             return moveTable.getCount(new getCoordinateXYClause(x,y));
     }
-
+   
+    public static int getAccountCountByHeight(long accountId, int height) {
+        if (height < 0) {
+            return 0;
+        }
+        return moveTable.getCount(new DbClause.LongClause("account_id", accountId), height);
+    }
+    
     static void addMove(Transaction transaction, Attachment.GameMove attachment) {
         moveTable.insert(new Move(transaction, attachment));
     }

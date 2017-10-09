@@ -62,9 +62,10 @@ public abstract class TransactionType {
     private static final byte SUBTYPE_DIGITAL_GOODS_REFUND = 7;
     
     private static final byte SUBTYPE_AT_CREATION = 0;
-    private static final byte SUBTYPE_AT_STATE = 1;
-        
-    private static final byte SUBTYPE_GAME_PREDISTRIBUTE = 0;
+    private static final byte SUBTYPE_AT_STATE = 1;        
+    private static final byte SUBTYPE_GAME_PREDISTRIBUTE = 2;
+    
+    private static final byte SUBTYPE_GAME_BASE_MOVE = 0;
     private static final byte SUBTYPE_GAME_BE_WORKER = 1;
     private static final byte SUBTYPE_GAME_BE_COLLECTOR = 2;
     private static final byte SUBTYPE_GAME_COLLECT = 3;
@@ -168,6 +169,8 @@ public abstract class TransactionType {
             			return AutomatedTransactions.AUTOMATED_TRANSACTION_CREATION;
             		case SUBTYPE_AT_STATE:
             			return AutomatedTransactions.AUTOMATED_TRANSACTION_STATE;
+            		case SUBTYPE_GAME_PREDISTRIBUTE:
+            			return AutomatedTransactions.PREDISTRIBUTE;            			
             		/*case SUBTYPE_AT_NXT_PAYMENT:
             			return AutomatedTransactions.AUTOMATED_TRANSACTION_NXT_PAYMENT;
             		case SUBTYPE_AT_ASSET_PAYMENT:
@@ -177,8 +180,6 @@ public abstract class TransactionType {
             	}
             case TYPE_GAME:
             	switch (subtype) {
-            		case SUBTYPE_GAME_PREDISTRIBUTE:
-            			return Game.PREDISTRIBUTE;
             		case SUBTYPE_GAME_BE_WORKER:
             			return Game.BE_WORKER;
             		case SUBTYPE_GAME_BE_COLLECTOR:
@@ -1845,6 +1846,41 @@ public abstract class TransactionType {
 			}
     	};
     	
+        public static final TransactionType PREDISTRIBUTE = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_PREDISTRIBUTE;
+            }
+
+            @Override
+            Attachment.GamePreDistribute parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GamePreDistribute(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GamePreDistribute parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GamePreDistribute(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GamePreDistribute attachment = (Attachment.GamePreDistribute) transaction.getAttachment();
+                
+            }
+
+            @Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GamePreDistribute attachment = (Attachment.GamePreDistribute)transaction.getAttachment();
+
+            }
+
+            @Override
+            public boolean canHaveRecipient() {
+                return false;
+            }
+
+        };
     	/*
     	 * 
     	 * 
@@ -2060,41 +2096,42 @@ public abstract class TransactionType {
         @Override
         final void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
         }
-
-        public static final TransactionType PREDISTRIBUTE = new Game() {
+                
+        @Override
+        boolean isDuplicate(Transaction transaction, Map<TransactionType, Set<String>> duplicates) {
+            Logger.logDebugMessage("duplicate" + Game.this.toString());
+        	return isDuplicate(Game.BASE_MOVE, Long.toString(transaction.getSenderId()), duplicates);
+        }
+        
+        public static final TransactionType BASE_MOVE = new Game() {
 
             @Override
             public final byte getSubtype() {
-                return TransactionType.SUBTYPE_GAME_PREDISTRIBUTE;
+                return TransactionType.SUBTYPE_GAME_BASE_MOVE;
+            }
+            
+            @Override
+            Attachment.GameBeWorker parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBeWorker(buffer, transactionVersion);
             }
 
             @Override
-            Attachment.GamePreDistribute parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.GamePreDistribute(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.GamePreDistribute parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.GamePreDistribute(attachmentData);
+            Attachment.GameBeWorker parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBeWorker(attachmentData);
             }
 
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.GamePreDistribute attachment = (Attachment.GamePreDistribute) transaction.getAttachment();
-                
             }
-
+            
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                Attachment.GamePreDistribute attachment = (Attachment.GamePreDistribute)transaction.getAttachment();
-
-            }
-
+            }   
+            
             @Override
             public boolean canHaveRecipient() {
                 return false;
             }
-
         };
         
         public static final TransactionType BE_WORKER = new Game() {
@@ -2119,7 +2156,7 @@ public abstract class TransactionType {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
                 Move.addOrUpdateMove(transaction, attachment);
             }
-
+            
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker)transaction.getAttachment();
@@ -2203,7 +2240,7 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameCollect attachment = (Attachment.GameCollect) transaction.getAttachment();
-                Move.addOrUpdateMove(transaction, attachment);               
+               	Move.addOrUpdateMove(transaction, attachment);
             }
 
             @Override
@@ -2215,6 +2252,8 @@ public abstract class TransactionType {
 
                 if (move == null)
                 	throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+                else if (move.getXCoordinate() == attachment.getXCoordinate() && move.getYCoordinate() == attachment.getYCoordinate())
+                	throw new NxtException.NotValidException("Player can't move to site of itself. " + attachment.getJSONObject());
                 
                 /*
                 double radis = Math.pow(senderAccount.getXCoordinate() - attachment.getToXCoordinate(),2) + Math.pow(senderAccount.getYCoordinate() - attachment.getToYCoordinate(),2);
@@ -2259,7 +2298,7 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.GameCheckIn attachment = (Attachment.GameCheckIn)transaction.getAttachment();
-                if (Account.getCoordinatePlayersCount(attachment.getXCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                if (Move.getCoordinatePlayersCount(attachment.getXCoordinate(), attachment.getYCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
                 	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
                 
 
