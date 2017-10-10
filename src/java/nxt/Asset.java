@@ -69,6 +69,7 @@ public final class Asset {
     private final String description;
     private final long quantityQNT;
     private final byte decimals;
+    private final byte landId;
 
     private Asset(Transaction transaction, Attachment.ColoredCoinsAssetIssuance attachment) {
         this.assetId = transaction.getId();
@@ -78,6 +79,7 @@ public final class Asset {
         this.description = attachment.getDescription();
         this.quantityQNT = attachment.getQuantityQNT();
         this.decimals = attachment.getDecimals();
+        this.landId = attachment.getLandId();
     }
 
     private Asset(ResultSet rs) throws SQLException {
@@ -88,11 +90,12 @@ public final class Asset {
         this.description = rs.getString("description");
         this.quantityQNT = rs.getLong("quantity");
         this.decimals = rs.getByte("decimals");
+        this.landId = rs.getByte("landId");        
     }
 
     private void save(Connection con) throws SQLException {
         try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO asset (id, account_id, name, "
-                + "description, quantity, decimals, height) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+                + "description, quantity, decimals, land_id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
             int i = 0;
             pstmt.setLong(++i, this.getId());
             pstmt.setLong(++i, this.getAccountId());
@@ -100,6 +103,7 @@ public final class Asset {
             pstmt.setString(++i, this.getDescription());
             pstmt.setLong(++i, this.getQuantityQNT());
             pstmt.setByte(++i, this.getDecimals());
+            pstmt.setByte(++i, this.getLandId());            
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
             pstmt.executeUpdate();
         }
@@ -125,10 +129,14 @@ public final class Asset {
         return quantityQNT;
     }
 
+    public byte getLandId() {
+        return landId;
+    }
+
     public byte getDecimals() {
         return decimals;
     }
-
+    
     public DbIterator<Account.AccountAsset> getAccounts(int from, int to) {
         return Account.getAssetAccounts(this.assetId, from, to);
     }

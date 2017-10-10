@@ -641,6 +641,7 @@ public interface Attachment extends Appendix {
         private final String description;
         private final long quantityQNT;
         private final byte decimals;
+        private final byte landId;
 
         ColoredCoinsAssetIssuance(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
@@ -648,6 +649,7 @@ public interface Attachment extends Appendix {
             this.description = Convert.readString(buffer, buffer.getShort(), Constants.MAX_ASSET_DESCRIPTION_LENGTH);
             this.quantityQNT = buffer.getLong();
             this.decimals = buffer.get();
+            this.landId = buffer.get();            
         }
 
         ColoredCoinsAssetIssuance(JSONObject attachmentData) {
@@ -656,13 +658,15 @@ public interface Attachment extends Appendix {
             this.description = Convert.nullToEmpty((String) attachmentData.get("description"));
             this.quantityQNT = Convert.parseLong(attachmentData.get("quantityQNT"));
             this.decimals = ((Long) attachmentData.get("decimals")).byteValue();
+            this.landId = ((Long) attachmentData.get("landId")).byteValue();
         }
 
-        public ColoredCoinsAssetIssuance(String name, String description, long quantityQNT, byte decimals) {
+        public ColoredCoinsAssetIssuance(String name, String description, long quantityQNT, byte decimals, byte landId) {
             this.name = name;
             this.description = Convert.nullToEmpty(description);
             this.quantityQNT = quantityQNT;
             this.decimals = decimals;
+            this.landId = landId;
         }
 
         @Override
@@ -672,7 +676,7 @@ public interface Attachment extends Appendix {
 
         @Override
         int getMySize() {
-            return 1 + Convert.toBytes(name).length + 2 + Convert.toBytes(description).length + 8 + 1;
+            return 1 + Convert.toBytes(name).length + 2 + Convert.toBytes(description).length + 8 + 1 + 1;
         }
 
         @Override
@@ -685,6 +689,7 @@ public interface Attachment extends Appendix {
             buffer.put(description);
             buffer.putLong(quantityQNT);
             buffer.put(decimals);
+            buffer.put(landId);
         }
 
         @Override
@@ -693,6 +698,7 @@ public interface Attachment extends Appendix {
             attachment.put("description", description);
             attachment.put("quantityQNT", quantityQNT);
             attachment.put("decimals", decimals);
+            attachment.put("landId", landId);
         }
 
         @Override
@@ -715,6 +721,10 @@ public interface Attachment extends Appendix {
         public byte getDecimals() {
             return decimals;
         }
+        
+        public byte getLandId() {
+            return landId;
+        }        
     }
 
     public final static class ColoredCoinsAssetTransfer extends AbstractAttachment {

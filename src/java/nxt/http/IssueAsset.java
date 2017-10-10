@@ -20,7 +20,7 @@ public final class IssueAsset extends CreateTransaction {
     static final IssueAsset instance = new IssueAsset();
 
     private IssueAsset() {
-        super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "name", "description", "quantityQNT", "decimals");
+        super(new APITag[] {APITag.AE, APITag.CREATE_TRANSACTION}, "name", "description", "quantityQNT", "decimals", "landId");
     }
 
     @Override
@@ -29,6 +29,7 @@ public final class IssueAsset extends CreateTransaction {
         String name = req.getParameter("name");
         String description = req.getParameter("description");
         String decimalsValue = Convert.emptyToNull(req.getParameter("decimals"));
+        String landIdValue = Convert.emptyToNull(req.getParameter("landId"));
 
         if (name == null) {
             return MISSING_NAME;
@@ -61,9 +62,21 @@ public final class IssueAsset extends CreateTransaction {
             }
         }
 
+        byte landId = 0;
+        if (landIdValue != null) {
+            try {
+            	landId = Byte.parseByte(landIdValue);
+                if (landId < 0 || landId > 100) {
+                    return INCORRECT_DECIMALS;
+                }
+            } catch (NumberFormatException e) {
+                return INCORRECT_DECIMALS;
+            }
+        }
+        
         long quantityQNT = ParameterParser.getQuantityQNT(req);
         Account account = ParameterParser.getSenderAccount(req);
-        Attachment attachment = new Attachment.ColoredCoinsAssetIssuance(name, description, quantityQNT, decimals);
+        Attachment attachment = new Attachment.ColoredCoinsAssetIssuance(name, description, quantityQNT, decimals, landId);
         return createTransaction(req, account, attachment);
 
     }

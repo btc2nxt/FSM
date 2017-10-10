@@ -61,6 +61,12 @@ public final class TownMap {
     static int townY;
     static int townX1;
     static int townY1;
+    static int coinLandBegin;
+    static int coinLandEnd;
+    static int hotelLandBegin;
+    static int hotelLandEnd;
+    static int restaurantLandBegin;
+    static int restaurantLandEnd;
     
     private final static TownMap instance = new TownMap();
     
@@ -71,6 +77,10 @@ public final class TownMap {
     	townY = 0;
     	townX1 = 110;
     	townY1 = 110;
+    	coinLandBegin = 72;
+    	coinLandEnd = 78;
+    	hotelLandBegin = 0;
+    	hotelLandEnd = 3;    	
     	
     	//there are 72 buildings, 7 coin areas.ignore walls
     	lands = new Land[79];

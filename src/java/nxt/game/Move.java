@@ -6,11 +6,13 @@ import nxt.db.DbKey;
 import nxt.db.DbUtils;
 import nxt.db.EntityDbTable;
 import nxt.db.VersionedEntityDbTable;
+import nxt.util.Convert;
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
 import nxt.Nxt;
 import nxt.Transaction;
+import nxt.Account.AccountAsset;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,8 +24,8 @@ public final class Move {
     public static enum MoveType {
         OUTSIDER, BE_COLLECTOR, BE_WORKER, COLLECT, CHECK_IN, EAT, BUILD, ATTACK, KEEP_FIT, PRACTISE_MARTIAL, BUY_ARMOR, IN_COMA, WAKEUP, QUIT_GAME 
     }
-    
-	private static final DbKey.LongKeyFactory<Move> moveDbKeyFactory = new DbKey.LongKeyFactory<Move>("account_id") {
+
+    private static final DbKey.LongKeyFactory<Move> moveDbKeyFactory = new DbKey.LongKeyFactory<Move>("account_id") {
 
         @Override
         public DbKey newKey(Move move) {
@@ -116,6 +118,8 @@ public final class Move {
     private int healthyIndex;
     private int xCoordinate;
     private int yCoordinate;
+    private long lifeValue;    
+    
     private MoveType step;
 
     public static void setPlayerStatus(long accountId, MoveType step) {
@@ -151,11 +155,11 @@ public final class Move {
         this.attackPower = Constants.GAME_INIT_ATTACK_POWER;
         this.defenseValue = Constants.GAME_INIT_DEFENSE_VALUE;
         this.healthyIndex = Constants.GAME_INIT_HEALTHY_INDEX;
+        this.lifeValue = 0;
         
-        //setPlayerStatus(this.step);
     }
     
-    private Move(long accountId, int collectPower, int attackPower, int defenseValue, int healthyIndex, int xCoordinate, int yCoordinate, String step) {
+    private Move(long accountId, int collectPower, int attackPower, int defenseValue, int healthyIndex, int xCoordinate, int yCoordinate, String step, long lifeValue) {
         this.accountId = accountId;
         this.dbKey = moveDbKeyFactory.newKey(this.accountId);
         this.collectPower = collectPower;
@@ -164,7 +168,8 @@ public final class Move {
         this.healthyIndex = healthyIndex;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
-        this.step = MoveType.valueOf(step);          
+        this.step = MoveType.valueOf(step);
+        this.lifeValue = lifeValue;
     }
 	
     private Move(ResultSet rs) throws SQLException {
@@ -176,14 +181,15 @@ public final class Move {
         this.healthyIndex = rs.getInt("healthy_index");
         this.xCoordinate = rs.getInt("x_coordinate");
         this.yCoordinate = rs.getInt("y_coordinate");
-		this.step = MoveType.valueOf(rs.getString("step"));		
+		this.step = MoveType.valueOf(rs.getString("step"));
+		this.lifeValue = rs.getLong("lifeValue");		
     }	
 
 	private void save(Connection con)
 	{
         try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO move (account_id, collect_power, "
-                + "attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, step, height) "
-        		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                + "attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, step, lifeValue, height) "
+        		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
             pstmt.setLong(++i, this.getAccountId());
 			pstmt.setInt(++i, this.getCollectPower());
@@ -193,7 +199,8 @@ public final class Move {
             pstmt.setInt(++i, this.getXCoordinate());
             pstmt.setInt(++i, this.getYCoordinate());
             //pstmt.setInt(++i, this.getMoveType().ordinal());
-            DbUtils.setString( pstmt , ++i , this.getMoveTypeStr() );            
+            DbUtils.setString( pstmt , ++i , this.getMoveTypeStr() );
+            pstmt.setLong(++i, this.getLifeValue());
 			pstmt.setInt( ++i , Nxt.getBlockchain().getHeight() );
 
 			pstmt.executeUpdate();
@@ -240,7 +247,11 @@ public final class Move {
         return step;
     }
     
-    void setAccountPlayer(int xCoordinate, int yCoordinate, MoveType step) {
+    public long getLifeValue() {
+        return lifeValue;
+    }
+    
+    /*void setAccountPlayer(int xCoordinate, int yCoordinate, MoveType step) {
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.step = step;
@@ -253,5 +264,5 @@ public final class Move {
         if (this.attackPower > 1) 
         	--this.attackPower;
         moveTable.insert(this);
-    }
+    }*/
 }
