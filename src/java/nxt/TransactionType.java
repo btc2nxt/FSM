@@ -187,6 +187,8 @@ public abstract class TransactionType {
             			return Game.BE_COLLECTOR;
             		case SUBTYPE_GAME_COLLECT:
             			return Game.COLLECT;
+            		case SUBTYPE_GAME_BUILD:
+            			return Game.BUILD;
             		case SUBTYPE_GAME_CHECK_IN:
             			return Game.CHECK_IN;
             		case SUBTYPE_GAME_EAT:
@@ -2322,6 +2324,31 @@ public abstract class TransactionType {
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
                 Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
+                Move.addOrUpdateMove(transaction, attachment);
+            }
+            
+        };
+        
+        public static final TransactionType BUILD = new Game.GameWorkerBase() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_BUILD;
+            }
+
+            @Override
+            Attachment.GameBuild parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBuild(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameBuild parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBuild(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameBuild attachment = (Attachment.GameBuild) transaction.getAttachment();
                 Move.addOrUpdateMove(transaction, attachment);
             }
             

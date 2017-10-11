@@ -2001,7 +2001,7 @@ public interface Attachment extends Appendix {
 
     	@Override
         public String getAppendixName() {
-            return "Worker";
+            return "Be_Worker";
         }
 
         @Override
@@ -2059,6 +2059,31 @@ public interface Attachment extends Appendix {
         public TransactionType getTransactionType() {
             return TransactionType.Game.COLLECT;
         }
+    }
+    
+    public final static class GameBuild extends GameMove {
+    	GameBuild(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+        }
+
+    	GameBuild(JSONObject attachmentData) {
+            super(attachmentData);
+        }
+
+    	public GameBuild(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+        
+    	@Override
+        public String getAppendixName() {
+            return "Build";
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.Game.BUILD;
+        }
+
     }
     
     public final static class GameCheckIn extends GameMove {

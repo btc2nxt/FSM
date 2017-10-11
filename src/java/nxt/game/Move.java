@@ -102,6 +102,10 @@ public final class Move {
             move.yCoordinate = attachment.getYCoordinate();
             move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
             --move.collectPower;
+            
+            if (attachment.getAppendixName().equals("Build") && move.lifeValue < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+            	move.lifeValue = move.lifeValue + Constants.GAME_BRICK_RATE;
+            	
         }
         moveTable.insert(move);
         setPlayerStatus(move.getAccountId(), move.getMoveType());
@@ -182,13 +186,13 @@ public final class Move {
         this.xCoordinate = rs.getInt("x_coordinate");
         this.yCoordinate = rs.getInt("y_coordinate");
 		this.step = MoveType.valueOf(rs.getString("step"));
-		this.lifeValue = rs.getLong("lifeValue");		
+		this.lifeValue = rs.getLong("life_Value");		
     }	
 
 	private void save(Connection con)
 	{
         try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO move (account_id, collect_power, "
-                + "attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, step, lifeValue, height) "
+                + "attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, step, life_Value, height) "
         		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
             pstmt.setLong(++i, this.getAccountId());
