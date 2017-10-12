@@ -21,6 +21,21 @@ public class AT_Machine_Processor{
 		return 0;
 	}
 
+	private int getAddrRET_DAT_2()
+	{
+		if (machineData.getMachineState().pc+4>=machineData.getCsize())
+			return -1;
+		else
+		{
+			//fun.addr1 = (machineData.getAp_code()).getInt((machineData.getAp_code()).position()+machineData.getMachineState().pc+1);
+			fun.addr1 = (machineData.getAp_code()).getInt(machineData.getMachineState().pc+1+2+4+4);			
+			if (fun.addr1<0 || fun.addr1*8 < 0|| fun.addr1>=machineData.getCsize())
+				return -1;
+			else
+				return 0;
+		}
+	}
+
 	private int getAddr(boolean is_code)
 	{
 		if (machineData.getMachineState().pc+4>=machineData.getCsize())
@@ -37,7 +52,7 @@ public class AT_Machine_Processor{
 				return 0;
 		}
 	}
-
+	
 	private int getAddrs()
 	{
 		if (machineData.getMachineState().pc + 4 + 4>=machineData.getCsize())
@@ -1058,9 +1073,10 @@ public class AT_Machine_Processor{
 
 			if( (rc == 0  || disassemble )&& op == OpCode.e_op_code_EXT_FUN_RET_DAT_2 )
 			{
-				(machineData.getAp_code()).position(size);
-				rc = getAddr( false );
-				(machineData.getAp_code()).position((machineData.getAp_code()).position()-size);
+				//(machineData.getAp_code()).position(size);
+				//rc = getAddr( false );
+				//(machineData.getAp_code()).position((machineData.getAp_code()).position()-size);
+				rc = getAddrRET_DAT_2();
 			}
 
 			if( rc == 0 )

@@ -488,7 +488,10 @@ public final class Account {
     }
 
     public String getPlayerStr() {
-        return player.name();
+        if (this.player == null)
+        	return "OUTSIDER";
+        else
+        	return player.name();
     }
     
     public byte[] getPublicKey() {

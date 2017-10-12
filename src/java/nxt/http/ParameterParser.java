@@ -486,7 +486,7 @@ final class ParameterParser {
 	
 	public static byte[] getMachineData(HttpServletRequest req) throws ParameterException{
 		try {
-			return Convert.parseHexString(req.getParameter("machineData"));
+			return Convert.parseHexString(req.getParameter("machineData").toLowerCase());
 		} catch (RuntimeException e) {
 			throw new ParameterException(INCORRECT_MACHINEDATA);
 		}

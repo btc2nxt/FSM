@@ -504,7 +504,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		clear_A( state );
 		
     	try (Connection con = Db.db.getConnection();
-    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 id FROM AT_State WHERE at_state_id = ? and paymentNo = ? ")) {
+    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 * FROM AT_payment WHERE at_state_id = ? and payment_No = ? ")) {
     		pstmt.setLong(1, val);
     		pstmt.setInt(2, paymentNO);   		
     		ResultSet rs = pstmt.executeQuery();
@@ -524,16 +524,17 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	
 	@Override
 	/* 0x0349 EXT_FUN_RET_DAT_2
-	 * get AT_State Id of timestamp(val) from FSM
+	 * get AT_State Id after timestamp(val) from FSM
+	 * A1 = AT_state.height
 	 */
 	public long get_StateId_after_Timestamp_from_FSM( long val , long atId, AT_Machine_State state ) {
-		int height = AT_API_Helper.longToHeight( val );
+		int height = AT_API_Helper.longToHeight( val ) - 10;
 		int numOfTx = AT_API_Helper.longToNumOfTx( val );
 	
 		Long stateId = 0L;
 		Logger.logDebugMessage("get state after timestamp "+val + " height: "+ height+" atId: "+ atId);
 		
-		stateId = findStateFromAT(height, atId);
+		stateId = findStateFromAT(height, atId, state);
 		if (stateId != 0) {
 		    Logger.logInfoMessage("state with id "+stateId+" found");			
 		}
@@ -616,7 +617,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		int y = (int) AT_API_Helper.getLong(state.get_A3());
 
 		Long atId = state.getLongId();		
-		Logger.logDebugMessage("get moves count between height "+val + " height: "+ val1 + " x:" + x + " y:" + y );
+		Logger.logDebugMessage("get moves count between height "+startHeight + " height: "+ endHeight + " x:" + x + " y:" + y );
 		
 		return getMovesCount(startHeight, endHeight, x, y);
 	}
@@ -838,8 +839,8 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     public static int getMovesCount(int startHeight, int endHeight, int x, int y){
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT count(distinct account_id) as account_count FROM move m "
-    					+ " WHERE height between ? and ? and x = ? and y = ?  "
-    					+ " and height = (select max(height) from move where account= m.account)")) {
+    					+ " WHERE height between ? and ? and x_coordinate = ? and y_coordinate = ?  "
+    					+ " and height = (select max(height) from move where account_id= m.account_id)")) {
     		pstmt.setInt(1, startHeight);
     		pstmt.setInt(2, endHeight);    		
     		pstmt.setLong(3, x);
@@ -858,16 +859,17 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     public static long getAccountIdFromMoveByRownum(int startHeight, int endHeight, int x, int y, int rownum){
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT distinct account_id FROM move m "
-    					+ " WHERE height between ? and ? and x = ? and y = ?  "
-    					+ " and height = (select max(height) from move where account= m.account)"
-    					+ " and rownum()= ? order by height,account_Id" )) {
+    					+ " WHERE height between ? and ? and x_coordinate = ? and y_coordinate = ?  "
+    					+ " and height = (select max(height) from move where account_id= m.account_id)"
+    					+ " and rownum()= ? order by account_Id" )) {
     		pstmt.setInt(1, startHeight);
     		pstmt.setInt(2, endHeight);    		
     		pstmt.setLong(3, x);
     		pstmt.setInt(4, y);
+    		pstmt.setInt(5, rownum);    		
     		ResultSet rs = pstmt.executeQuery();
     		if (rs.next())
-    			return rs.getInt("account_id");
+    			return rs.getLong("account_id");
     		else
     			return 0;
     	} catch (SQLException e) {
@@ -904,16 +906,20 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     /*
      * fine state id 
      */
-    public static Long findStateFromAT(int startHeight ,Long atID){
+    public static Long findStateFromAT(int startHeight ,Long atID, AT_Machine_State state){
     	Long transactionId;
+    	int height = 0;
+    	
     	try (Connection con = Db.db.getConnection();
-    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 id FROM AT_State WHERE height >= ? and at_id = ? order by height desc")){
+    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 id, height FROM AT_State WHERE height >= ? and at_id = ? order by height desc")){
     		pstmt.setInt(1, startHeight);
     		pstmt.setLong(2, atID);   		
     		ResultSet rs = pstmt.executeQuery();
     		
     		if (rs.next()) {
                 transactionId = rs.getLong("id");
+                height = rs.getInt("height");
+                state.set_A1(AT_API_Helper.getByteArray(AT_API_Helper.getLongTimestamp( height , 0 )));
             }
     		else {
         		transactionId = 0L;    			

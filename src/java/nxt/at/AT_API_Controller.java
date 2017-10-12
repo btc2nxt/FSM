@@ -282,7 +282,7 @@ public class AT_API_Controller{
         		atApi.A_To_Tx_between_Timestamps_with_Type( val1 , (int)val2, state );	
         		break;	
         	case 0x352:
-        		atApi.get_MovesCount_between_Timestamps_with_X_Y( val1 , val2, state );	
+        		rc = atApi.get_MovesCount_between_Timestamps_with_X_Y( val1 , val2, state );	
         		break;
         	case 0x450:
         		atApi.AirDrop_Coordinate_In_B( val1 , (int)val2, state );	
