@@ -17,6 +17,7 @@ public final class TownMap {
     	private int playersPerPoint;
     	private int availablePoints;
     	private long accountId;
+    	private long lifeValues[];
     	
     	public Land(int x, int y, int x1, int y1, LandDescription landType, long accountId) {
     		this.x = x;
@@ -31,6 +32,7 @@ public final class TownMap {
     			case BUILDING_AREA:
     				this.playersPerPoint = Constants.MAX_PLAYERS_PER_COORDINATE_WITHIN_BUILDING;
     				this.availablePoints = Constants.MAX_PLAYERS_CAPAITY_OF_BUILDING;
+    				lifeValues = new long[(x1 - x + 1) * (y1 - y + 1)];
     				break;
     			default:
     				this.playersPerPoint = 0;
@@ -97,7 +99,8 @@ public final class TownMap {
     	lands[8] = new Land(41, 41, 44, 49,LandDescription.BUILDING_AREA,(long) -1);
     	lands[9] = new Land(46, 41, 49, 49,LandDescription.BUILDING_AREA,(long) -1);
     	
-    	//block 1-2 from (41,1) to (49,39), total 8 buildings
+    	/*
+    	//block 1-2 from (41,1) to (49,39), total 8 buildings 
     	lands[10] = new Land(41,  1, 49,  4,LandDescription.BUILDING_AREA,(long) -1);    	
     	lands[11] = new Land(41,  6, 49,  9,LandDescription.BUILDING_AREA,(long) -1);    	
     	lands[12] = new Land(41, 11, 49, 14,LandDescription.BUILDING_AREA,(long) -1);
@@ -173,6 +176,7 @@ public final class TownMap {
     	lands[70] = new Land(61, 101, 69, 104,LandDescription.BUILDING_AREA,(long) -1);
     	lands[71] = new Land(61, 106, 69, 109,LandDescription.BUILDING_AREA,(long) -1);
     	
+    	*/
     	//7 coin areas
     	lands[72] = new Land( 1,  1, 39, 39,LandDescription.COIN_AREA,(long) -1);    	
     	lands[73] = new Land(71,  1, 109, 39,LandDescription.COIN_AREA,(long) -1);    	
@@ -207,4 +211,17 @@ public final class TownMap {
     public static Land getLand(int nLand) {
         return lands[nLand];
     }
+    
+    public static void setLifeValueOfLandAsset(int x, int y, long lifeValue) {
+		for ( int i = 0; i <10; i++) {
+			if (x >= lands[i].x && x <= lands[i].x1
+					&& y >= lands[i].y & y <= lands[i].y1) {
+			int seq = (y- lands[i].y) * (lands[i].x1 - lands[i].x + 1) + x- lands[i].x + 1;
+			lands[i].lifeValues[seq] = lifeValue;
+			break;
+			}
+	}
+
+    }
+    
 }

@@ -92,20 +92,32 @@ public final class Move {
     
     public static void addOrUpdateMove(Transaction transaction, Attachment.GameMove attachment) {
     	long senderId = transaction.getSenderId();
-    	DbIterator<Move> moves = getMovesByPlayer(senderId, 0, 1);
-    	Move move;
-        if (!moves.hasNext()) {
+    	int x;
+    	int y;
+    	//DbIterator<Move> moves = getMovesByPlayer(senderId, 0, 1);
+        //if (!moves.hasNext()) {
+    	x = attachment.getXCoordinate();
+    	y = attachment.getYCoordinate();
+    	Move move = getMove(senderId);
+    	if (move == null) {
             move = new Move(transaction, attachment);
         } else {
-            move = moves.next();
-            move.xCoordinate = attachment.getXCoordinate();
-            move.yCoordinate = attachment.getYCoordinate();
-            move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
-            --move.collectPower;
+            //move = moves.next();
+        	if (!attachment.getAppendixName().equals("QUIT_GAME")) {
+        		move.xCoordinate = x;
+        		move.yCoordinate = y;
+        		move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
+        		--move.collectPower;
             
-            if (attachment.getAppendixName().equals("Build") && move.lifeValue < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
-            	move.lifeValue = move.lifeValue + Constants.GAME_BRICK_RATE;
-            	
+        		if (attachment.getAppendixName().equals("Build") && move.lifeValue < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE) {
+        			move.lifeValue = move.lifeValue + Constants.GAME_BRICK_RATE;
+        			if (move.lifeValue >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+        				TownMap.setLifeValueOfLandAsset(x,y,move.lifeValue);
+                }
+        	}
+        	else
+        		move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
+        		
         }
         moveTable.insert(move);
         setPlayerStatus(move.getAccountId(), move.getMoveType());

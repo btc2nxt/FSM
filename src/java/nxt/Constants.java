@@ -94,7 +94,7 @@ public final class Constants {
 	public static final long GAME_MEAL_RATE = 25 * ONE_NXT;
 	public static final long GAME_ROOM_RATE = 30 * ONE_NXT;
 	public static final long GAME_BRICK_RATE = 3 * ONE_NXT;
-	public static final long MAX_HOTEL_RESTAURANT_LIFEVALUE = GAME_ROOM_RATE * 90;	
+	public static final long MAX_HOTEL_RESTAURANT_LIFEVALUE = isTestnet ? GAME_BRICK_RATE * 5 : GAME_ROOM_RATE * 90;	
 	public static final int GAME_INIT_COLLECT_POWER = 100;
 	public static final int GAME_INIT_ATTACK_POWER = 100;
 	public static final int GAME_INIT_DEFENSE_VALUE = 100;

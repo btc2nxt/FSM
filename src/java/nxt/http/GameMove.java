@@ -38,6 +38,8 @@ public final class GameMove extends CreateTransaction {
         	attachment = new Attachment.GameBuild(x, y);        
         else if (actionName.equals("CheckIn"))
         	attachment = new Attachment.GameCheckIn(x, y);
+        else if (actionName.equals("Quit"))
+        	attachment = new Attachment.GameQuit(x, y);        
         else attachment = null;
         
         return createTransaction(req, account, attachment);

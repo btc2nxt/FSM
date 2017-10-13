@@ -2112,6 +2112,32 @@ public interface Attachment extends Appendix {
 
     }
     
+    public final static class GameQuit extends GameMove {
+
+    	GameQuit(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+        }
+
+    	GameQuit(JSONObject attachmentData) {
+            super(attachmentData);
+        }
+
+      	public GameQuit(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+    	
+    	@Override
+        public String getAppendixName() {
+            return "QUIT_GAME";
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.Game.QUIT;
+        }
+
+    }
+    
     public final static class FinanceTicker extends AbstractAttachment{
     	
         private final String market;

@@ -206,7 +206,7 @@ public abstract class TransactionType {
             		case SUBTYPE_GAME_WAKEUP:
             			return Game.CHECK_IN;
             		case SUBTYPE_GAME_QUIT:
-            			return Game.CHECK_IN;            			            		
+            			return Game.QUIT;            			            		
             		default:
             			return null;
             	}	
@@ -2235,6 +2235,10 @@ public abstract class TransactionType {
             	else if (player == Account.PlayerType.WORKER) {
                     if (transaction.getType().getSubtype() == SUBTYPE_GAME_BE_WORKER)
                     	throw new NxtException.NotValidException("Player is a worker already. " + attachment.getJSONObject());
+                    
+                    Move move = Move.getMove(senderId);
+                    if (move.getLifeValue() >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+                    	throw new NxtException.NotValidException("Build finished. " + attachment.getJSONObject());
                 }
             	else 
                    	throw new NxtException.NotValidException("Collector cannot be a worker or build. " + attachment.getJSONObject());
@@ -2391,5 +2395,47 @@ public abstract class TransactionType {
             }
 
     };
+    
+    public static final TransactionType QUIT = new Game() {
+
+        @Override
+        public final byte getSubtype() {
+            return TransactionType.SUBTYPE_GAME_QUIT;
+        }
+
+        @Override
+        Attachment.GameQuit parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            return new Attachment.GameQuit(buffer, transactionVersion);
+        }
+
+        @Override
+        Attachment.GameQuit parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            return new Attachment.GameQuit(attachmentData);
+        }
+
+        @Override
+        void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+            Attachment.GameQuit attachment = (Attachment.GameQuit) transaction.getAttachment();
+            Move.addOrUpdateMove(transaction, attachment);               
+        }
+
+        @Override
+        void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+            Attachment.GameQuit attachment = (Attachment.GameQuit)transaction.getAttachment();
+        	long senderId = transaction.getSenderId();
+            Account account = Account.getAccount(senderId);
+        	Account.PlayerType player = account.getPlayer();
+
+        	if (player == Account.PlayerType.OUTSIDER)
+            	throw new NxtException.NotValidException("Already quit game or Not a player. " + attachment.getJSONObject());                
+
+        }
+
+        @Override
+        public boolean canHaveRecipient() {
+            return false;
+        }
+
+};
 
 }
