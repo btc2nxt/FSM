@@ -102,8 +102,12 @@ public final class Constants {
 	
 	public static final long GAME_PREDISTRIBUTE_FSM_ID = 1;
 	public static final long GAME_AIRDROP_FSM_ID = 2;
+	public static final long GAME_DIVIDEND_FSM_ID = 3;
+	public static final long GAME_SHARE_FSM_ID = 4;
 	public static final String GAME_PREDISTRIBUTE_FSM_NAME = "predistributeFSM";
-	public static final String GAME_AIRDROP_FSM_NAME = "airdropFSM";	
+	public static final String GAME_AIRDROP_FSM_NAME = "airdropFSM";
+	public static final String GAME_DIVIDEND_FSM_NAME = "dividendFSM";
+	public static final String GAME_SHARE_FSM_NAME = "shareFSM";		
 	
 
     public static final int[] MIN_VERSION = new int[] {1, 2};

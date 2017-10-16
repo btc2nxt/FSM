@@ -2,12 +2,9 @@ package nxt.http;
 
 import nxt.Account;
 import nxt.Attachment;
-import nxt.Constants;
 import nxt.NxtException;
-import nxt.util.Convert;
 import org.json.simple.JSONStreamAware;
 
-import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_NAME_LENGTH;
 import static nxt.http.JSONResponses.MISSING_NAME;
 
 import javax.servlet.http.HttpServletRequest;

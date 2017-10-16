@@ -2396,6 +2396,44 @@ public abstract class TransactionType {
 
     };
     
+    public static final TransactionType EAT = new Game() {
+
+        @Override
+        public final byte getSubtype() {
+            return TransactionType.SUBTYPE_GAME_EAT;
+        }
+
+        @Override
+        Attachment.GameEat parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            return new Attachment.GameEat(buffer, transactionVersion);
+        }
+
+        @Override
+        Attachment.GameEat parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            return new Attachment.GameEat(attachmentData);
+        }
+
+        @Override
+        void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+            Attachment.GameCheckIn attachment = (Attachment.GameCheckIn) transaction.getAttachment();
+            Move.addOrUpdateMove(transaction, attachment);               
+        }
+
+        @Override
+        void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+            Attachment.GameCheckIn attachment = (Attachment.GameCheckIn)transaction.getAttachment();
+            if (Move.getCoordinatePlayersCount(attachment.getXCoordinate(), attachment.getYCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
+            	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());                
+
+        }
+
+        @Override
+        public boolean canHaveRecipient() {
+            return false;
+        }
+
+    };
+
     public static final TransactionType QUIT = new Game() {
 
         @Override

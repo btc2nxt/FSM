@@ -2112,6 +2112,32 @@ public interface Attachment extends Appendix {
 
     }
     
+    public final static class GameEat extends GameMove {
+
+    	GameEat(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+        }
+
+    	GameEat(JSONObject attachmentData) {
+            super(attachmentData);
+        }
+
+      	public GameEat(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+    	
+    	@Override
+        public String getAppendixName() {
+            return "Eat";
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.Game.EAT;
+        }
+
+    }
+
     public final static class GameQuit extends GameMove {
 
     	GameQuit(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {

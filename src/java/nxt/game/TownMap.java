@@ -5,7 +5,7 @@ import nxt.at.AT_Constants;
 
 public final class TownMap {
     public static enum LandDescription {
-        WALL_AREA, COIN_AREA, BUILDING_AREA
+        WALL_AREA, COIN_AREA, HOTEL, RESTAURANT, HEALTHY_CLUB, MARTIL_CENTER, WEAPON_FACTORY
     }	
     
     public class Land {
@@ -29,7 +29,11 @@ public final class TownMap {
     			case COIN_AREA:
     				this.playersPerPoint = Constants.MAX_PLAYERS_PER_COORDINATE;
     				break;
-    			case BUILDING_AREA:
+    			case HOTEL:
+    			case RESTAURANT:
+    			case HEALTHY_CLUB:	
+    			case MARTIL_CENTER:
+    			case WEAPON_FACTORY:
     				this.playersPerPoint = Constants.MAX_PLAYERS_PER_COORDINATE_WITHIN_BUILDING;
     				this.availablePoints = Constants.MAX_PLAYERS_CAPAITY_OF_BUILDING;
     				lifeValues = new long[(x1 - x + 1) * (y1 - y + 1)];
@@ -88,16 +92,16 @@ public final class TownMap {
     	lands = new Land[79];
 
     	//block 1-1 from (1,41) to (49,49), total 10 buildings
-    	lands[0] = new Land( 1, 41,  4, 49,LandDescription.BUILDING_AREA,(long) -1);
-    	lands[1] = new Land( 6, 41,  9, 49,LandDescription.BUILDING_AREA,(long) -1);
-    	lands[2] = new Land(11, 41, 14, 49,LandDescription.BUILDING_AREA,(long) -1);
-    	lands[3] = new Land(16, 41, 19, 49,LandDescription.BUILDING_AREA,(long) -1);
-    	lands[4] = new Land(21, 41, 24, 49,LandDescription.BUILDING_AREA,(long) -1);    	
-    	lands[5] = new Land(16, 41, 29, 49,LandDescription.BUILDING_AREA,(long) -1);    	
-    	lands[6] = new Land(31, 41, 34, 49,LandDescription.BUILDING_AREA,(long) -1);    	
-    	lands[7] = new Land(36, 41, 39, 49,LandDescription.BUILDING_AREA,(long) -1);
-    	lands[8] = new Land(41, 41, 44, 49,LandDescription.BUILDING_AREA,(long) -1);
-    	lands[9] = new Land(46, 41, 49, 49,LandDescription.BUILDING_AREA,(long) -1);
+    	lands[0] = new Land( 1, 41,  4, 49,LandDescription.HOTEL,(long) -1);
+    	lands[1] = new Land( 6, 41,  9, 49,LandDescription.HOTEL,(long) -1);
+    	lands[2] = new Land(11, 41, 14, 49,LandDescription.HOTEL,(long) -1);
+    	lands[3] = new Land(16, 41, 19, 49,LandDescription.HOTEL,(long) -1);
+    	lands[4] = new Land(21, 41, 24, 49,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[5] = new Land(16, 41, 29, 49,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[6] = new Land(31, 41, 34, 49,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[7] = new Land(36, 41, 39, 49,LandDescription.RESTAURANT,(long) -1);
+    	//lands[8] = new Land(41, 41, 44, 49,LandDescription.BUILDING_AREA,(long) -1);
+    	//lands[9] = new Land(46, 41, 49, 49,LandDescription.BUILDING_AREA,(long) -1);
     	
     	/*
     	//block 1-2 from (41,1) to (49,39), total 8 buildings 
@@ -212,6 +216,11 @@ public final class TownMap {
         return lands[nLand];
     }
     
+    /*
+     * (x,y ) ---> Hotel.room
+     * (x,y ) ---> Restaurant.table
+     * ...
+     */
     public static void setLifeValueOfLandAsset(int x, int y, long lifeValue) {
 		for ( int i = 0; i <10; i++) {
 			if (x >= lands[i].x && x <= lands[i].x1
