@@ -296,6 +296,11 @@ public interface AT_API {
 	 */
 	public void B_to_Address_of_Creator( AT_Machine_State state );
 	
+	/**
+	 * sets @addr to the height of the current block
+	 */
+	public int get_Block_Height( AT_Machine_State state );
+
 	/*
 	 * get account from move by ,x,y to A1-A3 with
 	 */
@@ -322,9 +327,19 @@ public interface AT_API {
 	public void A_To_Tx_between_Timestamps_with_Type( long val, int type, AT_Machine_State state );
 
 	/**
-	 * sets A to tx number of txs between timestamps in B
+	 * sets @addr3 to row count of move between timestamps, and (x,y) in B
 	 */
 	public int get_MovesCount_between_Timestamps_with_X_Y( long val , long val1, AT_Machine_State state );
+
+	/**
+	 * sets @addr3 to row count of move between heights groupby assetid, accountId
+	 */
+	public int get_Count_between_Heights_groupby_asset_account( int val , int val1, AT_Machine_State state );
+
+	/**
+	 *  sets B1-B3 to accountId, assetId, sum(life_value) of move between heights, and rownum in B4
+	 */
+	public void B_to_Row_between_Heights_groupby_Asset_Account( int val, int val1, AT_Machine_State state );
 
 	// end range 0x0300..0x03ff
 	// ------------------------
@@ -374,7 +389,7 @@ public interface AT_API {
 	/**
 	 * airdrop coins to coordinate(B1,B2), sequence= B3,amount = B4
 	 */
-	public void AirDrop_Coordinate_In_B( long val , int count, AT_Machine_State state );
+	public void airDrop_Coordinate_In_B( long val , int count, AT_Machine_State state );
 	
 	// end range 0x0400.0x04ff
 	// -----------------------

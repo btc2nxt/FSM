@@ -204,9 +204,9 @@ public final class Move {
         		--move.collectPower;
             
         		if (attachment.getAppendixName().equals("Build") && move.lifeValue < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE) {
-        			move.lifeValue = move.lifeValue + Constants.GAME_BRICK_RATE;
-        			if (move.lifeValue >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+        			if (move.lifeValue + Constants.GAME_BRICK_RATE >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
         				landCompletedTable.insert(new LandCompleted(x,y,move.lifeValue)); //setLifeValueOfLandAsset(x,y,move.lifeValue);
+        			move.lifeValue = Constants.GAME_BRICK_RATE;
                 }
         	}
         	else

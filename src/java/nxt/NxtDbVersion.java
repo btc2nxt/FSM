@@ -372,14 +372,14 @@ class NxtDbVersion extends DbVersion {
             case 146:            	
                 apply("CREATE TABLE IF NOT EXISTS move (db_id IDENTITY, account_id BIGINT NOT NULL, collect_power SMALLINT NOT NULL,"                            
                 + " attack_power SMALLINT NOT NULL, defense_value SMALLINT NOT NULL, healthy_index SMALLINT NOT NULL,"
-                + " x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, step VARCHAR NOT NULL, "
-                + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
+                + " x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, step VARCHAR NOT NULL, life_value BIGINT NOT NULL, "
+                + " asset_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 147:
                 apply("ALTER TABLE account ADD COLUMN IF NOT EXISTS player VARCHAR");                
             case 148:
                 apply("ALTER TABLE asset ADD COLUMN IF NOT EXISTS land_id TINYINT NOT NULL default 0");                
             case 149:
-                apply("ALTER TABLE move ADD COLUMN IF NOT EXISTS life_value BIGINT NOT NULL default 0");
+                //apply("ALTER TABLE move ADD COLUMN IF NOT EXISTS life_value BIGINT NOT NULL default 0");
             case 150:            	
                 apply("CREATE TABLE IF NOT EXISTS land_completed (db_id IDENTITY, x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, life_value BIGINT NOT NULL, "
                 + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");

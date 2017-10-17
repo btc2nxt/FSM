@@ -368,6 +368,12 @@ public class AT_API_Impl implements AT_API
 	}
 
 	@Override
+	public int get_Block_Height( AT_Machine_State state ) {
+		return platform.get_Block_Height( state );
+		
+	}
+
+	@Override
 	public void B_to_Move_Account_between_Timestamps_with_X_Y( long val , long val1, AT_Machine_State state ) {
 		platform.B_to_Move_Account_between_Timestamps_with_X_Y( val , val1, state );
 		
@@ -404,8 +410,20 @@ public class AT_API_Impl implements AT_API
 	}
 
 	@Override
-	public void AirDrop_Coordinate_In_B( long val , int count, AT_Machine_State state ) {
-		platform.AirDrop_Coordinate_In_B( val , count, state );
+	public int get_Count_between_Heights_groupby_asset_account( int val , int val1, AT_Machine_State state ) {
+		return platform.get_Count_between_Heights_groupby_asset_account( val , val1, state );
+		
+	}
+	
+	@Override
+	public void B_to_Row_between_Heights_groupby_Asset_Account( int val , int val1, AT_Machine_State state ) {
+		platform.B_to_Row_between_Heights_groupby_Asset_Account( val , val1, state );
+		
+	}
+	
+	@Override
+	public void airDrop_Coordinate_In_B( long val , int count, AT_Machine_State state ) {
+		platform.airDrop_Coordinate_In_B( val , count, state );
 		
 	}
 	

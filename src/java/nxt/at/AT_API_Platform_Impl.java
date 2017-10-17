@@ -475,6 +475,15 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	}
 
 	@Override
+	public int get_Block_Height( AT_Machine_State state ) 
+	{
+
+		int height = Nxt.getBlockchain().getHeight();
+		return height;
+
+	}
+
+	@Override
 	/* 0x0347 EXT_FUN_DAT_2
 	 * get move's account get count of moves between timestamp(@val,val1), A2=x, A3=y, A4=rownum 
 	 * return: B1=account
@@ -622,6 +631,59 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		return getMovesCount(startHeight, endHeight, x, y);
 	}
 	
+	@Override
+	/* 0x0353 EXT_FUN_RET_DAT_2
+	 * get count of moves between height(@val,val1)
+	 */
+	public int get_Count_between_Heights_groupby_asset_account( int val, int val1, AT_Machine_State state ) {
+		startHeight = AT_API_Helper.longToHeight( val );
+		endHeight = AT_API_Helper.longToHeight( val1 );
+		int x = (int) AT_API_Helper.getLong(state.get_A2());
+		int y = (int) AT_API_Helper.getLong(state.get_A3());
+
+		Long atId = state.getLongId();		
+		Logger.logDebugMessage("get moves count between height "+startHeight + " height: "+ endHeight + " x:" + x + " y:" + y );
+		
+		return getMovesCount(startHeight, endHeight, x, y);
+	}
+	
+	@Override
+	/* 0x0354 EXT_FUN_DAT_2
+	 * get tx between @heights(val,val1) with rownu=B4
+	 */
+	public void B_to_Row_between_Heights_groupby_Asset_Account( int val , int val1, AT_Machine_State state ) {
+		int height = AT_API_Helper.longToHeight( val );
+		int numOfTx = AT_API_Helper.longToNumOfTx( val );
+
+		Long atId = state.getLongId();		
+		Long transactionId = 0L;
+		Logger.logDebugMessage("get tx between timestamp "+val + " height: "+ height);
+		
+		//when AT first runs the function, or re-catch the timestamp, e.g. refunding 
+		if (!AT_Controller.getTimeStampRetrieved() || height < state.getRetrievedHeight()){ 
+			startHeight = AT_API_Helper.longToHeight( val );
+			numOfTx = AT_API_Helper.longToNumOfTx( val );
+			//timeStampList = findATTransactions(startHeight, endHeight, atId, type, numOfTx);
+			AT_Controller.setTimeStampRetrieved(true);
+			timeStampIndex = 0;
+			
+			AT at =AT.getAT(atId);
+		}
+			
+		Logger.logDebugMessage("loop.... "+ startHeight + "-" + numOfTx);				
+		if (!timeStampList.isEmpty() && timeStampList.size()>timeStampIndex) {
+			transactionId = timeStampList.get(timeStampIndex++);
+			numOfTx++;
+			Logger.logInfoMessage("tx with id "+transactionId+" found");
+			clear_A( state );
+			state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
+		}
+		else {// can not find a tx
+			state.set_A3( AT_API_Helper.getByteArray( atId ) );
+			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
+		}
+	}
+	
 	@Override //0x0400
 	public long get_Current_Balance( AT_Machine_State state ) {
 		long balance = Account.getAccount( AT_API_Helper.getLong(state.getId()) ).getBalanceNQT();
@@ -737,7 +799,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	 * 
 	 * B3: Distribute FSM address
 	 */
-	public void AirDrop_Coordinate_In_B( long val , int count, AT_Machine_State state ) {
+	public void airDrop_Coordinate_In_B( long val , int count, AT_Machine_State state ) {
 
 		int x;
 		int y;

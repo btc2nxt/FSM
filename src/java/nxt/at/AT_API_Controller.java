@@ -174,6 +174,10 @@ public class AT_API_Controller{
 		{
 			atApi.B_to_Address_of_Creator( state );
 		}
+		else if ( func_num == 0x346 )
+		{
+			return atApi.get_Block_Height( state );
+		}		
 		else if ( func_num == 1024 ) //0x0400
 		{
 			return atApi.get_Current_Balance( state );
@@ -274,7 +278,7 @@ public class AT_API_Controller{
         		atApi.A_to_Payment_in_State_with_PaymentNO( val1 , (int)val2, state );	
         		break;
         	case 0x349:
-        		return atApi.get_StateId_after_Timestamp_from_FSM( val1 , (int)val2, state );        		
+        		rc = atApi.get_StateId_after_Timestamp_from_FSM( val1 , (int)val2, state );        		
         	case 0x350:
         		atApi.A_to_Tx_after_Timestamp_with_Type( val1 , val2, state );	
         		break;
@@ -284,8 +288,14 @@ public class AT_API_Controller{
         	case 0x352:
         		rc = atApi.get_MovesCount_between_Timestamps_with_X_Y( val1 , val2, state );	
         		break;
+        	case 0x353:
+        		rc = atApi.get_Count_between_Heights_groupby_asset_account( (int)val1 , (int)val2, state );	
+        		break;
+        	case 0x354:
+        		atApi.B_to_Row_between_Heights_groupby_Asset_Account( (int)val1 , (int)val2, state );	
+        		break;
         	case 0x450:
-        		atApi.AirDrop_Coordinate_In_B( val1 , (int)val2, state );	
+        		atApi.airDrop_Coordinate_In_B( val1 , (int)val2, state );	
         		break;	          		
         	case 1030:
         		rc = atApi.add_Minutes_to_Timestamp( val1 , val2 , state );
