@@ -6,13 +6,11 @@ import nxt.db.DbKey;
 import nxt.db.DbUtils;
 import nxt.db.EntityDbTable;
 import nxt.db.VersionedEntityDbTable;
-import nxt.util.Convert;
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
 import nxt.Nxt;
 import nxt.Transaction;
-import nxt.Account.AccountAsset;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,6 +23,73 @@ public final class Move {
         OUTSIDER, BE_COLLECTOR, BE_WORKER, COLLECT, CHECK_IN, EAT, BUILD, ATTACK, KEEP_FIT, PRACTISE_MARTIAL, BUY_ARMOR, IN_COMA, WAKEUP, QUIT_GAME 
     }
 
+    public static class LandCompleted {
+
+        private final int x;
+        private final int y;
+        private final DbKey dbKey;
+        private final long lifeValue;        
+
+        private LandCompleted(int x, int y, long lifeValue) {
+            this.x = x;
+            this.y = y;
+            this.lifeValue = lifeValue;
+            this.dbKey = landCompletedDbKeyFactory.newKey(this.x, this.y);
+        }
+
+        private LandCompleted(ResultSet rs) throws SQLException {
+            this.x = rs.getInt("x_coordinate");
+            this.y = rs.getInt("y_coordinate");
+            this.lifeValue = rs.getLong("life_Value");
+            this.dbKey = landCompletedDbKeyFactory.newKey(this.x, this.y);
+        }
+
+        private void save(Connection con) throws SQLException {
+            try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO land_completed "
+                    + "(x_coordinate, y_coordinate, life_Value, height, latest) "
+                    + "KEY (x_coordinate, y_coordinate) VALUES (?, ?, ?, ?, TRUE)")) {
+                int i = 0;
+                pstmt.setInt(++i, this.x);
+                pstmt.setLong(++i, this.y);
+                pstmt.setLong(++i, this.lifeValue);
+                pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
+                pstmt.executeUpdate();
+            }
+        }
+        
+        public long getLifeValue() {
+            return this.lifeValue;
+        }        
+    }
+    
+    private static final DbKey.LinkKeyFactory<LandCompleted> landCompletedDbKeyFactory = new DbKey.LinkKeyFactory<LandCompleted>("x_coordinate", "y_coordinate") {
+
+        @Override
+        public DbKey newKey(LandCompleted landCompleted) {
+            return landCompleted.dbKey;
+        }
+
+    };
+
+    public static final EntityDbTable<LandCompleted> landCompletedTable = new EntityDbTable<LandCompleted>("land_completed", landCompletedDbKeyFactory) {
+
+        @Override
+        protected LandCompleted load(Connection con, ResultSet rs) throws SQLException {
+            return new LandCompleted(rs);
+        }
+
+        @Override
+        protected void save(Connection con, LandCompleted landCompleted) throws SQLException {
+        	landCompleted.save(con);
+        }
+
+        @Override
+        protected String defaultSort() {
+            return " ORDER BY x, y ";
+        }
+
+    };
+    
     private static final DbKey.LongKeyFactory<Move> moveDbKeyFactory = new DbKey.LongKeyFactory<Move>("account_id") {
 
         @Override
@@ -48,6 +113,10 @@ public final class Move {
 
     };
 
+    public static LandCompleted getLandCompleted(int x, int y) {
+        return landCompletedTable.get(landCompletedDbKeyFactory.newKey(x, y));
+    }
+    
     public static Move getMove(long accountId) {
         return accountId == 0 ? null : moveTable.get(moveDbKeyFactory.newKey(accountId));
     }
@@ -79,6 +148,31 @@ public final class Move {
             return moveTable.getCount(new getCoordinateXYClause(x,y));
     }
    
+    private static final class getConsumerXYClause extends DbClause {
+    	private final int x;
+    	private final int y;
+    	private final String moveType;
+
+        private getConsumerXYClause(final int x, int y, String moveType) {
+        	super(" x_coordinate = ? AND y_coordinate = ? and step = ?");
+            this.x = x;
+            this.y = y;
+            this.moveType = moveType;
+        }
+
+        @Override
+        public int set(PreparedStatement pstmt, int index) throws SQLException {
+        	pstmt.setInt(index++, x);
+            pstmt.setInt(index++, y);
+            DbUtils.setString( pstmt , index++ , moveType );
+            return index;
+        }
+
+    }
+
+    public static int  getCoordinateConsumersCount( int x, int y, String moveType) {
+            return moveTable.getCount(new getConsumerXYClause(x, y, moveType));
+    }   
     public static int getAccountCountByHeight(long accountId, int height) {
         if (height < 0) {
             return 0;
@@ -112,7 +206,7 @@ public final class Move {
         		if (attachment.getAppendixName().equals("Build") && move.lifeValue < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE) {
         			move.lifeValue = move.lifeValue + Constants.GAME_BRICK_RATE;
         			if (move.lifeValue >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
-        				TownMap.setLifeValueOfLandAsset(x,y,move.lifeValue);
+        				landCompletedTable.insert(new LandCompleted(x,y,move.lifeValue)); //setLifeValueOfLandAsset(x,y,move.lifeValue);
                 }
         	}
         	else

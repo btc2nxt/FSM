@@ -1,6 +1,7 @@
 package nxt;
 
 import nxt.game.Move;
+import nxt.game.Move.LandCompleted;
 import nxt.game.Move.MoveType;
 import nxt.Attachment.AbstractAttachment;
 import nxt.Attachment.AutomatedTransactionsCreation;
@@ -192,7 +193,7 @@ public abstract class TransactionType {
             		case SUBTYPE_GAME_CHECK_IN:
             			return Game.CHECK_IN;
             		case SUBTYPE_GAME_EAT:
-            			return Game.CHECK_IN;
+            			return Game.EAT;
             		case SUBTYPE_GAME_ATTACK:
             			return Game.CHECK_IN;
             		case SUBTYPE_GAME_KEEP_FIT:
@@ -2358,7 +2359,49 @@ public abstract class TransactionType {
             
         };
         
-        public static final TransactionType CHECK_IN = new Game() {
+        abstract static class GameConsumer extends Game {
+
+        	@Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+                Attachment.GameMove attachment = (Attachment.GameMove)transaction.getAttachment();
+            	long senderId = transaction.getSenderId();
+            	int x = attachment.getXCoordinate();
+            	int y = attachment.getYCoordinate();         
+                
+            	LandCompleted landCompleted = Move.getLandCompleted(x, y);
+            	if (landCompleted.getLifeValue() < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)	
+                	throw new NxtException.NotValidException("Worker is building or wrong area: ");
+
+                TownMap.LandDescription  landType = null;
+                
+                for ( int i = 0; i <8; i++) {
+                	if (x >= TownMap.getLand(i).getX() && x <= TownMap.getLand(i).getX1()
+                			&& y >= TownMap.getLand(i).getY() & y <= TownMap.getLand(i).getY1()) {
+                		landType = TownMap.getLand(i).getLandType();
+                		break;
+                	}
+                }
+                if (attachment.getAppendixName().equals("Check_In"))
+                	if (landType != TownMap.LandDescription.HOTEL )	
+                		throw new NxtException.NotValidException("wrong area ");
+                
+                if (attachment.getAppendixName().equals("Eat"))
+                	if (landType != TownMap.LandDescription.RESTAURANT )	
+                		throw new NxtException.NotValidException("wrong area ");
+
+                if (Move.getCoordinateConsumersCount(x, y, attachment.getAppendixName().toUpperCase() ) >= Constants.MAX_CONSUMER_PER_COORDINATE)
+                	throw new NxtException.NotValidException("too many consumer in this coordination: " + attachment.getJSONObject());
+                                
+            }
+
+            @Override
+            final public boolean canHaveRecipient() {
+                return true;
+            }
+
+        }
+        
+        public static final TransactionType CHECK_IN = new Game.GameConsumer() {
 
             @Override
             public final byte getSubtype() {
@@ -2380,23 +2423,9 @@ public abstract class TransactionType {
                 Attachment.GameCheckIn attachment = (Attachment.GameCheckIn) transaction.getAttachment();
                 Move.addOrUpdateMove(transaction, attachment);               
             }
-
-            @Override
-            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                Attachment.GameCheckIn attachment = (Attachment.GameCheckIn)transaction.getAttachment();
-                if (Move.getCoordinatePlayersCount(attachment.getXCoordinate(), attachment.getYCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
-                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());                
-
-            }
-
-            @Override
-            public boolean canHaveRecipient() {
-                return false;
-            }
-
     };
     
-    public static final TransactionType EAT = new Game() {
+    public static final TransactionType EAT = new Game.GameConsumer() {
 
         @Override
         public final byte getSubtype() {
@@ -2418,20 +2447,6 @@ public abstract class TransactionType {
             Attachment.GameCheckIn attachment = (Attachment.GameCheckIn) transaction.getAttachment();
             Move.addOrUpdateMove(transaction, attachment);               
         }
-
-        @Override
-        void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-            Attachment.GameCheckIn attachment = (Attachment.GameCheckIn)transaction.getAttachment();
-            if (Move.getCoordinatePlayersCount(attachment.getXCoordinate(), attachment.getYCoordinate()) > Constants.MAX_PLAYERS_PER_COORDINATE)
-            	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());                
-
-        }
-
-        @Override
-        public boolean canHaveRecipient() {
-            return false;
-        }
-
     };
 
     public static final TransactionType QUIT = new Game() {

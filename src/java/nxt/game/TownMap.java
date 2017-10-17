@@ -1,7 +1,6 @@
 package nxt.game;
 
 import nxt.Constants;
-import nxt.at.AT_Constants;
 
 public final class TownMap {
     public static enum LandDescription {
@@ -34,7 +33,7 @@ public final class TownMap {
     			case HEALTHY_CLUB:	
     			case MARTIL_CENTER:
     			case WEAPON_FACTORY:
-    				this.playersPerPoint = Constants.MAX_PLAYERS_PER_COORDINATE_WITHIN_BUILDING;
+    				this.playersPerPoint = Constants.MAX_CONSUMER_PER_COORDINATE;
     				this.availablePoints = Constants.MAX_PLAYERS_CAPAITY_OF_BUILDING;
     				lifeValues = new long[(x1 - x + 1) * (y1 - y + 1)];
     				break;
@@ -59,7 +58,11 @@ public final class TownMap {
 
     	public int getY1() {
     		return y1;
-    	}    	
+    	} 
+    	
+    	public LandDescription getLandType() {
+    		return this.landType;
+    	}
     }
     
     static Land[] lands;
@@ -225,12 +228,24 @@ public final class TownMap {
 		for ( int i = 0; i <10; i++) {
 			if (x >= lands[i].x && x <= lands[i].x1
 					&& y >= lands[i].y & y <= lands[i].y1) {
-			int seq = (y- lands[i].y) * (lands[i].x1 - lands[i].x + 1) + x- lands[i].x + 1;
-			lands[i].lifeValues[seq] = lifeValue;
-			break;
+				int seq = (y- lands[i].y) * (lands[i].x1 - lands[i].x + 1) + x- lands[i].x + 1;
+				lands[i].lifeValues[seq] = lifeValue;
+				break;
 			}
-	}
-
+		}
     }
     
+    public static long getLifeValueOfLandAsset(int x, int y) {
+		long lifeValue = 0;
+		
+    	for ( int i = 0; i <10; i++) {
+			if (x >= lands[i].x && x <= lands[i].x1
+					&& y >= lands[i].y & y <= lands[i].y1) {
+				int seq = (y- lands[i].y) * (lands[i].x1 - lands[i].x + 1) + x- lands[i].x + 1;
+				lifeValue = lands[i].lifeValues[seq];
+				break;
+			}
+		}
+    	return lifeValue;
+    }    
 }

@@ -10,8 +10,6 @@
 package nxt;
 
 
-import nxt.Account.AccountAsset;
-import nxt.BlockchainProcessor.BlockOutOfOrderException;
 import nxt.at.AT_API_Helper;
 import nxt.at.AT_Constants;
 import nxt.at.AT_Controller;

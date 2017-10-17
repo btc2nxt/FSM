@@ -379,8 +379,15 @@ class NxtDbVersion extends DbVersion {
             case 148:
                 apply("ALTER TABLE asset ADD COLUMN IF NOT EXISTS land_id TINYINT NOT NULL default 0");                
             case 149:
-                apply("ALTER TABLE move ADD COLUMN IF NOT EXISTS life_value BIGINT NOT NULL default 0");                
-            case 150:
+                apply("ALTER TABLE move ADD COLUMN IF NOT EXISTS life_value BIGINT NOT NULL default 0");
+            case 150:            	
+                apply("CREATE TABLE IF NOT EXISTS land_completed (db_id IDENTITY, x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, life_value BIGINT NOT NULL, "
+                + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
+            case 151:
+            	apply("CREATE UNIQUE INDEX IF NOT EXISTS move_account_idx ON move (account_id, height DESC)");            
+            case 152:
+            	apply("CREATE INDEX IF NOT EXISTS move_height_idx ON move (height)");                
+            case 153:
                 return;
             default:
                 throw new RuntimeException("Blockchain database inconsistent with code, probably trying to run older code on newer database");
