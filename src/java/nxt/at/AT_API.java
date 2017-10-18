@@ -391,6 +391,13 @@ public interface AT_API {
 	 */
 	public void airDrop_Coordinate_In_B( long val , int count, AT_Machine_State state );
 	
+	/**
+	 * bool if B is a valid address then send it $addr amount
+	 * if this amount is greater than the AT's asset balance then it will also
+	 * return false
+	 */
+	public long send_Asset_to_Address_in_B( long val , AT_Machine_State state );
+
 	// end range 0x0400.0x04ff
 	// -----------------------
 }

@@ -250,6 +250,10 @@ public class AT_API_Controller{
 		{
 			atApi.send_to_Address_in_B( val , state );
 		}
+		else if ( func_num == 0x451 ) //func1 33 
+		{
+			atApi.send_Asset_to_Address_in_B( val , state );
+		}		
 		
 		return rc;
 	}

@@ -498,5 +498,10 @@ public class AT_API_Impl implements AT_API
 	public long add_Minutes_to_Timestamp( long val1 , long val2 , AT_Machine_State state ) {
 		return platform.add_Minutes_to_Timestamp( val1 , val2 , state );
 	}
+	
+	@Override
+	public long send_Asset_to_Address_in_B( long val , AT_Machine_State state ) {
+		return platform.send_to_Address_in_B( val , state );
+	}	
 
 }

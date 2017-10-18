@@ -14,23 +14,25 @@ public class AT_Transaction{
 	private byte[] message;
 	private int x;
 	private int y;
+	private long assetId;
 	
-	public AT_Transaction( byte[] recipientId , long amount , byte[] message, int x, int y ){
+	public AT_Transaction( byte[] recipientId , long amount , byte[] message, int x, int y, long assetId ){
 		//this.senderId = senderId.clone();
 		this.recipientId = recipientId.clone();
 		this.amount = amount;
 		this.message = (message != null) ? message.clone() : null;
 		this.x = x;
 		this.y = y;
+		this.assetId = assetId;		
 	}
 	
 	public long getAmount(){
 		return amount;
 	}
 	
-	//public byte[] getSenderId(){
-	//	return senderId;
-	//}
+	public long getAssetId(){
+		return assetId;
+	}
 	
 	public byte[] getRecipientId(){
 		return recipientId;

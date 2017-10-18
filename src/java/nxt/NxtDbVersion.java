@@ -364,7 +364,7 @@ class NxtDbVersion extends DbVersion {
             	apply("CREATE UNIQUE INDEX IF NOT EXISTS at_state_at_id_height_idx ON at_state (at_id, height DESC)");
             case 143:
                 apply("CREATE TABLE IF NOT EXISTS at_payment (db_id IDENTITY, at_state_id BIGINT NOT NULL, "            			
-            			+ "payment_no SMALLINT NOT NULL, recipient_id BIGINT NOT NULL, amount BIGINT NOT NULL, x SMALLINT not null, y SMALLINT not null,height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
+            			+ "payment_no SMALLINT NOT NULL, recipient_id BIGINT NOT NULL, amount BIGINT NOT NULL, x SMALLINT not null, y SMALLINT not null, asset_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 144:
             	apply("CREATE UNIQUE INDEX IF NOT EXISTS at_payment_at_state_id_payment_no ON at_payment (at_state_id, payment_no DESC)");
             case 145:
@@ -379,7 +379,6 @@ class NxtDbVersion extends DbVersion {
             case 148:
                 apply("ALTER TABLE asset ADD COLUMN IF NOT EXISTS land_id TINYINT NOT NULL default 0");                
             case 149:
-                //apply("ALTER TABLE move ADD COLUMN IF NOT EXISTS life_value BIGINT NOT NULL default 0");
             case 150:            	
                 apply("CREATE TABLE IF NOT EXISTS land_completed (db_id IDENTITY, x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, life_value BIGINT NOT NULL, "
                 + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");

@@ -474,6 +474,9 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 
 	}
 
+	/* 0x0346 EXT_FUN_DAT
+	 * get block height of current block 
+	 */
 	@Override
 	public int get_Block_Height( AT_Machine_State state ) 
 	{
@@ -483,11 +486,11 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 
 	}
 
-	@Override
 	/* 0x0347 EXT_FUN_DAT_2
 	 * get move's account get count of moves between timestamp(@val,val1), A2=x, A3=y, A4=rownum 
 	 * return: B1=account
 	 */
+	@Override
 	public void B_to_Move_Account_between_Timestamps_with_X_Y( long val, long val1, AT_Machine_State state ) {
 		startHeight = AT_API_Helper.longToHeight( val );
 		endHeight = AT_API_Helper.longToHeight( val1 );
@@ -502,11 +505,11 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		state.set_B1( AT_API_Helper.getByteArray( accountId) );
 	}
 	
-	@Override
 	/* 0x0348 EXT_FUN_DAT_2
 	 * get payment to A, @addr1=stateId, @addr2=paymentNO 
 	 * return: A1=amount, A2=x, A3=y
 	 */
+	@Override
 	public void A_to_Payment_in_State_with_PaymentNO( long val , int paymentNO, AT_Machine_State state ) {
 
 		Logger.logDebugMessage("get payment with stateId "+val + " paymentNO "+ paymentNO);
@@ -531,11 +534,11 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     	}
 	}
 	
-	@Override
 	/* 0x0349 EXT_FUN_RET_DAT_2
 	 * get AT_State Id after timestamp(val) from FSM
 	 * A1 = AT_state.height
 	 */
+	@Override
 	public long get_StateId_after_Timestamp_from_FSM( long val , long atId, AT_Machine_State state ) {
 		int height = AT_API_Helper.longToHeight( val ) - 10;
 		int numOfTx = AT_API_Helper.longToNumOfTx( val );
@@ -636,15 +639,10 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	 * get count of moves between height(@val,val1)
 	 */
 	public int get_Count_between_Heights_groupby_asset_account( int val, int val1, AT_Machine_State state ) {
-		startHeight = AT_API_Helper.longToHeight( val );
-		endHeight = AT_API_Helper.longToHeight( val1 );
-		int x = (int) AT_API_Helper.getLong(state.get_A2());
-		int y = (int) AT_API_Helper.getLong(state.get_A3());
-
 		Long atId = state.getLongId();		
-		Logger.logDebugMessage("get moves count between height "+startHeight + " height: "+ endHeight + " x:" + x + " y:" + y );
+		Logger.logDebugMessage("get moves count between height "+startHeight + " height: "+ endHeight );
 		
-		return getMovesCount(startHeight, endHeight, x, y);
+		return getMovesCountGroupbyAssetId(val, val1);
 	}
 	
 	@Override
@@ -652,36 +650,29 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	 * get tx between @heights(val,val1) with rownu=B4
 	 */
 	public void B_to_Row_between_Heights_groupby_Asset_Account( int val , int val1, AT_Machine_State state ) {
-		int height = AT_API_Helper.longToHeight( val );
-		int numOfTx = AT_API_Helper.longToNumOfTx( val );
-
-		Long atId = state.getLongId();		
-		Long transactionId = 0L;
-		Logger.logDebugMessage("get tx between timestamp "+val + " height: "+ height);
+		int rownum = (int) AT_API_Helper.getLong(state.get_A4());		
+		Logger.logDebugMessage("get record of move with height between "+val + " ...  "+  val1);
+		clear_B( state );
 		
-		//when AT first runs the function, or re-catch the timestamp, e.g. refunding 
-		if (!AT_Controller.getTimeStampRetrieved() || height < state.getRetrievedHeight()){ 
-			startHeight = AT_API_Helper.longToHeight( val );
-			numOfTx = AT_API_Helper.longToNumOfTx( val );
-			//timeStampList = findATTransactions(startHeight, endHeight, atId, type, numOfTx);
-			AT_Controller.setTimeStampRetrieved(true);
-			timeStampIndex = 0;
-			
-			AT at =AT.getAT(atId);
-		}
-			
-		Logger.logDebugMessage("loop.... "+ startHeight + "-" + numOfTx);				
-		if (!timeStampList.isEmpty() && timeStampList.size()>timeStampIndex) {
-			transactionId = timeStampList.get(timeStampIndex++);
-			numOfTx++;
-			Logger.logInfoMessage("tx with id "+transactionId+" found");
-			clear_A( state );
-			state.set_A1( AT_API_Helper.getByteArray( transactionId ) );
-		}
-		else {// can not find a tx
-			state.set_A3( AT_API_Helper.getByteArray( atId ) );
-			state.set_A4( AT_API_Helper.getByteArray( AT_API_Helper.getLongTimestamp( startHeight, 0 ) ) );			
-		}
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 asset_id, account_id, sum(life_value) as quantity FROM move "
+    					+ " WHERE height between ? and  ? and step = 'BUILD' and rownum()= ? "
+    					+ " groupby asset_id, account_id ")) {
+    		pstmt.setInt(1, val);
+    		pstmt.setInt(2, val1);   		
+    		ResultSet rs = pstmt.executeQuery();
+    		
+    		if (rs.next()) {
+    			state.set_B1( AT_API_Helper.getByteArray( rs.getLong("account_id") ) );
+    			state.set_B2( AT_API_Helper.getByteArray( rs.getLong("asset_id") ) );
+    			state.set_B3( AT_API_Helper.getByteArray( rs.getLong("quantity") ) );
+            }
+    			
+            rs.close();
+    		
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}
 	}
 	
 	@Override //0x0400
@@ -827,6 +818,26 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 			
 	}
 	
+	@Override  //0x451
+	public long send_Asset_to_Address_in_B( long val , AT_Machine_State state ) {
+		
+		if ( state.getG_balance() >= Constants.ONE_NXT ) { 
+			if ( state.getG_balance() >= val ) {
+				//AT_Transaction tx = new AT_Transaction(state.getId(), state.get_B1().clone() , val, null );
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null, 0, 0 );
+				state.addTransaction( tx );
+				state.setG_balance( state.getG_balance() - val );
+			}
+			else {
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null, 0 ,0 );			
+				state.addTransaction( tx );
+				state.setG_balance( 0L );
+				//at.setG_balance( at.getG_balance() - 123 );
+			}
+		}
+		return 1;
+	}
+
 	//get txs in a block with index > numOfTx
     public static List<Long> findATTransactions(int startHeight ,Long atID, int numOfTx){
     	try (Connection con = Db.db.getConnection();
@@ -917,7 +928,25 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     	}    		
     }
     
-	//get next account's count by x,y 
+	//get distinct account's count by x,y 
+    public static int getMovesCountGroupbyAssetId(int startHeight, int endHeight){
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT count(ccount_id) as account_count FROM move "
+    					+ " WHERE height between ? and ? and step = 'BUID'"
+    					+ " groupby asset_id, account_id")) {
+    		pstmt.setInt(1, startHeight);
+    		pstmt.setInt(2, endHeight);    		
+    		ResultSet rs = pstmt.executeQuery();
+    		if (rs.next())
+    			return rs.getInt("account_count");
+    		else
+    			return 0;
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}    		
+    }
+    
+    //get next account's count by x,y 
     public static long getAccountIdFromMoveByRownum(int startHeight, int endHeight, int x, int y, int rownum){
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT distinct account_id FROM move m "
@@ -937,7 +966,8 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     	} catch (SQLException e) {
     		throw new RuntimeException(e.toString(), e);
     	}    		
-    }   
+    }  
+    
     //get the latest tx in in blockchain with height > , and type= ?
     public static Long findTransactionToAT(int startHeight ,Long atID, int transactionType){
     	Long transactionId;
