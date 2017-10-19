@@ -431,6 +431,10 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 					systemATId = Constants.GAME_PREDISTRIBUTE_FSM_ID;
 				else if (name.equals(Constants.GAME_AIRDROP_FSM_NAME))
 					systemATId = Constants.GAME_AIRDROP_FSM_ID;
+				else if (name.equals(Constants.GAME_SHARE_REDEEM_FSM_NAME))
+					systemATId = Constants.GAME_SHARE_REDEEM_FSM_ID;
+				else if (name.equals(Constants.GAME_DIVIDEND_FSM_NAME))
+					systemATId = Constants.GAME_DIVIDEND_FSM_ID;
 				
 				if ( systemATId == 0 )
 					throw new ATIdNotAcceptedException("Invalid AT Id, equals 0" );

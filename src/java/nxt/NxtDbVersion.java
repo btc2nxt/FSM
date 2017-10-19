@@ -379,6 +379,9 @@ class NxtDbVersion extends DbVersion {
             case 148:
                 apply("ALTER TABLE asset ADD COLUMN IF NOT EXISTS land_id TINYINT NOT NULL default 0");                
             case 149:
+                apply("CREATE TABLE IF NOT EXISTS land (db_id IDENTITY, id SMALLINT NOT NULL, x SMALLINT NOT NULL, y SMALLINT NOT NULL, x1 SMALLINT NOT NULL, y1 SMALLINT NOT NULL,"
+                		+ " land_type VARCHAR NOT NULL, players_PerPoint SMALLINT NOT NULL, asset_id BIGINT NOT NULL, "
+                		+ " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");            	
             case 150:            	
                 apply("CREATE TABLE IF NOT EXISTS land_completed (db_id IDENTITY, x_coordinate SMALLINT NOT NULL, y_coordinate SMALLINT NOT NULL, life_value BIGINT NOT NULL, "
                 + " height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");

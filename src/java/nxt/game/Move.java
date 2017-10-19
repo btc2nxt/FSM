@@ -229,6 +229,7 @@ public final class Move {
     private int xCoordinate;
     private int yCoordinate;
     private long lifeValue;    
+    private long assetId;    
     
     private MoveType step;
 
@@ -280,6 +281,7 @@ public final class Move {
         this.yCoordinate = yCoordinate;
         this.step = MoveType.valueOf(step);
         this.lifeValue = lifeValue;
+        this.assetId = assetId;
     }
 	
     private Move(ResultSet rs) throws SQLException {
@@ -293,13 +295,14 @@ public final class Move {
         this.yCoordinate = rs.getInt("y_coordinate");
 		this.step = MoveType.valueOf(rs.getString("step"));
 		this.lifeValue = rs.getLong("life_Value");		
+		this.assetId = rs.getLong("asset_id");		
     }	
 
 	private void save(Connection con)
 	{
         try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO move (account_id, collect_power, "
-                + "attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, step, life_Value, height) "
-        		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                + "attack_power, defense_value, healthy_index, x_coordinate, y_coordinate, step, life_Value, asset_id, height) "
+        		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
             pstmt.setLong(++i, this.getAccountId());
 			pstmt.setInt(++i, this.getCollectPower());
@@ -311,6 +314,7 @@ public final class Move {
             //pstmt.setInt(++i, this.getMoveType().ordinal());
             DbUtils.setString( pstmt , ++i , this.getMoveTypeStr() );
             pstmt.setLong(++i, this.getLifeValue());
+            pstmt.setLong(++i, this.getAssetId());
 			pstmt.setInt( ++i , Nxt.getBlockchain().getHeight() );
 
 			pstmt.executeUpdate();
@@ -358,6 +362,10 @@ public final class Move {
     }
     
     public long getLifeValue() {
+        return lifeValue;
+    }
+    
+    public long getAssetId() {
         return lifeValue;
     }
     
