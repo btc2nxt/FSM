@@ -21,6 +21,17 @@ public final class TownMap {
         WALL_AREA, COIN_AREA, HOTEL, RESTAURANT, HEALTHY_CLUB, MARTIL_CENTER, WEAPON_FACTORY
     }	
     
+    public static final int TOWN_X = 0;
+    public static final int TOWN_Y = 0;
+    public static final int TOWN_X1 = 110;
+    public static final int TOWN_Y1 = 110;
+    public static final int COIN_LAND_BEGIN = 0;
+    public static final int COIN_LAND_END = 7;
+    public static final int HOTEL_LAND_BEGIN = 1;
+    public static final int HOTEL_LAND_END = 10;
+    public static final int RESTAURANT_LAND_BEGIN = 11;
+    public static final int RESTAURANT_LAND_END = 14;
+	
     public static class Land {
     	private int landId;
     	private final DbKey dbKey;    	
@@ -67,7 +78,7 @@ public final class TownMap {
             this.y = rs.getInt("y");
             this.x1 = rs.getInt("x1");
             this.y1 = rs.getInt("y1");     
-    		this.landType = LandDescription.valueOf(rs.getString("landType"));
+    		this.landType = LandDescription.valueOf(rs.getString("land_Type"));
     		this.playersPerPoint = rs.getInt("players_PerPoint");    		
             this.assetId = rs.getLong("asset_id");
 
@@ -107,6 +118,10 @@ public final class TownMap {
     		return y1;
     	} 
     	
+    	public long getAssetId() {
+    		return assetId;
+    	}
+    	
     	public LandDescription getLandType() {
     		return this.landType;
     	}
@@ -135,38 +150,25 @@ public final class TownMap {
 
     };
     
+    public static Land getLand(int id) {
+        return id == 0 ? null : landTable.get(landDbKeyFactory.newKey(id));
+    }
+    
     public static DbIterator<Land> getAllLands(int from, int to) {
         return landTable.getAll(from, to);
     }
     
     public static Land[] lands;
-    static int townX;
-    static int townY;
-    static int townX1;
-    static int townY1;
-    static int coinLandBegin;
-    static int coinLandEnd;
-    static int hotelLandBegin;
-    static int hotelLandEnd;
-    static int restaurantLandBegin;
-    static int restaurantLandEnd;
+
     
     private final static TownMap instance = new TownMap();
     
     public static void init() {}
     
     private TownMap() {
-    	townX = 0;
-    	townY = 0;
-    	townX1 = 110;
-    	townY1 = 110;
-    	coinLandBegin = 0;
-    	coinLandEnd = 6;
-    	hotelLandBegin = 10;
-    	hotelLandEnd = 13;    	
-    	
+   	
     	//there are 72 buildings, 7 coin areas.ignore walls
-    	lands = new Land[79];
+    	lands = new Land[15];
 
     	//7 coin areas
     	lands[0] = new Land(0, 1,  1, 39, 39,LandDescription.COIN_AREA,(long) -1);
@@ -178,38 +180,22 @@ public final class TownMap {
     	lands[6] = new Land(6, 51, 60, 59, 109,LandDescription.COIN_AREA,(long) -1);    	
     	
     	//block 1-1 from (1,41) to (49,49), total 10 buildings
-    	lands[10] = new Land(10, 1, 41,  4, 49,LandDescription.HOTEL,(long) -1);
-    	lands[11] = new Land(11, 6, 41,  9, 49,LandDescription.HOTEL,(long) -1);
-    	lands[12] = new Land(12, 11, 41, 14, 49,LandDescription.HOTEL,(long) -1);
-    	lands[13] = new Land(13, 16, 41, 19, 49,LandDescription.HOTEL,(long) -1);
-    	lands[14] = new Land(14, 21, 41, 24, 49,LandDescription.RESTAURANT,(long) -1);    	
-    	lands[15] = new Land(15, 16, 41, 29, 49,LandDescription.RESTAURANT,(long) -1);    	
-    	lands[16] = new Land(16, 31, 41, 34, 49,LandDescription.RESTAURANT,(long) -1);    	
-    	lands[17] = new Land(17, 36, 41, 39, 49,LandDescription.RESTAURANT,(long) -1);
+    	lands[7] = new Land(7, 1, 41,  4, 49,LandDescription.HOTEL,(long) -1);
+    	lands[8] = new Land(8, 6, 41,  9, 49,LandDescription.HOTEL,(long) -1);
+    	lands[9] = new Land(9, 11, 41, 14, 49,LandDescription.HOTEL,(long) -1);
+    	lands[10] = new Land(10, 16, 41, 19, 49,LandDescription.HOTEL,(long) -1);
+    	lands[11] = new Land(11, 21, 41, 24, 49,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[12] = new Land(12, 16, 41, 29, 49,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[13] = new Land(13, 31, 41, 34, 49,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[14] = new Land(14, 36, 41, 39, 49,LandDescription.RESTAURANT,(long) -1);
 	
     }
     
 	public static TownMap getInstance( ){
 		return instance;
 	}
-	
-    public int getTownX() {
-        return townX;
-    }
-    
-    public int getTownX1() {
-        return townX1;
-    }
-
-    public static int getTownY() {
-        return townY;
-    }
-    
-    public int getTownY1() {
-        return townY1;
-    }
-    
-    public static Land getLand(int nLand) {
+	   
+    public static Land getLandFromArray(int nLand) {
         return lands[nLand];
     }
     

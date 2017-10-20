@@ -2207,21 +2207,29 @@ public abstract class TransactionType {
 
         	@Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                Attachment.GameMove attachment = (Attachment.GameMove)transaction.getAttachment();
+                Attachment.GameBuild attachment = (Attachment.GameBuild)transaction.getAttachment();
             	long senderId = transaction.getSenderId();
             	int x = attachment.getXCoordinate();
             	int y = attachment.getYCoordinate();         
-                boolean  inCollectArea = false;
+                int landId = 0;
                 
-                for ( int i = 0; i <8; i++) {
-                	if (x >= TownMap.getLand(i).getX() && x <= TownMap.getLand(i).getX1()
-                			&& y >= TownMap.getLand(i).getY() & y <= TownMap.getLand(i).getY1()) {
-                		inCollectArea = true;
+                for ( int i = TownMap.HOTEL_LAND_BEGIN; i <= TownMap.RESTAURANT_LAND_END; i++) {
+                	if (x >= TownMap.getLandFromArray(i).getX() && x <= TownMap.getLandFromArray(i).getX1()
+                			&& y >= TownMap.getLandFromArray(i).getY() & y <= TownMap.getLandFromArray(i).getY1()) {
+                		landId = i;
                 		break;
                 	}
                 }
-                if (!inCollectArea)	
+                if (landId == 0)	
                 	throw new NxtException.NotValidException("not in building area: ");
+                
+                if (transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD) {
+                	TownMap.Land land = TownMap.getLand(landId);
+                	if (land == null)	
+                		throw new NxtException.NotValidException("don't bind to an asset ");
+                	else if (land.getAssetId() != attachment.getAssetId())
+                		throw new NxtException.NotValidException("this land has wrong asset id ");
+                }
 
                 if (Move.getCoordinatePlayersCount(x, y) > Constants.MAX_PLAYERS_PER_COORDINATE)
                 	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
@@ -2237,17 +2245,19 @@ public abstract class TransactionType {
                     if (transaction.getType().getSubtype() == SUBTYPE_GAME_BE_WORKER)
                     	throw new NxtException.NotValidException("Player is a worker already. " + attachment.getJSONObject());
                     
-                    Move move = Move.getMove(senderId);
-                    if (move.getLifeValue() >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
-                    	throw new NxtException.NotValidException("Build finished. " + attachment.getJSONObject());
+                    Move.LandCompleted landCompleted = Move.getLandCompleted(x, y);
+                    if (landCompleted != null)
+                    	if (landCompleted.getLifeValue() >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+                    		throw new NxtException.NotValidException("Build finished. " + attachment.getJSONObject());
                 }
             	else 
                    	throw new NxtException.NotValidException("Collector cannot be a worker or build. " + attachment.getJSONObject());
                     	
             	Move move = Move.getMove(senderId);
-            	if (move != null && transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD) {
-                	if (move.getXCoordinate() != x && move.getYCoordinate() != y)
-                		throw new NxtException.NotValidException("Worker needn't move . " + attachment.getJSONObject());                	
+            	if (move != null) {
+            		if (move.getMoveType() == Move.MoveType.BUILD && transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD)
+            			if (move.getXCoordinate() != x && move.getYCoordinate() != y)
+            				throw new NxtException.NotValidException("Worker needn't move . " + attachment.getJSONObject());                	
                 }
                 
             }

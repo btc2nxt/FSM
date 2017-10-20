@@ -28,7 +28,7 @@ public final class Move {
         private final int x;
         private final int y;
         private final DbKey dbKey;
-        private final long lifeValue;        
+        private long lifeValue;        
 
         private LandCompleted(int x, int y, long lifeValue) {
             this.x = x;
@@ -203,10 +203,20 @@ public final class Move {
         		move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
         		--move.collectPower;
             
-        		if (attachment.getAppendixName().equals("Build") && move.lifeValue < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE) {
-        			if (move.lifeValue + Constants.GAME_BRICK_RATE >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
-        				landCompletedTable.insert(new LandCompleted(x,y,move.lifeValue)); //setLifeValueOfLandAsset(x,y,move.lifeValue);
+        		if (attachment.getAppendixName().equals("Build")) {
+        			LandCompleted landCompleted = getLandCompleted(x,y);
+        			if (landCompleted != null) {
+        				if (landCompleted.lifeValue < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+        					landCompleted.lifeValue = landCompleted.lifeValue + Constants.GAME_BRICK_RATE;
+        				
+        				if (landCompleted.lifeValue <= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+        					landCompletedTable.insert(landCompleted);
+        			}
+        			else {
+        				landCompletedTable.insert(new LandCompleted(x, y,Constants.GAME_BRICK_RATE ));
+        			}
         			move.lifeValue = Constants.GAME_BRICK_RATE;
+        			move.assetId = ((Attachment.GameBuild) attachment).getAssetId();
                 }
         	}
         	else
@@ -366,7 +376,7 @@ public final class Move {
     }
     
     public long getAssetId() {
-        return lifeValue;
+        return assetId;
     }
     
     /*void setAccountPlayer(int xCoordinate, int yCoordinate, MoveType step) {

@@ -1985,7 +1985,7 @@ public interface Attachment extends Appendix {
         }    	
     }
     
-    public final static class GameBeWorker extends GameMove {
+    public final static class GameBeWorker extends GameBuild {
 
     	GameBeWorker(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
@@ -1995,8 +1995,8 @@ public interface Attachment extends Appendix {
             super(attachmentData);
         }
 
-    	public GameBeWorker(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
-            super(xCoordinate, yCoordinate);
+    	public GameBeWorker(short xCoordinate, short yCoordinate, long assetId) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate, assetId);
         }
 
     	@Override
@@ -2061,29 +2061,64 @@ public interface Attachment extends Appendix {
         }
     }
     
-    public final static class GameBuild extends GameMove {
+    public static class GameBuild extends GameMove {
+    	//private final short xCoordinate;
+    	//private final short yCoordinate;
+    	private final long assetId;
+
     	GameBuild(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
+			//this.xCoordinate = buffer.getShort();
+			//this.yCoordinate = buffer.getShort();
+			this.assetId = buffer.getLong();
         }
 
     	GameBuild(JSONObject attachmentData) {
             super(attachmentData);
+            //this.xCoordinate = ((Long) attachmentData.get("xCoordinate")).shortValue();
+            //this.yCoordinate = ((Long) attachmentData.get("yCoordinate")).shortValue();
+            this.assetId = Convert.parseUnsignedLong((String) attachmentData.get("asset"));            
         }
 
-    	public GameBuild(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
-            super(xCoordinate, yCoordinate);
+    	public GameBuild(short xCoordinate, short yCoordinate, long assetId) throws NxtException.NotValidException {
+    		super(xCoordinate, yCoordinate);
+    		//this.xCoordinate = xCoordinate;
+            //this.yCoordinate = yCoordinate;
+            this.assetId = assetId;
         }
-        
-    	@Override
+
+        @Override
+        int getMySize() {
+            return 2 + 2 + 8;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+        	buffer.putShort(super.xCoordinate);
+            buffer.putShort(super.yCoordinate);
+            buffer.putLong(assetId);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+        	attachment.put("xCoordinate", super.xCoordinate);
+        	attachment.put("yCoordinate", super.yCoordinate);
+        	attachment.put("asset", Convert.toUnsignedLong(assetId));
+        }
+
+        @Override
         public String getAppendixName() {
             return "Build";
         }
-
+               
+        public long getAssetId() {
+            return assetId;
+        } 
+        
         @Override
         public TransactionType getTransactionType() {
             return TransactionType.Game.BUILD;
         }
-
     }
     
     public final static class GameCheckIn extends GameMove {

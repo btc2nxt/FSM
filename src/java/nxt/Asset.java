@@ -92,7 +92,7 @@ public final class Asset {
         this.description = rs.getString("description");
         this.quantityQNT = rs.getLong("quantity");
         this.decimals = rs.getByte("decimals");
-        this.landId = rs.getByte("landId");        
+        this.landId = rs.getByte("land_Id");        
     }
 
     private void save(Connection con) throws SQLException {

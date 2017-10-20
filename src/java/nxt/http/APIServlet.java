@@ -183,7 +183,8 @@ public final class APIServlet extends HttpServlet {
         map.put("startAT",StartAT.instance);
         map.put("gameEnter",GameEnter.instance); 
         map.put("gameMove",GameMove.instance);
-        map.put("gameConsume",GameConsume.instance);          
+        map.put("gameConsume",GameConsume.instance);
+        map.put("gameBuild",GameBuild.instance);
 
         if (API.enableDebugAPI) {
             map.put("clearUnconfirmedTransactions", ClearUnconfirmedTransactions.instance);

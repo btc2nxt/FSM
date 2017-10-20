@@ -41,7 +41,7 @@ public final class GameEnter extends CreateTransaction {
         if (name.equals("Collector"))
         	attachment = new Attachment.GameBeCollector(x, y);
         else if (name.equals("Worker"))
-        	attachment = new Attachment.GameBeWorker(x, y);
+        	attachment = new Attachment.GameBeWorker(x, y, 0);
         else attachment = null;
         
         return createTransaction(req, account, attachment);
