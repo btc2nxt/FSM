@@ -501,7 +501,7 @@ public class AT_API_Impl implements AT_API
 	
 	@Override
 	public long send_Asset_to_Address_in_B( long val , AT_Machine_State state ) {
-		return platform.send_to_Address_in_B( val , state );
+		return platform.send_Asset_to_Address_in_B( val , state );
 	}	
 
 }

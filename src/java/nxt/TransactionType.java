@@ -1833,7 +1833,7 @@ public abstract class TransactionType {
                 if (atPayments != null) {
         		for (AT_Transaction tx : atPayments )
         		{
-                    AT.addATPayment(atStateId, ++paymentNo, tx.getRecipientIdLong(), tx.getAmount(), tx.getX(), tx.getY());
+                    AT.addATPayment(atStateId, ++paymentNo, tx.getRecipientIdLong(), tx.getAmount(), tx.getX(), tx.getY(), tx.getAssetId());
                     Account recipientAccountOfPayment = Account.addOrGetAccount(tx.getRecipientIdLong());                   
                     recipientAccountOfPayment.addToBalanceAndUnconfirmedBalanceNQT(tx.getAmount());
             		paymentsAmount +=tx.getAmount();                    

@@ -1722,7 +1722,7 @@ public interface Attachment extends Appendix {
         }
 		@Override
 		int getMySize() {
-            return 8 + 2 + 2 + 8 + 8 + 4 + 1 + (atPayments == null ? 0 : atPayments.size()) *24 + 2 + (machineCode ==null ? 0 : machineCode.length) + 2 + (machineData ==null ? 0 : machineData.length);
+            return 8 + 2 + 2 + 8 + 8 + 4 + 1 + (atPayments == null ? 0 : atPayments.size()) *32 + 2 + (machineCode ==null ? 0 : machineCode.length) + 2 + (machineData ==null ? 0 : machineData.length);
 		}
 
 		@Override
@@ -1741,6 +1741,7 @@ public interface Attachment extends Appendix {
     				buffer.putLong((long) tx.getAmount());		    			
     				buffer.putInt((int) tx.getX());
     				buffer.putInt((int) tx.getY());
+    				buffer.putLong((long) tx.getAssetId());
     			}
     		}
             buffer.putShort((short) (machineCode == null ? 0 :machineCode.length));

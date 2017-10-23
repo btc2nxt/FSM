@@ -655,17 +655,21 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		clear_B( state );
 		
     	try (Connection con = Db.db.getConnection();
-    			PreparedStatement pstmt = con.prepareStatement("SELECT top 1 asset_id, account_id, sum(life_value) as quantity FROM move "
-    					+ " WHERE height between ? and  ? and step = 'BUILD' and rownum()= ? "
-    					+ " groupby asset_id, account_id ")) {
+    			PreparedStatement pstmt = con.prepareStatement("SELECT asset_id, account_id, sum(life_value) as quantity FROM move "
+    					+ " WHERE height between ? and  ? and step = 'BUILD' "//and rownum()= ? "
+    					+ " group by asset_id, account_id ")) {
     		pstmt.setInt(1, val);
     		pstmt.setInt(2, val1);   		
     		ResultSet rs = pstmt.executeQuery();
     		
-    		if (rs.next()) {
+    		while (rs.next()) {
+    			if (rs.getRow() < rownum)
+    				continue;
     			state.set_B1( AT_API_Helper.getByteArray( rs.getLong("account_id") ) );
     			state.set_B2( AT_API_Helper.getByteArray( rs.getLong("asset_id") ) );
     			state.set_B3( AT_API_Helper.getByteArray( rs.getLong("quantity") ) );
+    			Logger.logDebugMessage("get a record of  "+rownum);
+    			break;
             }
     			
             rs.close();
@@ -692,12 +696,12 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		if ( state.getG_balance() >= Constants.ONE_NXT ) { 
 			if ( state.getG_balance() >= val ) {
 				//AT_Transaction tx = new AT_Transaction(state.getId(), state.get_B1().clone() , val, null );
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null, 0, 0 );
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null, 0, 0, 0 );
 				state.addTransaction( tx );
 				state.setG_balance( state.getG_balance() - val );
 			}
 			else {
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null, 0 ,0 );			
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null, 0 ,0, 0 );			
 				state.addTransaction( tx );
 				state.setG_balance( 0L );
 				//at.setG_balance( at.getG_balance() - 123 );
@@ -713,7 +717,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		//AT at = AT.getAT( atId );
 		//bug: G_balance = 0 ,AT has to stop
 		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
-			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null,0 ,0 );
+			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null,0 ,0, 0 );
 			state.addTransaction( tx );
 			state.setG_balance( 0L );			
 		}
@@ -728,7 +732,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		
 		if ( at.getP_balance() > at.getG_balance()  )
 		{
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getG_balance(), null, 0, 0 );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getG_balance(), null, 0, 0, 0 );
 			state.addTransaction( tx );
 			
 			at.setG_balance( 0L );
@@ -737,7 +741,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		}
 		else
 		{
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getP_balance(),null, 0, 0 );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , state.getP_balance(),null, 0, 0, 0 );
 			state.addTransaction( tx );
 			
 			at.setG_balance( at.getG_balance() - at.getP_balance() );
@@ -758,7 +762,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		if ( at.getG_balance() > amount )
 		{
 		
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , amount, null, 0, 0 );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , amount, null, 0, 0, 0 );
 			state.addTransaction( tx );
 			
 			state.setG_balance( state.getG_balance() - amount );
@@ -766,7 +770,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		}
 		else
 		{
-			AT_Transaction tx = new AT_Transaction( state.get_B1() , at.getG_balance(), null, 0, 0 );
+			AT_Transaction tx = new AT_Transaction( state.get_B1() , at.getG_balance(), null, 0, 0, 0 );
 			state.addTransaction( tx );
 			
 			state.setG_balance( 0L );
@@ -812,7 +816,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		}
 		
 		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
-			AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(Constants.GAME_AIRDROP_FSM_ID) , 0, null ,x ,y );
+			AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(Constants.GAME_AIRDROP_FSM_ID) , 0, null ,x ,y, 0 );
 			state.addTransaction( tx );			
 		}
 			
@@ -824,12 +828,12 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		if ( state.getG_balance() >= Constants.ONE_NXT ) { 
 			if ( state.getG_balance() >= val ) {
 				//AT_Transaction tx = new AT_Transaction(state.getId(), state.get_B1().clone() , val, null );
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null, 0, 0 );
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null, 0, 0, AT_API_Helper.getLong(state.get_B2())  );
 				state.addTransaction( tx );
 				state.setG_balance( state.getG_balance() - val );
 			}
 			else {
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null, 0 ,0 );			
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null, 0 ,0, AT_API_Helper.getLong(state.get_B2()) );			
 				state.addTransaction( tx );
 				state.setG_balance( 0L );
 				//at.setG_balance( at.getG_balance() - 123 );
@@ -931,14 +935,16 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	//get distinct account's count by x,y 
     public static int getMovesCountGroupbyAssetId(int startHeight, int endHeight){
     	try (Connection con = Db.db.getConnection();
-    			PreparedStatement pstmt = con.prepareStatement("SELECT count(ccount_id) as account_count FROM move "
-    					+ " WHERE height between ? and ? and step = 'BUID'"
-    					+ " groupby asset_id, account_id")) {
+    			PreparedStatement pstmt = con.prepareStatement("SELECT count(account_id) as account_count FROM move "
+    					+ " WHERE height between ? and ? and step = 'BUILD'"
+    					+ " group by asset_id, account_id")) {
     		pstmt.setInt(1, startHeight);
     		pstmt.setInt(2, endHeight);    		
     		ResultSet rs = pstmt.executeQuery();
-    		if (rs.next())
-    			return rs.getInt("account_count");
+    		if (rs.next()) {
+    			 rs.last();
+    			 return rs.getRow();
+    		}
     		else
     			return 0;
     	} catch (SQLException e) {
