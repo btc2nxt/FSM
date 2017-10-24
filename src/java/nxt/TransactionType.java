@@ -2376,21 +2376,23 @@ public abstract class TransactionType {
                 Attachment.GameMove attachment = (Attachment.GameMove)transaction.getAttachment();
             	long senderId = transaction.getSenderId();
             	int x = attachment.getXCoordinate();
-            	int y = attachment.getYCoordinate();         
+            	int y = attachment.getYCoordinate();
+                TownMap.LandDescription  landType = null;            	
                 
             	LandCompleted landCompleted = Move.getLandCompleted(x, y);
             	if (landCompleted.getLifeValue() < Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)	
                 	throw new NxtException.NotValidException("Worker is building or wrong area: ");
-
-                TownMap.LandDescription  landType = null;
-                
-                for ( int i = 0; i <8; i++) {
-                	if (x >= TownMap.getLand(i).getX() && x <= TownMap.getLand(i).getX1()
-                			&& y >= TownMap.getLand(i).getY() & y <= TownMap.getLand(i).getY1()) {
+            	
+                for ( int i = TownMap.HOTEL_LAND_BEGIN; i <= TownMap.RESTAURANT_LAND_END; i++) {
+                	if (x >= TownMap.getLandFromArray(i).getX() && x <= TownMap.getLandFromArray(i).getX1()
+                			&& y >= TownMap.getLandFromArray(i).getY() & y <= TownMap.getLandFromArray(i).getY1()) {
                 		landType = TownMap.getLand(i).getLandType();
                 		break;
                 	}
                 }
+                if (landType == null)	
+                	throw new NxtException.NotValidException("not in building area: ");
+
                 if (attachment.getAppendixName().equals("Check_In"))
                 	if (landType != TownMap.LandDescription.HOTEL )	
                 		throw new NxtException.NotValidException("wrong area ");

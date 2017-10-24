@@ -218,6 +218,10 @@ public final class Move {
         			move.lifeValue = Constants.GAME_BRICK_RATE;
         			move.assetId = ((Attachment.GameBuild) attachment).getAssetId();
                 }
+        		else if (attachment.getAppendixName().equals("Check_In"))
+        			move.lifeValue = ((Attachment.GameCheckIn) attachment).getAmountNQT();
+        		else if (attachment.getAppendixName().equals("Eat"))
+        			move.lifeValue = ((Attachment.GameEat) attachment).getAmountNQT();        		
         	}
         	else
         		move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());

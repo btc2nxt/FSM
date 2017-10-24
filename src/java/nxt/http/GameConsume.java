@@ -35,9 +35,9 @@ public final class GameConsume extends CreateTransaction {
 		
         Attachment attachment;
         if (actionName.equals("CheckIn"))
-        	attachment = new Attachment.GameCheckIn(x, y);
+        	attachment = new Attachment.GameCheckIn(x, y, amountNQT);
         else if (actionName.equals("Eat"))
-        	attachment = new Attachment.GameEat(x, y);        
+        	attachment = new Attachment.GameEat(x, y, amountNQT);        
         else attachment = null;
         
         return createTransaction(req, consumer, Constants.GAME_DIVIDEND_FSM_ID, amountNQT, attachment);
