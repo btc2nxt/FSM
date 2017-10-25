@@ -1,0 +1,109 @@
+Use Case: Dividend for Game Monopoly
+------------------------------------------
+
+Dividend of Game Monopoly distributes dividend to the asset holders by income of the hotel,
+restaurnant of the asset.
+Because there may are so many asset holders, the FSM will distributes dividend every month.
+
+Variables
+---------
+
+@00 ==> 0000000000000000	@timestamp
+@01 ==> 0500000000000000	@heightInit
+@02 ==> 0300000000000000	@AssetRedeemId
+
+Variables(must saved to blockchain)
+---------
+@03 == A1 @asset_count
+@04 == A2 @heightBegin
+@05 == A3 @heightEnd
+@06 == A4 @rownum
+@07 == B1 @income @recipient
+@08 == B2 	  @quantity
+@09 == B3 
+@0a == B4 
+@0b == @asset_id
+@0c == @dividend
+@0d == @holder_num 
+
+
+Script Assembly
+---------------
+
+if @timestamp not zero goto init                         1e000000000f
+set @heightBegin to @heightInit				 02 04000000 01000000
+
+:init (0f)
+set @timestamp to the height of the current block	 35 4603 00000000
+set @heightEnd to @timestamp				 02 05000000 00000000
+set @rownum to 0 (@A4 =0)				 01 06000000 0000000000000000
+get @asset_count of move between @heights		 37 5503 03000000 04000000 05000000
+if @asset_count != 0 goto next_asset			 1e 03000000 0b
+goto finish					         1a c9000000
+
+:next_asset(46)
+inc @rownum						 04 06000000
+next @income to B between @heights with @row group asset 34 5603 04000000 05000000
+set @asset_id  to B2					 02 0b000000 08000000
+if @asset_id == 0 goto next_asset_finish		 1b 0b000000 5f
+get total_quantity to @dividend of assetid without FSM   37 5703 0c000000 0b000000 02000000
+income/ @dividend					 09 07000000 0c000000
+set @dividend to @income				 02 0c000000 07000000
+set @holder_num to 0 					 01 0d000000 0000000000000000
+
+:next_dividend (93)
+inc @holder_num						 04 0d000000
+next account to B1 of @asset_id, @holders_count		 34 5803 0b000000 0d000000
+if @recipient == 0 goto next_asset_finish		 1b 07000000 1b
+@quantity * @dividend to @quantity			 08 08000000 0c000000
+send @quantity to @address in B1			 33 0204 08000000
+goto next_dividend					 1a 93000000
+
+:next_asset_finish(be)
+@asset_count -1						 05 03000000
+if @asset_count>0 goto next_asset			 1e 03000000 83
+
+:finish(c9)
+set @heightBegin to @timestamp				 02 04000000 00000000
+inc @heightBegin					 04 04000000
+finished						 28
+
+machinecode
+----------------
+1e000000000f02040000000100000035460300000000020500000000000000010600000000000000000000003755030300000004000000050000001e030000000b1ac900000004060000003456030400000005000000020b000000080000001b0b0000005f3757030c0000000b0000000200000009070000000c000000020c00000007000000010d0000000000000000000000040d0000003458030b0000000d0000001b070000001b08080000000c000000330204080000001a9300000005030000001e0300000083020400000000000000040400000028
+
+data
+----------------
+000000000000000005000000000000000300000000000000
+
+properties
+----------------
+01000000000000000a000000002000000058000000
+
+00000000* BNZ $00000000, :0000000f
+00000006  SET @00000004 $00000001
+0000000f  FUN @00000000 838
+00000016  SET @00000005 $00000000
+0000001f  SET @00000006 #0000000000000000
+0000002c  FUN @00000003 853 $00000004 $00000005
+0000003b  BNZ $00000003, :00000046
+00000041  JMP :      c9
+00000046  INC @00000006
+0000004b  FUN 854 $00000004 $00000005
+00000056  SET @0000000b $00000008
+0000005f  BZR $0000000b, :000000be
+00000065  FUN @0000000c 855 $0000000b $00000002
+00000074  DIV @00000007 @0000000c
+0000007d  SET @0000000c $00000007
+00000086  SET @0000000d #0000000000000000
+00000093  INC @0000000d
+00000098  FUN 856 $0000000b $0000000d
+000000a3  BZR $00000007, :000000be
+000000a9  MUL @00000008 @0000000c
+000000b2  FUN 1026 $00000008
+000000b9  JMP :      93
+000000be  DEC @00000003
+000000c3  BNZ $00000003, :00000046
+000000c9  SET @00000004 $00000000
+000000d2  INC @00000004
+000000d7  FIN
