@@ -502,6 +502,28 @@ public class AT_API_Impl implements AT_API
 	@Override
 	public long send_Asset_to_Address_in_B( long val , AT_Machine_State state ) {
 		return platform.send_Asset_to_Address_in_B( val , state );
+	}
+
+	@Override
+	public int get_AssetCount_from_Move_between_Heights_(int val, int val1, AT_Machine_State state) {
+		return platform.get_AssetCount_from_Move_between_Heights_( val , val1, state );
+	}
+
+	@Override
+	public void B_to_Income_between_Heights_groupby_Asset(int val, int val1, AT_Machine_State state) {
+		platform.B_to_Income_between_Heights_groupby_Asset( val , val1, state );
+		
+	}
+
+	@Override
+	public int get_TotalQty_by_AssetId(long val, int val1, AT_Machine_State state) {
+		return platform.get_TotalQty_by_AssetId( val , val1, state );
+	}
+
+	@Override
+	public void B_to_Account_by_AssetId(int val, int val1, AT_Machine_State state) {
+		platform.B_to_Account_by_AssetId( val , val1, state );
+		
 	}	
 
 }

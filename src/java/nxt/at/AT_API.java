@@ -341,6 +341,26 @@ public interface AT_API {
 	 */
 	public void B_to_Row_between_Heights_groupby_Asset_Account( int val, int val1, AT_Machine_State state );
 
+	/**
+	 * sets @addr3 to count(distinct asset_id) from move between heights
+	 */
+	public int get_AssetCount_from_Move_between_Heights_( int val , int val1, AT_Machine_State state );
+
+	/**
+	 *  sets B1-B2 to income=sum(life_value), assetId from move between heights, and rownum in A4
+	 */
+	public void B_to_Income_between_Heights_groupby_Asset( int val, int val1, AT_Machine_State state );
+	
+	/**
+	 * sets @addr3 to sum(quantity) from asset  where assetId = assetid, and assetid<>AssetRdeemId
+	 */
+	public int get_TotalQty_by_AssetId( long val , int val1, AT_Machine_State state );
+
+	/**
+	 *  sets B1-B2 to accountId, quantity from asset  addr1=assetid,  addr2=rownum
+	 */
+	public void B_to_Account_by_AssetId( int val, int val1, AT_Machine_State state );
+	
 	// end range 0x0300..0x03ff
 	// ------------------------
 	

@@ -679,6 +679,114 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     	}
 	}
 	
+	@Override
+	/* 0x0355 EXT_FUN_RET_DAT_2
+	 * get count of assetid  from move between height(@val,val1)
+	 */
+	public int get_AssetCount_from_Move_between_Heights_( int val, int val1, AT_Machine_State state ) {	
+		Logger.logDebugMessage("get asset count between height "+startHeight + " height: "+ endHeight );
+		
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT count(distinct asset_id) as asset_count FROM move "
+    					+ " WHERE height between ? and ? and (step = 'CHECK_IN' or step = 'EAT'")) {
+    		pstmt.setInt(1, val);
+    		pstmt.setInt(2, val1);    		
+    		ResultSet rs = pstmt.executeQuery();
+    		if (rs.next()) {
+    			 return rs.getInt("asset_count");
+    		}
+    		else
+    			return 0;
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}  
+	}
+	
+	@Override
+	/* 0x0356 EXT_FUN_DAT_2
+	 * get tx between @heights(val,val1) with rownu=A4
+	 */
+	public void B_to_Income_between_Heights_groupby_Asset( int val , int val1, AT_Machine_State state ) {
+		int rownum = (int) AT_API_Helper.getLong(state.get_A4());		
+		Logger.logDebugMessage("get record of move with height between "+val + " ...  "+  val1);
+		clear_B( state );
+		
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT asset_id, sum(life_value) as income FROM move "
+    					+ " WHERE height between ? and  ? and (step = 'CHECK_IN' or step = 'EAT') "//and rownum()= ? "
+    					+ " group by asset_id ")) {
+    		pstmt.setInt(1, val);
+    		pstmt.setInt(2, val1);   		
+    		ResultSet rs = pstmt.executeQuery();
+    		
+    		while (rs.next()) {
+    			if (rs.getRow() < rownum)
+    				continue;
+    			state.set_B1( AT_API_Helper.getByteArray( rs.getLong("income") ) );
+    			state.set_B2( AT_API_Helper.getByteArray( rs.getLong("asset_id") ) );    			
+    			Logger.logDebugMessage("get a record of  "+rownum);
+    			break;
+            }
+    			
+            rs.close();
+    		
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}
+	}
+	
+	@Override
+	/* 0x0357 EXT_FUN_RET_DAT_2
+	 * get sum(quantity) from account_asset where assetid=@val,val1)
+	 */
+	public int get_TotalQty_by_AssetId( long val, int val1, AT_Machine_State state ) {		
+		Logger.logDebugMessage("get totalQty from account_asset assetId= "+val );
+		
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT sum(quantity) as total_qty from account_asset "
+    					+ " WHERE asset_id ? and asset_id <> ?")) {
+    		pstmt.setLong(1, val);
+    		pstmt.setInt(2, val1);    		
+    		ResultSet rs = pstmt.executeQuery();
+    		if (rs.next()) {
+    			 return rs.getInt("total_qty");
+    		}
+    		else
+    			return 0;
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	} 
+	}
+	
+	@Override
+	/* 0x0358 EXT_FUN_DAT_2
+	 * B1=@recipient, from account_asset  val=assetid,val=row
+	 */
+	public void B_to_Account_by_AssetId( int val , int val1, AT_Machine_State state ) {
+		int rownum = (int) AT_API_Helper.getLong(state.get_A4());		
+		Logger.logDebugMessage("get account from account_asset with assetId "+val + "  rownum:  "+  val1);
+		clear_B( state );
+		
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT account_id, quantity FROM account_asset "
+    					+ " WHERE asset_id = ? and asset_id <>3 and  and rownum()= ? ")) {
+    		pstmt.setInt(1, val);
+    		pstmt.setInt(2, val1);   		
+    		ResultSet rs = pstmt.executeQuery();
+    		
+    		if (rs.next()) {
+    			state.set_B1( AT_API_Helper.getByteArray( rs.getLong("account_id") ) );
+    			state.set_B2( AT_API_Helper.getByteArray( rs.getLong("quantity") ) );
+    			Logger.logDebugMessage("get a record of  "+rownum);
+            }
+    			
+            rs.close();
+    		
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e.toString(), e);
+    	}
+	}
+	
 	@Override //0x0400
 	public long get_Current_Balance( AT_Machine_State state ) {
 		long balance = Account.getAccount( AT_API_Helper.getLong(state.getId()) ).getBalanceNQT();

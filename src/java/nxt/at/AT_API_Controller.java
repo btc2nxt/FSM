@@ -298,6 +298,18 @@ public class AT_API_Controller{
         	case 0x354:
         		atApi.B_to_Row_between_Heights_groupby_Asset_Account( (int)val1 , (int)val2, state );	
         		break;
+        	case 0x355:
+        		rc = atApi.get_AssetCount_from_Move_between_Heights_( (int)val1 , (int)val2, state );	
+        		break;
+        	case 0x356:
+        		atApi.B_to_Income_between_Heights_groupby_Asset( (int)val1 , (int)val2, state );	
+        		break;
+        	case 0x357:
+        		rc = atApi.get_TotalQty_by_AssetId( val1 , (int)val2, state );	
+        		break;
+        	case 0x358:
+        		atApi.B_to_Account_by_AssetId( (int)val1 , (int)val2, state );	
+        		break;        		
         	case 0x450:
         		atApi.airDrop_Coordinate_In_B( val1 , (int)val2, state );	
         		break;	          		
