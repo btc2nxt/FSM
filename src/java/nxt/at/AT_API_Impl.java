@@ -516,12 +516,12 @@ public class AT_API_Impl implements AT_API
 	}
 
 	@Override
-	public int get_TotalQty_by_AssetId(long val, int val1, AT_Machine_State state) {
+	public long get_TotalQty_by_AssetId(long val, int val1, AT_Machine_State state) {
 		return platform.get_TotalQty_by_AssetId( val , val1, state );
 	}
 
 	@Override
-	public void B_to_Account_by_AssetId(int val, int val1, AT_Machine_State state) {
+	public void B_to_Account_by_AssetId(long val, int val1, AT_Machine_State state) {
 		platform.B_to_Account_by_AssetId( val , val1, state );
 		
 	}	

@@ -354,12 +354,12 @@ public interface AT_API {
 	/**
 	 * sets @addr3 to sum(quantity) from asset  where assetId = assetid, and assetid<>AssetRdeemId
 	 */
-	public int get_TotalQty_by_AssetId( long val , int val1, AT_Machine_State state );
+	public long get_TotalQty_by_AssetId( long val , int val1, AT_Machine_State state );
 
 	/**
 	 *  sets B1-B2 to accountId, quantity from asset  addr1=assetid,  addr2=rownum
 	 */
-	public void B_to_Account_by_AssetId( int val, int val1, AT_Machine_State state );
+	public void B_to_Account_by_AssetId( long val, int val1, AT_Machine_State state );
 	
 	// end range 0x0300..0x03ff
 	// ------------------------

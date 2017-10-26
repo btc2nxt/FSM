@@ -1765,9 +1765,7 @@ public abstract class TransactionType {
 			@Override
 			AbstractAttachment parseAttachment(JSONObject attachmentData)
 					throws NotValidException {
-				//Logger.logDebugMessage("parsing AT state attachment from json");
 				Attachment.AutomatedTransactionsState atStateAttachment = new Attachment.AutomatedTransactionsState(attachmentData);
-				//Logger.logDebugMessage("attachment AT State parsed.");
 				return atStateAttachment;
 			}
 
@@ -1778,13 +1776,24 @@ public abstract class TransactionType {
                 List<AT_Transaction> atPayments = attachment.getATPayments();
                 Account atAccount = Account.getAccount(attachment.getATId());
                 long paymentsAmount =0;
+                long unconfirmedAssetBalance;
                 if (atPayments != null) {
                 	for (AT_Transaction tx : atPayments )
                 	{
-                		paymentsAmount +=tx.getAmount();
+                		if (tx.getAssetId() == 0)
+                			paymentsAmount +=tx.getAmount();
+                		else //update asset unconfirmed balance
+                		{
+                            unconfirmedAssetBalance = atAccount.getUnconfirmedAssetBalanceQNT(tx.getAssetId());
+                            if (unconfirmedAssetBalance >= 0 && unconfirmedAssetBalance >= tx.getAmount()) {
+                            	atAccount.addToUnconfirmedAssetBalanceQNT(tx.getAssetId(), -tx.getAmount());
+                            }
+                            else
+                            	return false;
+                		}
                 	}
                 }
-                Logger.logDebugMessage("Applying AT_State attachment unconfirmed balance succeed, payment no: "+ paymentsAmount);
+                Logger.logDebugMessage("Applying AT_State attachment unconfirmed balance succeed, payment total: "+ paymentsAmount);
 
                 if (atAccount.getUnconfirmedBalanceNQT() >= paymentsAmount) {
                 	atAccount.addToUnconfirmedBalanceNQT(-paymentsAmount);
@@ -1802,7 +1811,10 @@ public abstract class TransactionType {
                 if (atPayments != null) {
                 	for (AT_Transaction tx : atPayments )
                 	{
-                		paymentsAmount +=tx.getAmount();
+                		if (tx.getAssetId() == 0)
+                			paymentsAmount +=tx.getAmount();
+                		else
+                           	atAccount.addToUnconfirmedAssetBalanceQNT(tx.getAssetId(), tx.getAmount());
                 	}
                 }
             	atAccount.addToUnconfirmedBalanceNQT(paymentsAmount);                
@@ -1827,18 +1839,27 @@ public abstract class TransactionType {
                 
 				//Logger.logDebugMessage("validating AT payment attachment");                
                 List<AT_Transaction> atPayments = attachment.getATPayments();
-                Long atStateId = transaction.getId();                
+                Long atStateId = transaction.getId();
+                Account atAccount = Account.getAccount(attachment.getATId());                
                 short paymentNo = 0;
-                long paymentsAmount =0;                
+                long paymentsAmount =0; 
+                
                 if (atPayments != null) {
         		for (AT_Transaction tx : atPayments )
         		{
                     AT.addATPayment(atStateId, ++paymentNo, tx.getRecipientIdLong(), tx.getAmount(), tx.getX(), tx.getY(), tx.getAssetId());
-                    Account recipientAccountOfPayment = Account.addOrGetAccount(tx.getRecipientIdLong());                   
-                    recipientAccountOfPayment.addToBalanceAndUnconfirmedBalanceNQT(tx.getAmount());
-            		paymentsAmount +=tx.getAmount();                    
+                	Account recipientAccountOfPayment = Account.addOrGetAccount(tx.getRecipientIdLong());                    
+                    if (tx.getAssetId() == 0) {                   
+                    	recipientAccountOfPayment.addToBalanceAndUnconfirmedBalanceNQT(tx.getAmount());
+                    	paymentsAmount +=tx.getAmount();
+                    }
+                    else
+                    {
+                    	atAccount.addToAssetBalanceQNT(tx.getAssetId(), -tx.getAmount());
+                        recipientAccountOfPayment.addToAssetAndUnconfirmedAssetBalanceQNT(tx.getAssetId(), tx.getAmount());
+                    }
                 }
-                Account atAccount = Account.getAccount(attachment.getATId());
+
         		atAccount.addToBalanceNQT(-paymentsAmount);
                 }
                 Logger.logDebugMessage("Applying AT_State attachment succeed, payment count: "+ paymentNo);
@@ -2107,6 +2128,11 @@ public abstract class TransactionType {
         	return isDuplicate(Game.BASE_MOVE, Long.toString(transaction.getSenderId()), duplicates);
         }
         
+        @Override
+        public boolean canHaveRecipient() {
+            return false;
+        }
+        
         public static final TransactionType BASE_MOVE = new Game() {
 
             @Override
@@ -2137,16 +2163,7 @@ public abstract class TransactionType {
                 return false;
             }
         };
-        
 
-
-            @Override
-            public boolean canHaveRecipient() {
-                return false;
-            }
-
-        };
-        
         abstract static class GameCollectorBase extends Game {
 
         	@Override
@@ -2155,16 +2172,16 @@ public abstract class TransactionType {
             	long senderId = transaction.getSenderId();
             	int x = attachment.getXCoordinate();
             	int y = attachment.getYCoordinate();         
-                boolean  inCollectArea = false;
+                int landId = -1;
                 
-                for ( int i = 72; i <79; i++) {
-                	if (x >= TownMap.getLand(i).getX() && x <= TownMap.getLand(i).getX1()
-                			&& y >= TownMap.getLand(i).getY() & y <= TownMap.getLand(i).getY1()) {
-                		inCollectArea = true;
+                for ( int i = TownMap.COIN_LAND_BEGIN; i <= TownMap.COIN_LAND_END; i++) {
+                	if (x >= TownMap.getLandFromArray(i).getX() && x <= TownMap.getLandFromArray(i).getX1()
+                			&& y >= TownMap.getLandFromArray(i).getY() & y <= TownMap.getLandFromArray(i).getY1()) {
+                		landId = i;
                 		break;
                 	}
                 }
-                if (!inCollectArea)	
+                if (landId == -1)	
                 	throw new NxtException.NotValidException("not in collection area: ");
 
                 if (Move.getCoordinatePlayersCount(x, y) > Constants.MAX_PLAYERS_PER_COORDINATE)
@@ -2500,7 +2517,7 @@ public abstract class TransactionType {
         public boolean canHaveRecipient() {
             return false;
         }
-
+    };
 };
 
 }

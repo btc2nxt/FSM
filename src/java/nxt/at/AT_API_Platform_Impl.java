@@ -688,7 +688,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT count(distinct asset_id) as asset_count FROM move "
-    					+ " WHERE height between ? and ? and (step = 'CHECK_IN' or step = 'EAT'")) {
+    					+ " WHERE height between ? and ? and (step = 'CHECK_IN' or step = 'EAT')")) {
     		pstmt.setInt(1, val);
     		pstmt.setInt(2, val1);    		
     		ResultSet rs = pstmt.executeQuery();
@@ -739,20 +739,20 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	/* 0x0357 EXT_FUN_RET_DAT_2
 	 * get sum(quantity) from account_asset where assetid=@val,val1)
 	 */
-	public int get_TotalQty_by_AssetId( long val, int val1, AT_Machine_State state ) {		
+	public long get_TotalQty_by_AssetId( long val, int val1, AT_Machine_State state ) {		
 		Logger.logDebugMessage("get totalQty from account_asset assetId= "+val );
 		
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT sum(quantity) as total_qty from account_asset "
-    					+ " WHERE asset_id ? and asset_id <> ?")) {
+    					+ " WHERE asset_id = ? and account_id <> ? and latest = true ")) {
     		pstmt.setLong(1, val);
     		pstmt.setInt(2, val1);    		
     		ResultSet rs = pstmt.executeQuery();
     		if (rs.next()) {
-    			 return rs.getInt("total_qty");
+    			 return rs.getLong("total_qty");
     		}
     		else
-    			return 0;
+    			return (long)0L;
     	} catch (SQLException e) {
     		throw new RuntimeException(e.toString(), e);
     	} 
@@ -762,16 +762,16 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	/* 0x0358 EXT_FUN_DAT_2
 	 * B1=@recipient, from account_asset  val=assetid,val=row
 	 */
-	public void B_to_Account_by_AssetId( int val , int val1, AT_Machine_State state ) {
+	public void B_to_Account_by_AssetId( long val , int val1, AT_Machine_State state ) {
 		int rownum = (int) AT_API_Helper.getLong(state.get_A4());		
 		Logger.logDebugMessage("get account from account_asset with assetId "+val + "  rownum:  "+  val1);
 		clear_B( state );
 		
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT account_id, quantity FROM account_asset "
-    					+ " WHERE asset_id = ? and asset_id <>3 and  and rownum()= ? ")) {
-    		pstmt.setInt(1, val);
-    		pstmt.setInt(2, val1);   		
+    					+ " WHERE asset_id = ? and account_id <> 3 and latest = true limit ?,1")) {
+    		pstmt.setLong(1, val);
+    		pstmt.setInt(2, val1-1);   		
     		ResultSet rs = pstmt.executeQuery();
     		
     		if (rs.next()) {
@@ -809,7 +809,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 				state.setG_balance( state.getG_balance() - val );
 			}
 			else {
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance(), null, 0 ,0, 0 );			
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null, 0 ,0, 0 );			
 				state.addTransaction( tx );
 				state.setG_balance( 0L );
 				//at.setG_balance( at.getG_balance() - 123 );

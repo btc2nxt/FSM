@@ -308,7 +308,7 @@ public class AT_API_Controller{
         		rc = atApi.get_TotalQty_by_AssetId( val1 , (int)val2, state );	
         		break;
         	case 0x358:
-        		atApi.B_to_Account_by_AssetId( (int)val1 , (int)val2, state );	
+        		atApi.B_to_Account_by_AssetId( val1 , (int)val2, state );	
         		break;        		
         	case 0x450:
         		atApi.airDrop_Coordinate_In_B( val1 , (int)val2, state );	

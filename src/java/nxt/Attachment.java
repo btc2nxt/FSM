@@ -2063,28 +2063,20 @@ public interface Attachment extends Appendix {
     }
     
     public static class GameBuild extends GameMove {
-    	//private final short xCoordinate;
-    	//private final short yCoordinate;
     	private final long assetId;
 
     	GameBuild(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
-			//this.xCoordinate = buffer.getShort();
-			//this.yCoordinate = buffer.getShort();
 			this.assetId = buffer.getLong();
         }
 
     	GameBuild(JSONObject attachmentData) {
             super(attachmentData);
-            //this.xCoordinate = ((Long) attachmentData.get("xCoordinate")).shortValue();
-            //this.yCoordinate = ((Long) attachmentData.get("yCoordinate")).shortValue();
             this.assetId = Convert.parseUnsignedLong((String) attachmentData.get("asset"));            
         }
 
     	public GameBuild(short xCoordinate, short yCoordinate, long assetId) throws NxtException.NotValidException {
     		super(xCoordinate, yCoordinate);
-    		//this.xCoordinate = xCoordinate;
-            //this.yCoordinate = yCoordinate;
             this.assetId = assetId;
         }
 
@@ -2123,32 +2115,37 @@ public interface Attachment extends Appendix {
     }
     
     public final static class GameCheckIn extends GameMove {
+    	private final long assetId;
     	private final long amountNQT;
     	
     	GameCheckIn(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
+            this.assetId = buffer.getLong();
             this.amountNQT = buffer.getLong();
         }
 
     	GameCheckIn(JSONObject attachmentData) {
             super(attachmentData);
+            this.assetId = Convert.parseUnsignedLong((String) attachmentData.get("asset"));
             this.amountNQT = Convert.parseUnsignedLong((String) attachmentData.get("amountNQT"));
         }
 
-      	public GameCheckIn(short xCoordinate, short yCoordinate, long amountNQT) throws NxtException.NotValidException {
+      	public GameCheckIn(short xCoordinate, short yCoordinate, long assetId, long amountNQT) throws NxtException.NotValidException {
             super(xCoordinate, yCoordinate);
+            this.assetId = assetId;
             this.amountNQT = amountNQT;
         }
     	
         @Override
         int getMySize() {
-            return 2 + 2 + 8;
+            return 2 + 2 + 8 + 8;
         }
 
         @Override
         void putMyBytes(ByteBuffer buffer) {
         	buffer.putShort(super.xCoordinate);
             buffer.putShort(super.yCoordinate);
+            buffer.putLong(assetId);
             buffer.putLong(amountNQT);
         }
 
@@ -2156,11 +2153,16 @@ public interface Attachment extends Appendix {
         void putMyJSON(JSONObject attachment) {
         	attachment.put("xCoordinate", super.xCoordinate);
         	attachment.put("yCoordinate", super.yCoordinate);
+        	attachment.put("asset", Convert.toUnsignedLong(assetId));
         	attachment.put("amountNQT", Convert.toUnsignedLong(amountNQT));
         }
         
       	public long getAmountNQT() {
             return amountNQT;
+        } 
+        
+        public long getAssetId() {
+            return assetId;
         } 
         
       	@Override
@@ -2176,32 +2178,37 @@ public interface Attachment extends Appendix {
     }
     
     public final static class GameEat extends GameMove {
+    	private final long assetId;
     	private final long amountNQT;
     	
     	GameEat(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
+            this.assetId = buffer.getLong();
             this.amountNQT = buffer.getLong();
         }
 
     	GameEat(JSONObject attachmentData) {
             super(attachmentData);
+            this.assetId = Convert.parseUnsignedLong((String) attachmentData.get("asset"));
             this.amountNQT = Convert.parseUnsignedLong((String) attachmentData.get("amountNQT"));
         }
 
-      	public GameEat(short xCoordinate, short yCoordinate, long amountNQT) throws NxtException.NotValidException {
+      	public GameEat(short xCoordinate, short yCoordinate, long assetId, long amountNQT) throws NxtException.NotValidException {
             super(xCoordinate, yCoordinate);
+            this.assetId = assetId;
             this.amountNQT = amountNQT;
         }
     	
         @Override
         int getMySize() {
-            return 2 + 2 + 8;
+            return 2 + 2 + 8 + 8;
         }
 
         @Override
         void putMyBytes(ByteBuffer buffer) {
         	buffer.putShort(super.xCoordinate);
             buffer.putShort(super.yCoordinate);
+            buffer.putLong(assetId);
             buffer.putLong(amountNQT);
         }
 
@@ -2209,6 +2216,7 @@ public interface Attachment extends Appendix {
         void putMyJSON(JSONObject attachment) {
         	attachment.put("xCoordinate", super.xCoordinate);
         	attachment.put("yCoordinate", super.yCoordinate);
+        	attachment.put("asset", Convert.toUnsignedLong(assetId));
         	attachment.put("amountNQT", Convert.toUnsignedLong(amountNQT));
         }
         
@@ -2216,9 +2224,8 @@ public interface Attachment extends Appendix {
             return amountNQT;
         } 
         
-      	@Override
-        public String getAppendixName() {
-            return "Eat";
+        public long getAssetId() {
+            return assetId;
         }
 
         @Override
