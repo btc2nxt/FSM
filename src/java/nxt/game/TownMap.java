@@ -18,19 +18,19 @@ import nxt.util.Logger;
 
 public final class TownMap {
     public static enum LandDescription {
-        WALL_AREA, COIN_AREA, HOTEL, RESTAURANT, HEALTHY_CLUB, MARTIL_CENTER, WEAPON_FACTORY
+        WALL_AREA, COIN_AREA, HOTEL, RESTAURANT, USER_AREA, WITNESS_HALL, JUSTICE_HALL, HEALTHY_CLUB, MARTIL_CENTER, WEAPON_FACTORY
     }	
     
     public static final int TOWN_X = 0;
     public static final int TOWN_Y = 0;
-    public static final int TOWN_X1 = 110;
-    public static final int TOWN_Y1 = 110;
+    public static final int TOWN_X1 = 99;
+    public static final int TOWN_Y1 = 99;
     public static final int COIN_LAND_BEGIN = 0;
-    public static final int COIN_LAND_END = 7;
-    public static final int HOTEL_LAND_BEGIN = 1;
-    public static final int HOTEL_LAND_END = 10;
-    public static final int RESTAURANT_LAND_BEGIN = 11;
-    public static final int RESTAURANT_LAND_END = 14;
+    public static final int COIN_LAND_END = 4;
+    public static final int HOTEL_LAND_BEGIN = 5;
+    public static final int HOTEL_LAND_END = 8;
+    public static final int RESTAURANT_LAND_BEGIN = 9;
+    public static final int RESTAURANT_LAND_END = 12;
 	
     public static class Land {
     	private int landId;
@@ -167,27 +167,44 @@ public final class TownMap {
     
     private TownMap() {
    	
-    	//there are 72 buildings, 7 coin areas.ignore walls
-    	lands = new Land[15];
+    	/*
+    	 *coin area : 5, black
+    	 *hotel : 4, red
+    	 *restaurant : 4, pink
+    	 *witness hall : 1, green
+    	 *justice hall : 1, purple
+    	 *user area : 9, blue 
+    	 */
+    	lands = new Land[24];
 
-    	//7 coin areas
-    	lands[0] = new Land(0, 1,  1, 39, 39,LandDescription.COIN_AREA,(long) -1);
-    	lands[1] = new Land(1, 71, 1, 109, 39,LandDescription.COIN_AREA,(long) -1);   	
-    	lands[2] = new Land(2,  1, 71, 39, 109,LandDescription.COIN_AREA,(long) -1);
-    	lands[3] = new Land(3, 71, 71, 109, 109,LandDescription.COIN_AREA,(long) -1);
-    	lands[4] = new Land(4,  1, 51, 109, 59,LandDescription.COIN_AREA,(long) -1);
-    	lands[5] = new Land(5, 51,  1, 59, 50,LandDescription.COIN_AREA,(long) -1);
-    	lands[6] = new Land(6, 51, 60, 59, 109,LandDescription.COIN_AREA,(long) -1);    	
+    	lands[0] = new Land(0, 0,  0, 39, 39,LandDescription.COIN_AREA,(long) -1);
+    	lands[1] = new Land(1, 60, 0, 99, 39,LandDescription.COIN_AREA,(long) -1);   	
+    	lands[2] = new Land(2, 0, 60, 39, 99,LandDescription.COIN_AREA,(long) -1);
+    	lands[3] = new Land(3, 60, 60, 99, 99,LandDescription.COIN_AREA,(long) -1);
+    	lands[4] = new Land(4, 40, 40, 59, 59,LandDescription.COIN_AREA,(long) -1);
     	
-    	//block 1-1 from (1,41) to (49,49), total 10 buildings
-    	lands[7] = new Land(7, 1, 41,  4, 49,LandDescription.HOTEL,(long) -1);
-    	lands[8] = new Land(8, 6, 41,  9, 49,LandDescription.HOTEL,(long) -1);
-    	lands[9] = new Land(9, 11, 41, 14, 49,LandDescription.HOTEL,(long) -1);
-    	lands[10] = new Land(10, 16, 41, 19, 49,LandDescription.HOTEL,(long) -1);
-    	lands[11] = new Land(11, 21, 41, 24, 49,LandDescription.RESTAURANT,(long) -1);    	
-    	lands[12] = new Land(12, 16, 41, 29, 49,LandDescription.RESTAURANT,(long) -1);    	
-    	lands[13] = new Land(13, 31, 41, 34, 49,LandDescription.RESTAURANT,(long) -1);    	
-    	lands[14] = new Land(14, 36, 41, 39, 49,LandDescription.RESTAURANT,(long) -1);
+    	lands[5] = new Land(5, 10, 40, 11, 59,LandDescription.HOTEL,(long) -1);
+    	lands[6] = new Land(6, 70, 40, 71, 59,LandDescription.HOTEL,(long) -1);
+    	lands[7] = new Land(7, 40, 10, 59, 11,LandDescription.HOTEL,(long) -1);
+    	lands[8] = new Land(8, 40, 70, 59, 71,LandDescription.HOTEL,(long) -1);
+    	
+    	lands[9] = new Land(9, 30, 40, 31, 59,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[10] = new Land(10, 90, 40, 91, 59,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[11] = new Land(11, 40, 30, 59, 31,LandDescription.RESTAURANT,(long) -1);    	
+    	lands[12] = new Land(12, 40, 90, 59, 91,LandDescription.RESTAURANT,(long) -1);
+    	
+    	lands[13] = new Land(13, 40, 0, 59, 1, LandDescription.WITNESS_HALL,(long) -1);
+    	lands[14] = new Land(14, 40, 2, 48, 2, LandDescription.JUSTICE_HALL,(long) -1);
+    	
+    	lands[15] = new Land(15, 40, 4, 59, 5, LandDescription.USER_AREA,(long) -1);    	
+    	lands[16] = new Land(16, 40, 7, 59, 8, LandDescription.USER_AREA,(long) -1);
+    	lands[17] = new Land(17, 40, 13, 59, 14, LandDescription.USER_AREA,(long) -1);
+    	lands[18] = new Land(18, 40, 16, 59, 17, LandDescription.USER_AREA,(long) -1);
+    	lands[19] = new Land(19, 40, 19, 59, 20, LandDescription.USER_AREA,(long) -1);    	
+    	lands[20] = new Land(20, 40, 22, 59, 23, LandDescription.USER_AREA,(long) -1);    	
+    	lands[21] = new Land(21, 40, 25, 59, 26, LandDescription.USER_AREA,(long) -1);
+    	lands[22] = new Land(22, 40, 33, 59, 34, LandDescription.USER_AREA,(long) -1);
+    	lands[23] = new Land(23, 40, 36, 59, 37, LandDescription.USER_AREA,(long) -1);
 	
     }
     
