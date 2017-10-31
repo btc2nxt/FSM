@@ -2228,6 +2228,11 @@ public interface Attachment extends Appendix {
             return assetId;
         }
 
+      	@Override
+        public String getAppendixName() {
+            return "Eat";
+        }
+      	
         @Override
         public TransactionType getTransactionType() {
             return TransactionType.Game.EAT;

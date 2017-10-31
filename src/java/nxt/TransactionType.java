@@ -2410,13 +2410,23 @@ public abstract class TransactionType {
                 if (landType == null)	
                 	throw new NxtException.NotValidException("not in building area: ");
 
-                if (attachment.getAppendixName().equals("Check_In"))
+                if (attachment.getAppendixName().equals("Check_In")) {
                 	if (landType != TownMap.LandDescription.HOTEL )	
                 		throw new NxtException.NotValidException("wrong area ");
+                	
+                	int fromHeight = Nxt.getBlockchain().getHeight() - Constants.GAME_ROOM_SLEEP_HEIGHT;
+                	if (Move.getStepCountFromHeight("CHECK_IN", fromHeight) > 0)
+                		throw new NxtException.NotValidException("must sleep hours ");
+                }
                 
-                if (attachment.getAppendixName().equals("Eat"))
+                if (attachment.getAppendixName().equals("Eat")) {
                 	if (landType != TownMap.LandDescription.RESTAURANT )	
                 		throw new NxtException.NotValidException("wrong area ");
+                
+                	int fromHeight = Nxt.getBlockchain().getHeight() - Constants.GAME_ROOM_SLEEP_HEIGHT;
+                	if (Move.getStepCountFromHeight("EAT", fromHeight) > 0)
+                		throw new NxtException.NotValidException("must sleep hours ");
+                }
 
                 if (Move.getCoordinateConsumersCount(x, y, attachment.getAppendixName().toUpperCase() ) >= Constants.MAX_CONSUMER_PER_COORDINATE)
                 	throw new NxtException.NotValidException("too many consumer in this coordination: " + attachment.getJSONObject());
@@ -2473,7 +2483,7 @@ public abstract class TransactionType {
 
         @Override
         void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-            Attachment.GameCheckIn attachment = (Attachment.GameCheckIn) transaction.getAttachment();
+            Attachment.GameEat attachment = (Attachment.GameEat) transaction.getAttachment();
             Move.addOrUpdateMove(transaction, attachment);               
         }
     };

@@ -86,14 +86,16 @@ public final class Constants {
 	public static final int AUTOMATED_TRANSACTION_FINISHED = Integer.MAX_VALUE;
 	public static final int MAX_AUTOMATED_TRANSACTION_SYSTEM = 10;	
 	
-	public static final int MAX_TOWN_XY = 110;
+	public static final int MAX_TOWN_XY = 100;
 	public static final int MAX_PLAYERS_PER_COORDINATE = 20;
 	public static final int MAX_CONSUMER_PER_COORDINATE = 1;
 	public static final int MAX_PLAYERS_CAPAITY_OF_BUILDING = 20;
 	public static final int GAME_DISTRIBUTE_PACKAGES = 5;	
 	public static final long GAME_MEAL_RATE = 25 * ONE_NXT;
 	public static final long GAME_ROOM_RATE = 30 * ONE_NXT;
+	public static final int GAME_ROOM_SLEEP_HEIGHT = 4 * 60; //4 hours
 	public static final long GAME_FOOD_RATE = GAME_ROOM_RATE / 3;	
+	public static final int GAME_FOOD_SLEEP_HEIGHT = GAME_ROOM_SLEEP_HEIGHT / 4;	
 	public static final long GAME_BRICK_RATE = 3 * ONE_NXT;
 	public static final long MAX_HOTEL_RESTAURANT_LIFEVALUE = isTestnet ? GAME_BRICK_RATE * 5 : GAME_ROOM_RATE * 90;	
 	public static final int GAME_INIT_COLLECT_POWER = 100;

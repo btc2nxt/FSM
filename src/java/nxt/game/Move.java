@@ -151,20 +151,20 @@ public final class Move {
     private static final class getConsumerXYClause extends DbClause {
     	private final int x;
     	private final int y;
-    	private final String moveType;
+    	private final String step;
 
-        private getConsumerXYClause(final int x, int y, String moveType) {
+        private getConsumerXYClause(final int x, int y, String step) {
         	super(" x_coordinate = ? AND y_coordinate = ? and step = ?");
             this.x = x;
             this.y = y;
-            this.moveType = moveType;
+            this.step = step;
         }
 
         @Override
         public int set(PreparedStatement pstmt, int index) throws SQLException {
         	pstmt.setInt(index++, x);
             pstmt.setInt(index++, y);
-            DbUtils.setString( pstmt , index++ , moveType );
+            DbUtils.setString( pstmt , index++ , step );
             return index;
         }
 
@@ -172,12 +172,17 @@ public final class Move {
 
     public static int  getCoordinateConsumersCount( int x, int y, String moveType) {
             return moveTable.getCount(new getConsumerXYClause(x, y, moveType));
-    }   
+    }
+    
     public static int getAccountCountByHeight(long accountId, int height) {
         if (height < 0) {
             return 0;
         }
         return moveTable.getCount(new DbClause.LongClause("account_id", accountId), height);
+    }
+    
+    public static int getStepCountFromHeight(String step, int fromHeight) {
+        return moveTable.getCountFromHeight(new DbClause.StringClause("step", step), fromHeight);
     }
     
     static void addMove(Transaction transaction, Attachment.GameMove attachment) {
@@ -196,7 +201,7 @@ public final class Move {
     	if (move == null) {
             move = new Move(transaction, attachment);
         } else {
-            //move = moves.next();
+        	move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
         	if (!attachment.getAppendixName().equals("QUIT_GAME")) {
         		move.xCoordinate = x;
         		move.yCoordinate = y;
@@ -221,15 +226,16 @@ public final class Move {
         		else if (attachment.getAppendixName().equals("Check_In")) {
         			move.lifeValue = ((Attachment.GameCheckIn) attachment).getAmountNQT();
         			move.assetId = ((Attachment.GameCheckIn) attachment).getAssetId();
+        			move.collectPower = Constants.GAME_INIT_COLLECT_POWER;
         		}
         		else if (attachment.getAppendixName().equals("Eat")) {
         			move.lifeValue = ((Attachment.GameEat) attachment).getAmountNQT();
-        			move.assetId = ((Attachment.GameCheckIn) attachment).getAssetId();        			
+        			move.assetId = ((Attachment.GameEat) attachment).getAssetId();
+        			move.collectPower = move.collectPower + Constants.GAME_INIT_COLLECT_POWER / 4;
+        			if (move.collectPower > Constants.GAME_INIT_COLLECT_POWER)
+        				move.collectPower = Constants.GAME_INIT_COLLECT_POWER;
         		}
         	}
-        	else
-        		move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
-        		
         }
         moveTable.insert(move);
         setPlayerStatus(move.getAccountId(), move.getMoveType());
