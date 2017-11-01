@@ -1986,18 +1986,45 @@ public interface Attachment extends Appendix {
         }    	
     }
     
-    public final static class GameBeWorker extends GameBuild {
-
+    public final static class GameBeWorker extends GameMove {
+    	private final long amountNQT;
+    	
     	GameBeWorker(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
+            this.amountNQT = buffer.getLong();
         }
 
     	GameBeWorker(JSONObject attachmentData) {
             super(attachmentData);
+            this.amountNQT = Convert.parseUnsignedLong((String) attachmentData.get("amountNQT"));
         }
 
-    	public GameBeWorker(short xCoordinate, short yCoordinate, long assetId) throws NxtException.NotValidException {
-            super(xCoordinate, yCoordinate, assetId);
+      	public GameBeWorker(short xCoordinate, short yCoordinate, long amountNQT) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+            this.amountNQT = amountNQT;
+        }
+    	
+        @Override
+        int getMySize() {
+            return 2 + 2 + 8;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+        	buffer.putShort(super.xCoordinate);
+            buffer.putShort(super.yCoordinate);
+            buffer.putLong(amountNQT);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+        	attachment.put("xCoordinate", super.xCoordinate);
+        	attachment.put("yCoordinate", super.yCoordinate);
+        	attachment.put("amountNQT", Convert.toUnsignedLong(amountNQT));
+        }
+        
+      	public long getAmountNQT() {
+            return amountNQT;
         }
 
     	@Override
@@ -2013,17 +2040,45 @@ public interface Attachment extends Appendix {
     }
     
     public final static class GameBeCollector extends GameMove {
+    	private final long amountNQT;
+    	
     	GameBeCollector(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
+            this.amountNQT = buffer.getLong();
         }
 
     	GameBeCollector(JSONObject attachmentData) {
             super(attachmentData);
+            this.amountNQT = Convert.parseUnsignedLong((String) attachmentData.get("amountNQT"));
         }
 
-    	public GameBeCollector(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+      	public GameBeCollector(short xCoordinate, short yCoordinate, long amountNQT) throws NxtException.NotValidException {
             super(xCoordinate, yCoordinate);
+            this.amountNQT = amountNQT;
         }
+    	
+        @Override
+        int getMySize() {
+            return 2 + 2 + 8;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+        	buffer.putShort(super.xCoordinate);
+            buffer.putShort(super.yCoordinate);
+            buffer.putLong(amountNQT);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+        	attachment.put("xCoordinate", super.xCoordinate);
+        	attachment.put("yCoordinate", super.yCoordinate);
+        	attachment.put("amountNQT", Convert.toUnsignedLong(amountNQT));
+        }
+        
+      	public long getAmountNQT() {
+            return amountNQT;
+        } 
         
     	@Override
         public String getAppendixName() {

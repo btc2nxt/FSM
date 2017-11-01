@@ -2221,17 +2221,165 @@ public abstract class TransactionType {
             }
 
             @Override
-            final public boolean canHaveRecipient() {
+            public boolean canHaveRecipient() {
                 return false;
             }
 
         }
-        
-        abstract static class GameWorkerBase extends Game {
+               
+        public static final TransactionType BE_COLLECTOR = new Game.GameCollectorBase() {
 
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_BE_COLLECTOR;
+            }
+
+            @Override
+            Attachment.GameBeCollector parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBeCollector(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameBeCollector parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBeCollector(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameBeCollector attachment = (Attachment.GameBeCollector) transaction.getAttachment();
+                Logger.logDebugMessage("Applying be Collector attachent");
+                Move.addOrUpdateMove(transaction, attachment);   
+            }
+            
+            @Override
+            final public boolean canHaveRecipient() {
+                return true;
+            }
+
+        };
+        
+        public static final TransactionType COLLECT = new Game.GameCollectorBase() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_COLLECT;
+            }
+
+            @Override
+            Attachment.GameCollect parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameCollect(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameCollect parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameCollect(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameCollect attachment = (Attachment.GameCollect) transaction.getAttachment();
+               	Move.addOrUpdateMove(transaction, attachment);
+            }
+        };
+
+        public static final TransactionType BE_WORKER = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_BE_WORKER;
+            }
+
+            @Override
+            Attachment.GameBeWorker parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBeWorker(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameBeWorker parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBeWorker(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
+                Move.addOrUpdateMove(transaction, attachment);
+            }
+            
         	@Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                Attachment.GameBuild attachment = (Attachment.GameBuild)transaction.getAttachment();
+        		Attachment.GameBeWorker attachment = (Attachment.GameBeWorker)transaction.getAttachment();
+            	long senderId = transaction.getSenderId();
+            	int x = attachment.getXCoordinate();
+            	int y = attachment.getYCoordinate();         
+                int landId = 0;
+                
+                for ( int i = TownMap.HOTEL_LAND_BEGIN; i <= TownMap.RESTAURANT_LAND_END; i++) {
+                	if (x >= TownMap.getLandFromArray(i).getX() && x <= TownMap.getLandFromArray(i).getX1()
+                			&& y >= TownMap.getLandFromArray(i).getY() & y <= TownMap.getLandFromArray(i).getY1()) {
+                		landId = i;
+                		break;
+                	}
+                }
+                if (landId == 0)	
+                	throw new NxtException.NotValidException("not in building area: ");
+                
+                if (Move.getCoordinatePlayersCount(x, y) > Constants.MAX_PLAYERS_PER_COORDINATE)
+                	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
+                
+            	Account account = Account.getAccount(senderId);
+            	Account.PlayerType player = account.getPlayer();
+
+            	if (player == Account.PlayerType.OUTSIDER) {
+                	if (transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD)
+                		throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+            	}
+            	else if (player == Account.PlayerType.WORKER) {
+                    if (transaction.getType().getSubtype() == SUBTYPE_GAME_BE_WORKER)
+                    	throw new NxtException.NotValidException("Player is a worker already. " + attachment.getJSONObject());
+                    
+                    Move.LandCompleted landCompleted = Move.getLandCompleted(x, y);
+                    if (landCompleted != null)
+                    	if (landCompleted.getLifeValue() >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+                    		throw new NxtException.NotValidException("Build finished. " + attachment.getJSONObject());
+                }
+            	else 
+                   	throw new NxtException.NotValidException("Collector cannot be a worker or build. " + attachment.getJSONObject());
+                    	                
+            }
+        	
+            @Override
+            final public boolean canHaveRecipient() {
+                return true;
+            }
+            
+        };
+        
+        public static final TransactionType BUILD = new Game() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_GAME_BUILD;
+            }
+
+            @Override
+            Attachment.GameBuild parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+                return new Attachment.GameBuild(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.GameBuild parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+                return new Attachment.GameBuild(attachmentData);
+            }
+
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Attachment.GameBuild attachment = (Attachment.GameBuild) transaction.getAttachment();
+                Move.addOrUpdateMove(transaction, attachment);
+            }
+            
+        	@Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+        		Attachment.GameBuild attachment = (Attachment.GameBuild)transaction.getAttachment();
             	long senderId = transaction.getSenderId();
             	int x = attachment.getXCoordinate();
             	int y = attachment.getYCoordinate();         
@@ -2285,112 +2433,6 @@ public abstract class TransactionType {
                 }
                 
             }
-
-            @Override
-            final public boolean canHaveRecipient() {
-                return false;
-            }
-
-        }
-        
-        public static final TransactionType BE_COLLECTOR = new Game.GameCollectorBase() {
-
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_GAME_BE_COLLECTOR;
-            }
-
-            @Override
-            Attachment.GameBeCollector parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.GameBeCollector(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.GameBeCollector parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.GameBeCollector(attachmentData);
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.GameBeCollector attachment = (Attachment.GameBeCollector) transaction.getAttachment();
-                Logger.logDebugMessage("Applying be Collector attachent");
-                Move.addOrUpdateMove(transaction, attachment);   
-            }
-
-        };
-        
-        public static final TransactionType COLLECT = new Game.GameCollectorBase() {
-
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_GAME_COLLECT;
-            }
-
-            @Override
-            Attachment.GameCollect parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.GameCollect(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.GameCollect parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.GameCollect(attachmentData);
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.GameCollect attachment = (Attachment.GameCollect) transaction.getAttachment();
-               	Move.addOrUpdateMove(transaction, attachment);
-            }
-        };
-
-        public static final TransactionType BE_WORKER = new Game.GameWorkerBase() {
-
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_GAME_BE_WORKER;
-            }
-
-            @Override
-            Attachment.GameBeWorker parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.GameBeWorker(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.GameBeWorker parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.GameBeWorker(attachmentData);
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.GameBeWorker attachment = (Attachment.GameBeWorker) transaction.getAttachment();
-                Move.addOrUpdateMove(transaction, attachment);
-            }
-            
-        };
-        
-        public static final TransactionType BUILD = new Game.GameWorkerBase() {
-
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_GAME_BUILD;
-            }
-
-            @Override
-            Attachment.GameBuild parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.GameBuild(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.GameBuild parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.GameBuild(attachmentData);
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.GameBuild attachment = (Attachment.GameBuild) transaction.getAttachment();
-                Move.addOrUpdateMove(transaction, attachment);
-            }
-            
         };
         
         abstract static class GameConsumer extends Game {

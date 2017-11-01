@@ -42,12 +42,12 @@ public final class GameConsume extends CreateTransaction {
         
         Attachment attachment;
         if (actionName.equals("CheckIn")) {
-        	if (amountNQT < Constants.GAME_ROOM_RATE)
+        	if (amountNQT < Constants.GAME_ROOM_RATE || amountNQT > Constants.GAME_ROOM_RATE + Constants.ONE_NXT)
         		return INCORRECT_AMOUNT;
         	attachment = new Attachment.GameCheckIn(x, y, asset.getId(), amountNQT);
         }
         else if (actionName.equals("Eat")) {
-        	if (amountNQT < Constants.GAME_FOOD_RATE)
+        	if (amountNQT < Constants.GAME_MEAL_RATE || amountNQT > Constants.GAME_MEAL_RATE + Constants.ONE_NXT)
         		return INCORRECT_AMOUNT;
         	attachment = new Attachment.GameEat(x, y, asset.getId(), amountNQT);
         }

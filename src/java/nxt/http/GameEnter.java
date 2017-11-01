@@ -7,6 +7,7 @@ import nxt.NxtException;
 import nxt.util.Convert;
 import org.json.simple.JSONStreamAware;
 
+import static nxt.http.JSONResponses.INCORRECT_AMOUNT;
 import static nxt.http.JSONResponses.INCORRECT_AUTOMATED_TRANSACTION_NAME_LENGTH;
 import static nxt.http.JSONResponses.MISSING_NAME;
 
@@ -17,7 +18,7 @@ public final class GameEnter extends CreateTransaction {
     static final GameEnter instance = new GameEnter();
 
     private GameEnter() {
-        super(new APITag[] {APITag.GAME, APITag.CREATE_TRANSACTION}, "x", "y", "statusName","map");
+        super(new APITag[] {APITag.GAME, APITag.CREATE_TRANSACTION}, "x", "y", "statusName","map", "amountNQT");
     }
 
     @Override
@@ -37,14 +38,18 @@ public final class GameEnter extends CreateTransaction {
         }
         
         Account account = ParameterParser.getSenderAccount(req);
+        long amountNQT = ParameterParser.getAmountNQT(req);
+    	if (amountNQT < Constants.GAME_ROOM_RATE || amountNQT > Constants.GAME_ROOM_RATE + Constants.ONE_NXT)
+    		return INCORRECT_AMOUNT;
+
         Attachment attachment;
         if (name.equals("Collector"))
-        	attachment = new Attachment.GameBeCollector(x, y);
+        	attachment = new Attachment.GameBeCollector(x, y, amountNQT);
         else if (name.equals("Worker"))
-        	attachment = new Attachment.GameBeWorker(x, y, 0);
+        	attachment = new Attachment.GameBeWorker(x, y, amountNQT);
         else attachment = null;
         
-        return createTransaction(req, account, attachment);
+        return createTransaction(req, account, Constants.GAME_DIVIDEND_FSM_ID, amountNQT, attachment);
     }
 
 }
