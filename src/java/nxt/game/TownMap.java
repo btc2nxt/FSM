@@ -25,6 +25,7 @@ public final class TownMap {
     public static final int TOWN_Y = 0;
     public static final int TOWN_X1 = 99;
     public static final int TOWN_Y1 = 99;
+    public static final int TOWN_MAX_LAND = 23;    
     public static final int COIN_LAND_BEGIN = 0;
     public static final int COIN_LAND_END = 4;
     public static final int HOTEL_LAND_BEGIN = 5;
@@ -175,7 +176,7 @@ public final class TownMap {
     	 *justice hall : 1, purple
     	 *user area : 9, blue 
     	 */
-    	lands = new Land[24];
+    	lands = new Land[TOWN_MAX_LAND + 1];
 
     	lands[0] = new Land(0, 0,  0, 39, 39,LandDescription.COIN_AREA,(long) -1);
     	lands[1] = new Land(1, 60, 0, 99, 39,LandDescription.COIN_AREA,(long) -1);   	

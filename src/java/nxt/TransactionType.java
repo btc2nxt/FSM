@@ -861,12 +861,14 @@ public abstract class TransactionType {
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                 Attachment.ColoredCoinsAssetIssuance attachment = (Attachment.ColoredCoinsAssetIssuance)transaction.getAttachment();
+                int landId = attachment.getLandId();
                 if (attachment.getName().length() < Constants.MIN_ASSET_NAME_LENGTH
                         || attachment.getName().length() > Constants.MAX_ASSET_NAME_LENGTH
                         || attachment.getDescription().length() > Constants.MAX_ASSET_DESCRIPTION_LENGTH
                         || attachment.getDecimals() < 0 || attachment.getDecimals() > 8
                         || attachment.getQuantityQNT() <= 0
                         || attachment.getQuantityQNT() > Constants.MAX_ASSET_QUANTITY_QNT
+                        || landId > TownMap.TOWN_MAX_LAND || ( landId < TownMap.HOTEL_LAND_BEGIN && landId != 0) 
                         ) {
                     throw new NxtException.NotValidException("Invalid asset issuance: " + attachment.getJSONObject());
                 }
@@ -876,6 +878,11 @@ public abstract class TransactionType {
                         throw new NxtException.NotValidException("Invalid asset name: " + normalizedName);
                     }
                 }
+                
+                //an Asset only bind to one land
+                TownMap.Land land = TownMap.getLand(landId);
+                if (land != null)
+                	throw new NxtException.NotValidException("This land has binded : " + landId);
             }
 
             @Override

@@ -390,6 +390,8 @@ class NxtDbVersion extends DbVersion {
             case 152:
             	apply("CREATE INDEX IF NOT EXISTS move_height_idx ON move (height)");                
             case 153:
+                apply("CREATE UNIQUE INDEX IF NOT EXISTS land_id_idx ON land (id)");
+            case 154:
                 return;
             default:
                 throw new RuntimeException("Blockchain database inconsistent with code, probably trying to run older code on newer database");

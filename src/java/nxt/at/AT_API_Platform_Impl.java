@@ -897,8 +897,11 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	@Override
 	/* 0x0450 EXT_FUN_DAT_2
 	 * airdrop coins to coordinate(B1,B2), val= hash 8 bytes, count = 1..5
-	 * x = B1 + val_high4bytes % 30
-	 * y = B2 + val_lowbytes % 31
+	 * x = B1 + val_high4bytes % 40
+	 * y = B2 + val_lowbytes % 40
+	 * 	 * coin area 5 has small rectangle, 20*20
+	 * 
+	 * (0,0) will not airdrop any coins on it, it means normal payment.
 	 * 
 	 * B3: Distribute FSM address
 	 */
@@ -906,23 +909,23 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 
 		int x;
 		int y;
+		int modValue;
 
 		Logger.logDebugMessage("AirDrop_Coordinate_In_B "+val + " count "+ count);
+		if (count == 5)
+			modValue = 20;
+		else
+			modValue = 40;
 		
-		x = (int) ((val & 0xffffffff00000000L)>>32) % 30;
-		y = (int) ((val & 0x00000000ffffffffL) % 30    );
+		x = (int) ((val & 0xffffffff00000000L)>>32) % modValue;
+		y = (int) ((val & 0x00000000ffffffffL) % modValue    );
 
-		x = (x & 0xFF) % 30 + (int)AT_API_Helper.getLong(state.get_B1());
-		y = (y & 0xFF) % 30 + (int)AT_API_Helper.getLong(state.get_B2());
-				
-		if (count == 5 && (val & 0xff00)>>8 % 2 == 0) {
-			int tmp;
-			tmp = x;
-			x = y;
-			y = tmp;
-			
+		x = (x & 0xFF) % modValue + (int)AT_API_Helper.getLong(state.get_B1());
+		y = (y & 0xFF) % modValue + (int)AT_API_Helper.getLong(state.get_B2());
+						
+		if (x == 0 && y == 0 && count == 1) {
+			x = 1;
 		}
-		
 		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
 			AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(Constants.GAME_AIRDROP_FSM_ID) , 0, null ,x ,y, 0 );
 			state.addTransaction( tx );			
