@@ -2421,7 +2421,7 @@ public abstract class TransactionType {
                 	if (landType != TownMap.LandDescription.HOTEL )	
                 		throw new NxtException.NotValidException("wrong area ");
                 	
-                	int fromHeight = Nxt.getBlockchain().getHeight() - Constants.GAME_ROOM_SLEEP_HEIGHT;
+                	int fromHeight = Nxt.getBlockchain().getHeight() - Constants.GAME_ROOM_SLEEP_BLOCKS;
                 	if (Move.getStepCountFromHeight("CHECK_IN", fromHeight) > 0)
                 		throw new NxtException.NotValidException("must sleep hours ");
                 }
@@ -2430,7 +2430,7 @@ public abstract class TransactionType {
                 	if (landType != TownMap.LandDescription.RESTAURANT )	
                 		throw new NxtException.NotValidException("wrong area ");
                 
-                	int fromHeight = Nxt.getBlockchain().getHeight() - Constants.GAME_ROOM_SLEEP_HEIGHT;
+                	int fromHeight = Nxt.getBlockchain().getHeight() - Constants.GAME_MEAL_SLEEP_BLOCKS;
                 	if (Move.getStepCountFromHeight("EAT", fromHeight) > 0)
                 		throw new NxtException.NotValidException("must sleep hours ");
                 }
