@@ -2295,6 +2295,32 @@ public interface Attachment extends Appendix {
 
     }
 
+    public final static class GameWalk extends GameMove {
+
+    	GameWalk(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+        }
+
+    	GameWalk(JSONObject attachmentData) {
+            super(attachmentData);
+        }
+
+      	public GameWalk(short xCoordinate, short yCoordinate) throws NxtException.NotValidException {
+            super(xCoordinate, yCoordinate);
+        }
+    	
+    	@Override
+        public String getAppendixName() {
+            return "Walk";
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.Game.WALK;
+        }
+
+    }
+    
     public final static class GameQuit extends GameMove {
 
     	GameQuit(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {

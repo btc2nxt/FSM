@@ -72,14 +72,15 @@ public abstract class TransactionType {
     private static final byte SUBTYPE_GAME_COLLECT = 3;
     private static final byte SUBTYPE_GAME_CHECK_IN = 4;       
     private static final byte SUBTYPE_GAME_EAT = 5;
-    private static final byte SUBTYPE_GAME_BUILD = 6;    
-    private static final byte SUBTYPE_GAME_ATTACK = 7;
-    private static final byte SUBTYPE_GAME_KEEP_FIT = 8;
-    private static final byte SUBTYPE_GAME_PRACTISE_MARTIAL = 9;
-    private static final byte SUBTYPE_GAME_BUY_ARMOR = 10;
-    private static final byte SUBTYPE_GAME_IN_COMA = 11;
-    private static final byte SUBTYPE_GAME_WAKEUP = 12;
-    private static final byte SUBTYPE_GAME_QUIT = 13;    
+    private static final byte SUBTYPE_GAME_BUILD = 6;  
+    private static final byte SUBTYPE_GAME_WALK = 7;
+    private static final byte SUBTYPE_GAME_ATTACK = 8;
+    private static final byte SUBTYPE_GAME_KEEP_FIT = 9;
+    private static final byte SUBTYPE_GAME_PRACTISE_MARTIAL = 10;
+    private static final byte SUBTYPE_GAME_BUY_ARMOR = 11;
+    private static final byte SUBTYPE_GAME_IN_COMA = 12;
+    private static final byte SUBTYPE_GAME_WAKEUP = 13;
+    private static final byte SUBTYPE_GAME_QUIT = 14;    
 
     private static final byte SUBTYPE_ACCOUNT_CONTROL_EFFECTIVE_BALANCE_LEASING = 0;
 
@@ -194,6 +195,8 @@ public abstract class TransactionType {
             			return Game.CHECK_IN;
             		case SUBTYPE_GAME_EAT:
             			return Game.EAT;
+            		case SUBTYPE_GAME_WALK:
+            			return Game.WALK;            			
             		case SUBTYPE_GAME_ATTACK:
             			return Game.CHECK_IN;
             		case SUBTYPE_GAME_KEEP_FIT:
@@ -2213,8 +2216,11 @@ public abstract class TransactionType {
                 	if (move.getXCoordinate() == x && move.getYCoordinate() == y)
                 		throw new NxtException.NotValidException("Player can't move to site of itself. " + attachment.getJSONObject());
                 	
+                	double radis = Math.pow(move.getXCoordinate() - x, 2) + Math.pow(move.getYCoordinate() - y, 2);
+                    radis = Math.sqrt(radis);
                 	if (transaction.getType().getSubtype() == SUBTYPE_GAME_COLLECT)
-                		if ( Math.abs(move.getXCoordinate() - x) +  Math.abs(move.getYCoordinate() - y)  > move.getCollectPower())
+                		//if ( Math.abs(move.getXCoordinate() - x) +  Math.abs(move.getYCoordinate() - y)  > move.getCollectPower())
+                		if ( radis> move.getCollectPower())
                 			throw new NxtException.NotValidException("jump too far away: " + attachment.getJSONObject());
                 }
                 
@@ -2329,22 +2335,15 @@ public abstract class TransactionType {
             	Account account = Account.getAccount(senderId);
             	Account.PlayerType player = account.getPlayer();
 
-            	if (player == Account.PlayerType.OUTSIDER) {
-                	if (transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD)
-                		throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+            	if (player != Account.PlayerType.OUTSIDER) {
+               		throw new NxtException.NotValidException("Player has entered game . " + attachment.getJSONObject());
             	}
-            	else if (player == Account.PlayerType.WORKER) {
-                    if (transaction.getType().getSubtype() == SUBTYPE_GAME_BE_WORKER)
-                    	throw new NxtException.NotValidException("Player is a worker already. " + attachment.getJSONObject());
-                    
-                    Move.LandCompleted landCompleted = Move.getLandCompleted(x, y);
-                    if (landCompleted != null)
-                    	if (landCompleted.getLifeValue() >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
-                    		throw new NxtException.NotValidException("Build finished. " + attachment.getJSONObject());
-                }
-            	else 
-                   	throw new NxtException.NotValidException("Collector cannot be a worker or build. " + attachment.getJSONObject());
-                    	                
+            	    
+                Move.LandCompleted landCompleted = Move.getLandCompleted(x, y);
+                if (landCompleted != null)
+                 	if (landCompleted.getLifeValue() >= Constants.MAX_HOTEL_RESTAURANT_LIFEVALUE)
+                   		throw new NxtException.NotValidException("Build finished. " + attachment.getJSONObject());
+            	
             }
         	
             @Override
@@ -2410,8 +2409,7 @@ public abstract class TransactionType {
             	Account.PlayerType player = account.getPlayer();
 
             	if (player == Account.PlayerType.OUTSIDER) {
-                	if (transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD)
-                		throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+               		throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
             	}
             	else if (player == Account.PlayerType.WORKER) {
                     if (transaction.getType().getSubtype() == SUBTYPE_GAME_BE_WORKER)
@@ -2427,6 +2425,9 @@ public abstract class TransactionType {
                     	
             	Move move = Move.getMove(senderId);
             	if (move != null) {
+            		if ( move.getCollectPower() < 1)
+            			throw new NxtException.NotValidException("low power, must eat or check in : " + attachment.getJSONObject());
+
             		if (move.getMoveType() == Move.MoveType.BUILD && transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD)
             			if (move.getXCoordinate() != x && move.getYCoordinate() != y)
             				throw new NxtException.NotValidException("Worker needn't move . " + attachment.getJSONObject());                	
@@ -2537,6 +2538,73 @@ public abstract class TransactionType {
         }
     };
 
+    public static final TransactionType WALK = new Game() {
+
+        @Override
+        public final byte getSubtype() {
+            return TransactionType.SUBTYPE_GAME_WALK;
+        }
+
+        @Override
+        Attachment.GameWalk parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            return new Attachment.GameWalk(buffer, transactionVersion);
+        }
+
+        @Override
+        Attachment.GameWalk parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            return new Attachment.GameWalk(attachmentData);
+        }
+
+        @Override
+        void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+            Attachment.GameWalk attachment = (Attachment.GameWalk) transaction.getAttachment();
+            Move.addOrUpdateMove(transaction, attachment);               
+        }
+
+        @Override
+        void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+            Attachment.GameWalk attachment = (Attachment.GameWalk)transaction.getAttachment();
+        	long senderId = transaction.getSenderId();
+        	int x = attachment.getXCoordinate();
+        	int y = attachment.getYCoordinate();         
+            int landId = -1;
+            
+            for ( int i = TownMap.COIN_LAND_BEGIN; i <= TownMap.RESTAURANT_LAND_END; i++) {
+            	if (x >= TownMap.getLandFromArray(i).getX() && x <= TownMap.getLandFromArray(i).getX1()
+            			&& y >= TownMap.getLandFromArray(i).getY() & y <= TownMap.getLandFromArray(i).getY1()) {
+            		landId = i;
+            		break;
+            	}
+            }
+            if (landId != -1)	
+            	throw new NxtException.NotValidException("NO Walking in coin or building area: ");
+            
+            if (Move.getCoordinatePlayersCount(x, y) > Constants.MAX_PLAYERS_PER_COORDINATE)
+            	throw new NxtException.NotValidException("too many players in this coordination: " + attachment.getJSONObject());
+            
+        	Account account = Account.getAccount(senderId);
+        	Account.PlayerType player = account.getPlayer();
+
+        	if (player == Account.PlayerType.OUTSIDER) 
+           		throw new NxtException.NotValidException("Player must enter game first. " + attachment.getJSONObject());
+        	
+        	Move move = Move.getMove(senderId);
+        	if (move != null) {
+        		if ( move.getCollectPower() < 1)
+        			throw new NxtException.NotValidException("low power, must eat or check in : " + attachment.getJSONObject());
+
+       			if (move.getXCoordinate() == x && move.getYCoordinate() == y)
+       				throw new NxtException.NotValidException("same coordinate with last step . " + attachment.getJSONObject());                	
+            }
+            
+        }
+
+        @Override
+        public boolean canHaveRecipient() {
+            return false;
+        }
+    };
+    
     public static final TransactionType QUIT = new Game() {
 
         @Override

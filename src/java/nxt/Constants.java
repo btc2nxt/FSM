@@ -98,7 +98,7 @@ public final class Constants {
 	public static final int GAME_ROOM_SLEEP_BLOCKS = 4 * 60; //4 hours	
 	public static final int GAME_MEAL_SLEEP_BLOCKS = GAME_ROOM_SLEEP_BLOCKS / 4;	
 	public static final long MAX_HOTEL_RESTAURANT_LIFEVALUE = isTestnet ? GAME_BRICK_RATE * 5 : GAME_ROOM_RATE * 90 ; //90 days	
-	public static final int GAME_INIT_COLLECT_POWER = 100;
+	public static final int GAME_INIT_COLLECT_POWER = isTestnet ? 5 : 100;
 	public static final int GAME_INIT_ATTACK_POWER = 100;
 	public static final int GAME_INIT_DEFENSE_VALUE = 100;
 	public static final int GAME_INIT_HEALTHY_INDEX = 100;

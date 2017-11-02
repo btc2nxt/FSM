@@ -20,7 +20,7 @@ import java.sql.SQLException;
 public final class Move {
 
     public static enum MoveType {
-        OUTSIDER, BE_COLLECTOR, BE_WORKER, COLLECT, CHECK_IN, EAT, BUILD, ATTACK, KEEP_FIT, PRACTISE_MARTIAL, BUY_ARMOR, IN_COMA, WAKEUP, QUIT_GAME 
+        OUTSIDER, BE_COLLECTOR, BE_WORKER, COLLECT, CHECK_IN, EAT, BUILD, WALK, ATTACK, KEEP_FIT, PRACTISE_MARTIAL, BUY_ARMOR, IN_COMA, WAKEUP, QUIT_GAME 
     }
 
     public static class LandCompleted {
@@ -206,7 +206,8 @@ public final class Move {
         		move.xCoordinate = x;
         		move.yCoordinate = y;
         		move.step = MoveType.valueOf(attachment.getAppendixName().toUpperCase());
-        		--move.collectPower;
+        		if (move.collectPower > 0)
+        			--move.collectPower;
             
         		if (attachment.getAppendixName().equals("Build")) {
         			LandCompleted landCompleted = getLandCompleted(x,y);

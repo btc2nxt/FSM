@@ -31,6 +31,8 @@ public final class GameMove extends CreateTransaction {
         Attachment attachment;
         if (actionName.equals("Collect"))
         	attachment = new Attachment.GameCollect(x, y);
+        if (actionName.equals("Walk"))
+        	attachment = new Attachment.GameWalk(x, y);        
         else if (actionName.equals("Quit"))
         	attachment = new Attachment.GameQuit(x, y);        
         else attachment = null;
