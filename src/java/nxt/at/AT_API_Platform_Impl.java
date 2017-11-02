@@ -497,9 +497,10 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		int x = (int) AT_API_Helper.getLong(state.get_A2());
 		int y = (int) AT_API_Helper.getLong(state.get_A3());
 		int rownum = (int) AT_API_Helper.getLong(state.get_A4());
+		rownum--; //limit 0,1 = first row
 
 		Long atId = state.getLongId();		
-		Logger.logDebugMessage("get moves count between height "+val + " height: "+ val1 + " x:" + x + " y:" + y );
+		Logger.logDebugMessage("get move's acount between height "+startHeight + " height: "+ endHeight + " x:" + x + " y:" + y + " rownum: " + rownum);
 		
 		long  accountId = getAccountIdFromMoveByRownum(startHeight, endHeight, x, y, rownum);
 		state.set_B1( AT_API_Helper.getByteArray( accountId) );
@@ -926,7 +927,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		if (x == 0 && y == 0 && count == 1) {
 			x = 1;
 		}
-		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
+		if ( state.getG_balance() >= 0 ) {
 			AT_Transaction tx = new AT_Transaction( AT_API_Helper.getByteArray(Constants.GAME_AIRDROP_FSM_ID) , 0, null ,x ,y, 0 );
 			state.addTransaction( tx );			
 		}
@@ -1069,7 +1070,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     			PreparedStatement pstmt = con.prepareStatement("SELECT distinct account_id FROM move m "
     					+ " WHERE height between ? and ? and x_coordinate = ? and y_coordinate = ?  "
     					+ " and height = (select max(height) from move where account_id= m.account_id)"
-    					+ " and rownum()= ? order by account_Id" )) {
+    					+ " order by account_Id limit ?,1" )) {
     		pstmt.setInt(1, startHeight);
     		pstmt.setInt(2, endHeight);    		
     		pstmt.setLong(3, x);

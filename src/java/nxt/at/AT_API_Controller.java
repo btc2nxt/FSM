@@ -282,7 +282,8 @@ public class AT_API_Controller{
         		atApi.A_to_Payment_in_State_with_PaymentNO( val1 , (int)val2, state );	
         		break;
         	case 0x349:
-        		rc = atApi.get_StateId_after_Timestamp_from_FSM( val1 , (int)val2, state );        		
+        		rc = atApi.get_StateId_after_Timestamp_from_FSM( val1 , (int)val2, state );
+        		break;
         	case 0x350:
         		atApi.A_to_Tx_after_Timestamp_with_Type( val1 , val2, state );	
         		break;
