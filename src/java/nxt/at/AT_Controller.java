@@ -45,13 +45,20 @@ public final class AT_Controller {
 		Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
 			@Override
 			public void notify(Block block) {
-                try{
-				for (AT_Controller vm : vms.values()) {
-                	if (vm.getATId() == 0 )
-                		vm.runCreatorATs(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());
-                	else
-                		vm.runForAnyoneAT(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());                		
-                }
+				try {
+					runSystemATs(block.getHeight());
+				} catch (NotValidException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				try{
+					for (AT_Controller vm : vms.values()) {
+						if (vm.getATId() == 0 )
+							vm.runCreatorATs(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());
+						else
+							vm.runForAnyoneAT(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());                		
+					}
                 }
 				catch ( NxtException.ValidationException e )
 				{
@@ -62,12 +69,6 @@ public final class AT_Controller {
 
 				}
                 
-				try {
-					runSystemATs(block.getHeight());
-				} catch (NotValidException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			}
 
 		}, BlockchainProcessor.Event.BLOCK_PUSHED);//BLOCK_GENERATED);
@@ -361,7 +362,7 @@ public final class AT_Controller {
                    if ( atStateUpdates.hasNext()) {
                 	   atState = atStateUpdates.next();
                        if (atState.getMachineData() != null) {
-                       	at.setAp_data(atState.getMachineData());                		
+                       	at.setVarAp_data(atState.getMachineData());                		
                        }                	
                     }
                    }
@@ -430,7 +431,7 @@ public final class AT_Controller {
 		try (DbIterator<AT> ats = AT.getSystemATs(Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM))	{
 		while ( ats.hasNext() )
 		{
-			/*load AT machine code, get state from AT_State
+			/*load AT machine code, data, get state from AT_State
 			 * reset machine_state
 			 * add machineState.jumps(call listcode) 	
 			 */
@@ -446,9 +447,13 @@ public final class AT_Controller {
             try (DbIterator<AT.ATState> atStates = at.getATStates(0, 1)) {
                 if (atStates.hasNext()) {
                    AT.ATState atState = atStates.next(); 
-                   //the AT has stopped || sleepbetween
+                   
+                	/*
+                	 * the AT has stopped (with pc = -1) 
+                	 * || sleepbetween && pc =0	   
+                	 */
                    lastRanHeight = atState.getLastRanHeight();
-                   if (atState.getPc() < 0 || at.getSleepBetween() > blockHeight - lastRanHeight ) 
+                   if (atState.getPc() < 0 || (at.getSleepBetween() > blockHeight - lastRanHeight && atState.getPc() == 0)) 
                 	   continue;
                    
                    at.getMachineState().pc = atState.getPc(); 
@@ -456,12 +461,14 @@ public final class AT_Controller {
                    lastStateId = atState.getId();
                    Logger.logDebugMessage("height,pc " + atState.getTimeStamp()+ " "+at.getMachineState().pc);
                    
-                   //load update of FSM
+                   /*
+                    * load var data from AT_State
+                    */
                    try (DbIterator<AT.ATState> atStateUpdates = at.getATStateUpdates(0, 1)) {                   
                    if ( atStateUpdates.hasNext()) {
                 	   atState = atStateUpdates.next();
                        if (atState.getMachineData() != null) {
-                       	at.setAp_data(atState.getMachineData());                		
+                       	at.setVarAp_data(atState.getMachineData());                		
                        }                	
                     }
                    }
@@ -575,7 +582,7 @@ public final class AT_Controller {
                    if ( atStateUpdates.hasNext()) {
                 	   atState = atStateUpdates.next();
                        if (atState.getMachineData() != null) {
-                       	at.setAp_data(atState.getMachineData());                		
+                       	at.setVarAp_data(atState.getMachineData());                		
                        }                	
                     }
                    }
@@ -644,7 +651,7 @@ public final class AT_Controller {
             if ( atStateUpdates.hasNext()) {
             	atLastState = atStateUpdates.next();
                 if (atLastState.getMachineData() != null) {
-                	at.setAp_data(atLastState.getMachineData());                		
+                	at.setVarAp_data(atLastState.getMachineData());                		
                 }                	
              }
             }

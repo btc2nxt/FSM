@@ -419,6 +419,15 @@ public class AT_Machine_State
 
 	}
 	
+	//only save var data to AT_State
+	public void setVarAp_data(byte[] machineData) 
+	{
+		this.ap_data.clear();
+		this.ap_data.position(constBytes);
+		this.ap_data.put( machineData, 0, varBytes);
+
+	}
+	
 	protected int getCsize() 
 	{
 		return csize;
@@ -656,5 +665,16 @@ public class AT_Machine_State
 	public int getVarBytes(){
 		return this.varBytes;
 	}
+	
+	public byte[] getVarMachinData()
+	{
+		byte[] varMachinData = new byte[this.varBytes];
+		ap_data.clear();
+		ap_data.position(constBytes);
+		ap_data.get( varMachinData, 0 , varBytes );	
+		return varMachinData;
+
+	}		
+
 	
 }
