@@ -400,6 +400,14 @@ final class JSONData {
         return json;
     }
    
+
+    static JSONObject atPayment(AT.ATPayment atPayment) {
+        JSONObject json = new JSONObject();
+        json.put("paymentNO", atPayment.getPaymentNo());
+        json.put("x", atPayment.getX());
+        json.put("y", atPayment.getY());
+        return json;
+    }
     
     // ugly, hopefully temporary
     private static void modifyAttachmentJSON(JSONObject json) {

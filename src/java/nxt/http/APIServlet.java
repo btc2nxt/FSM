@@ -185,6 +185,7 @@ public final class APIServlet extends HttpServlet {
         map.put("gameMove",GameMove.instance);
         map.put("gameConsume",GameConsume.instance);
         map.put("gameBuild",GameBuild.instance);
+        map.put("getPredistributeCoordinates",GetPredistributeCoordinates.instance);        
 
         if (API.enableDebugAPI) {
             map.put("clearUnconfirmedTransactions", ClearUnconfirmedTransactions.instance);

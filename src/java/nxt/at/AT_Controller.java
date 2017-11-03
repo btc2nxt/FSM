@@ -443,46 +443,38 @@ public final class AT_Controller {
 			
 			listCode( at , true , true );
 			
-			Logger.logDebugMessage("atId " + AT_API_Helper.getLong(at.getId()));
-            try (DbIterator<AT.ATState> atStates = at.getATStates(0, 1)) {
-                if (atStates.hasNext()) {
-                   AT.ATState atState = atStates.next(); 
+			long atId = at.getLongId();
+			Logger.logDebugMessage("atId " + atId);
+            AT.ATState atState = at.getATStateById(atId); 
+            if (atState != null) {
+                /*
+                * the AT has stopped (with pc = -1) 
+                * || sleepbetween && pc =0	   
+                */
+            	lastRanHeight = atState.getLastRanHeight();
+                if (atState.getPc() < 0 || (at.getSleepBetween() > blockHeight - lastRanHeight && atState.getPc() == 0)) 
+                   continue;
                    
-                	/*
-                	 * the AT has stopped (with pc = -1) 
-                	 * || sleepbetween && pc =0	   
-                	 */
-                   lastRanHeight = atState.getLastRanHeight();
-                   if (atState.getPc() < 0 || (at.getSleepBetween() > blockHeight - lastRanHeight && atState.getPc() == 0)) 
-                	   continue;
+                at.getMachineState().pc = atState.getPc(); 
+                long timeStamp = atState.getTimeStamp();
+                lastStateId = atState.getId();
+                Logger.logDebugMessage("height,pc " + atState.getTimeStamp()+ " "+at.getMachineState().pc);
                    
-                   at.getMachineState().pc = atState.getPc(); 
-                   long timeStamp = atState.getTimeStamp();
-                   lastStateId = atState.getId();
-                   Logger.logDebugMessage("height,pc " + atState.getTimeStamp()+ " "+at.getMachineState().pc);
-                   
-                   /*
-                    * load var data from AT_State
-                    */
-                   try (DbIterator<AT.ATState> atStateUpdates = at.getATStateUpdates(0, 1)) {                   
-                   if ( atStateUpdates.hasNext()) {
-                	   atState = atStateUpdates.next();
-                       if (atState.getMachineData() != null) {
-                       	at.setVarAp_data(atState.getMachineData());                		
-                       }                	
-                    }
-                   }
-                   /*
-                    * when send a message to FSM, the message will rewrite all data area,
-                    * and timestamp is on $address 0 
-                    * so timestamp must be set after the rewriting
-                    */
-                   at.setTimeStamp(timeStamp);
-                }
-                else {
-                	at.setTimeStamp(AT_API_Helper.getLongTimestamp(at.getCreationBlockHeight(),0));                	
-                	Logger.logDebugMessage("AT doesn't have AT_State record, set timestamp to createion height " );                	
-                }              	
+                 /*
+                  * load var data from AT_State
+                 */
+                if (atState.getMachineData().length != 0)
+                	at.setVarAp_data(atState.getMachineData());                		
+                /*
+                  * when send a message to FSM, the message will rewrite all data area,
+                  * and timestamp is on $address 0 
+                  * so timestamp must be set after the rewriting
+                */
+                at.setTimeStamp(timeStamp);
+            }
+            else {
+               	at.setTimeStamp(AT_API_Helper.getLongTimestamp(at.getCreationBlockHeight(),0));                	
+               	Logger.logDebugMessage("AT doesn't have AT_State record, set timestamp to createion height " );              	
             }
 
 			at.setLastRanSteps(totalSteps);
@@ -494,7 +486,6 @@ public final class AT_Controller {
 			
 			if (atCost >0 ) {
 				try {
-				//if (AT_API_Helper.getLong(at.getId()) != Constants.GAME_PREDISTRIBUTE_FSM_ID) {
 					List<AT_Transaction> atTransactions = at.getTransactions();				
 					//Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions,secretPhrase, AT_API_Helper.getLong(at.getId()),(short)at.getMachineState().pc,(short)at.getMachineState().steps,at.getMachineState().timeStamp,lastStateId);
 					Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactions, atSecretPhrase, at, lastStateId, lastRanHeight);					
@@ -502,26 +493,6 @@ public final class AT_Controller {
 					transaction.sign(atSecretPhrase);
                     Nxt.getTransactionProcessor().broadcast(transaction);
                     Logger.logDebugMessage("FSM transactions broadcast succeed");
-				//}
-				/*else {
-					Iterator<AT_Transaction> atTransactions = at.getTransactions().iterator();
-					List<AT_Transaction> atTransactionsTmp = new ArrayList<AT_Transaction>();
-					while ( atTransactions.hasNext() ) {
-						if (!atTransactionsTmp.isEmpty())
-							atTransactionsTmp.clear();
-						atTransactionsTmp.add(atTransactions.next());
-						Transaction transaction = Nxt.getTransactionProcessor().parseTransaction(atTransactionsTmp, atSecretPhrase, at, lastStateId, lastRanHeight);					
-						transaction.validate();
-						transaction.sign(atSecretPhrase);
-	                    Nxt.getTransactionProcessor().broadcast(transaction);
-	                    Logger.logDebugMessage("FSM predistribute transaction success. ");
-	                    //break;//test use
-					}
-					
-				}*/
-                
-                //Long Id = transaction.getId();
-                //Logger.logDebugMessage("new transaction id " + Id);
 				}
 				catch ( NxtException.ValidationException e )
 				{
@@ -637,24 +608,20 @@ public final class AT_Controller {
         List<AT_Transaction> atPayments = attachment.getATPayments();
         //Account atAccount = Account.getAccount(attachment.getATId());
 		
-		AT at = AT.getAT(attachment.getATId());
+		long atId = attachment.getATId();
+        AT at = AT.getAT(atId);
 		listCode(at, true,true);
-		Logger.logDebugMessage("Validating FSM receieved transaction with atId " + AT_API_Helper.getLong(at.getId()));
-        AT.ATState atLastState = at.getATState(attachment.getLastStateId());
+		Logger.logDebugMessage("Validating FSM receieved transaction with atId " + atId);
+        //AT.ATState atLastState = at.getATState(attachment.getLastStateId());
+        AT.ATState atState = at.getATStateById(atId);		
         int atCost = 0;
-        if (atLastState != null) {
-        	at.getMachineState().pc = atLastState.getPc();
-            long timeStamp = atLastState.getTimeStamp();
+        if (atState != null) {
+        	at.getMachineState().pc = atState.getPc();
+            long timeStamp = atState.getTimeStamp();
             
             //load update of FSM
-            try (DbIterator<AT.ATState> atStateUpdates = at.getATStateUpdates(0, 1)) {                   
-            if ( atStateUpdates.hasNext()) {
-            	atLastState = atStateUpdates.next();
-                if (atLastState.getMachineData() != null) {
-                	at.setVarAp_data(atLastState.getMachineData());                		
-                }                	
-             }
-            }
+            if (atState.getMachineData().length != 0)
+            	at.setVarAp_data(atState.getMachineData());                		
             at.setTimeStamp(timeStamp);            
         }
         else if (attachment.getLastStateId() == 0) {

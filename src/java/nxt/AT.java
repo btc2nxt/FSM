@@ -21,6 +21,7 @@ import nxt.db.DbIterator;
 import nxt.db.DbKey;
 import nxt.db.DbUtils;
 import nxt.db.EntityDbTable;
+import nxt.db.VersionedEntityDbTable;
 import nxt.util.Listener;
 import nxt.util.Logger;
 import nxt.Account;
@@ -219,7 +220,8 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		
 		private ATPayment(ResultSet rs) throws SQLException {			
 			this.dbKey = atPaymentDbKeyFactory.newKey(this.atStateId, this.paymentNo);
-			this.atStateId = rs.getLong("at_state_id");			
+			this.atStateId = rs.getLong("at_state_id");
+			this.paymentNo = rs.getShort("payment_No");			
 			this.recipientId = rs.getLong("recipient_id");
 			this.amount = rs.getLong("amount");
 			this.x = rs.getInt("x");
@@ -253,7 +255,15 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 
 		public long getRecipientId() {
 			return recipientId;
-		}	
+		}
+		
+		public long getX() {
+			return x;
+		}
+		
+		public long getY() {
+			return y;
+		}
 	}
 
 	private static final DbKey.LongKeyFactory<AT> atDbKeyFactory = new DbKey.LongKeyFactory<AT>("id") {
@@ -265,7 +275,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 
     };
 
-    private static final EntityDbTable<AT> atTable = new EntityDbTable<AT>("at", atDbKeyFactory) {
+    private static final VersionedEntityDbTable<AT> atTable = new VersionedEntityDbTable<AT>("at", atDbKeyFactory) {
 
         @Override
         protected AT load(Connection con, ResultSet rs) throws SQLException {
@@ -279,7 +289,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 
     };
 
-    private static final DbKey.LongKeyFactory<ATState> atStateDbKeyFactory = new DbKey.LongKeyFactory<ATState>("id") {
+    private static final DbKey.LongKeyFactory<ATState> atStateDbKeyFactory = new DbKey.LongKeyFactory<ATState>("at_id") {
 
         @Override
         public DbKey newKey(ATState atState) {
@@ -288,7 +298,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 
     };
 
-    private static final EntityDbTable<ATState> atStateTable = new EntityDbTable<ATState>("at_state", atStateDbKeyFactory) {
+    private static final VersionedEntityDbTable<ATState> atStateTable = new VersionedEntityDbTable<ATState>("at_state", atStateDbKeyFactory) {
 
         @Override
         protected ATState load(Connection con, ResultSet rs) throws SQLException {
@@ -411,7 +421,14 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         return atStateTable.get(atStateDbKeyFactory.newKey(atStateId));
     }
     
-    
+    public static ATState getATStateById(long atId) {
+        return atStateTable.get(atStateDbKeyFactory.newKey(atId));
+    }
+       
+	public static DbIterator<ATPayment> getATPaymentByStateId(long stateId, int from, int to) {
+        return atPaymentTable.getManyBy(new DbClause.LongClause("at_state_id", stateId), from, to);
+    }
+	
     protected int getPreviousBlock() {
 		return this.previousBlock;
 	}
