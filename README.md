@@ -5,9 +5,20 @@ Features:
 Total supply: 1 000 000 000
 Premine: 4% (for forge use and marketing)
 Block time: 1 minute
-Distribution per block: 600 (100 to dev and marketing) 
+Distribution per block: 6*1500 (1500 to dev and marketing) 
 Map: 100*100
-Lands: 68 (4 for hotels, 4 restaurants, 1 health club, 1 martial art center, 1 weapon factory¡­)
+Lands: 68 (4 for hotels, 4 restaurants, 1 notary office, 1 court of justice, 1 health club, 1 martial art center, 1 weapon factory¡­)
 Role of player: collector (collect coins), worker (build hotels and so on).
+
+How to collect coins
+
+1. Become a worker
+  That will cost 300 coins to an account, after player enter the game, it will get 100 initial CollectPower.
+
+2. Collect
+  Jump to the position of the Pre-distributeFSM generates. There are five coin areas in the game. After every jumping, the CollectPower will minus 1. When the CollectPower is below 1, player cannot move otherwise Check in hotel or has some food in restaurant.
+
+3. Airdrop FSM
+  Airdrop FSM will send coins to the players that are in the positions every 10 blocks.
 
 
