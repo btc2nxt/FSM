@@ -1,0 +1,78 @@
+FSM(Finite State Machine) is new design of AT(Automated Machine). Two years past, FSM were still in the code and didn't improve. That is why i want to develop a game or a use case to push FSM to real world or  solve some problem of businesses. When i have been coding , i found many bugs that FSM need to improve.
+Last week, i reached the first milestone which succeeded in aridropping coins, distributing dividend to asset holders.
+Because i am not good at UI design, all tests are on http and offline. Actually I use Nxt1.3.5 NRS, and sometime the 1.3.5 UI too.
+
+1. set nxt-default.properties file
+nxt.apiServerEnforcePOST=false
+nxt.isOffline=true
+
+2. pre-distribute the coordinator(x,y)
+
+http://127.0.0.1:9776/nxt?requestType=createATProgram&secretPhrase=1&atVersion=1&name=predistributeFSM&description=test&runType=SYSTEM_AT&machineCode=1e000000003d350103000000003203030113000000010000000000000033160101000000331701020000003500011200000034500412000000130000000413000000331601030000003317010400000035010112000000345004120000001300000004130000003316010500000033170106000000350201120000003450041200000013000000041300000033160107000000331701080000003503011200000034500412000000130000000413000000331601090000003317010a00000035000114000000061200000014000000345004120000001300000028&machineData=0000000000000000000000000000000000000000000000003c00000000000000000000000000000000000000000000003c000000000000003c000000000000003c00000000000000280000000000000028000000000000000200000000000000&variables=01000000050000000a000000000c00000048000000&feeNQT=200000000000&deadline=1440
+
+variables means: will start run at height 12. After sleep 10 blocks, will run again at height 22.
+
+account id of predistributeFSM  is 1, which is hardcoded in the source.
+This FSM  will generate 5 coordinators for Airdrop FSM to delivery coins to the collectors.
+http api: getPredistributeCoordinates  can show them.
+
+version reserved 
+0100 0000 
+delayBlocks/ sleepBetween/ freezeWhenSameBalance/ startBlockHeight/ varBytes(72)
+05000000 0a000000 00 0c000000 48000000
+
+3. Airdrop FSM
+http://127.0.0.1:9776/nxt?requestType=createATProgram&secretPhrase=btc2nxtTest1&atVersion=1&name=airdropFSM&description=test&runType=SYSTEM_AT&machineCode=1e000000001f35000300000000070000000003000000070000000003000000374903110000000000000001000000261100000035000100000000020f00000000000000060f0000000400000002100000000000000006100000000500000002140000000300000026140000003448031100000014000000375203120000000f0000001000000005140000001b12000000dc021300000002000000091300000012000000010a0000000000000000000000040a0000003447030f000000100000003302041300000005120000001e12000000e42a2114000000030000000f1a6700000028&machineData=00000000000000000100000000000000005cb2ec220000000500000000000000000000000100000000000000070000000000000000000000&variables=01000000050000000a000000001500000070000000&feeNQT=200000000000&deadline=1440
+
+account of Airdrop FSM is 2, which's balance is zero, so must send many coins to it.
+
+4. Be a collector
+http://127.0.0.1:9776/nxt?requestType=gameEnter&secretPhrase=1&statusName=Collector&map=1&x=1&y=1&amountNQT=30000000000&feeNQT=100000000&deadline=1440
+
+5. collect coin
+http://127.0.0.1:9776/nxt?requestType=gameMove&secretPhrase=1&actionName=Collect&x=5&y=22&feeNQT=100000000&deadline=1440
+
+6. issue an asset of a land
+http://127.0.0.1:9776/nxt?requestType=issueAsset&secretPhrase=btc2nxt2&name=hotel&description=test&quantityQNT=270000000000&deadline=1440&decimals=8&feeNQT=1000000000000&landId=8
+
+landId=5..8 are hotels
+landId=9..12 are restaurants
+
+After issue assets, lands of town bind to assets.
+
+7.Be a workder
+http://127.0.0.1:9776/nxt?requestType=gameEnter&secretPhrase=btc2nxt2&statusName=Worker&x=1&y=41&feeNQT=100000000&deadline=1440
+
+8.Build a single room
+http://127.0.0.1:9776/nxt?requestType=gameBuild&secretPhrase=btc2nxt2&asset=535298268338500849&x=6&y=41&feeNQT=100000000&deadline=1440
+
+the asset id must be the id of land's asset.
+
+The room need 5 Builds to finish.
+
+9. shareRedeemFSM
+http://127.0.0.1:9776/nxt?requestType=createATProgram&secretPhrase=btc2nxtTest1&atVersion=1&name=shareRedeemFSM&description=test&runType=SYSTEM_AT&machineCode=1e000000000f020400000001000000354603000000000205000000000000003753030300000004000000050000001b030000003501060000000000000000000000040600000034540304000000050000003351040900000005030000001e03000000e4020400000000000000040400000028&machineData=000000000000000005000000000000000000000000000000&variables=01000000000000000a000000001000000040000000&feeNQT=200000000000&deadline=1440
+
+shareRedeemFSM will auto send shares to workers, depends on workers' works. Because the asset is not create by shareRedeemFSM, we have to transfer asset to it, which has account id 3.
+
+hareRedeemFSM will run at height 16, and continue to run in 10 blocks.
+
+version reserved 
+0100 0000 
+delayBlocks/ sleepBetween/ freezeWhenSameBalance/ startBlockHeight/ varBytes 8*8=
+00000000 0a000000 00 10000000 40000000
+
+11. Check in
+http://127.0.0.1:9776/nxt?requestType=gameConsume&secretPhrase=2&actionName=CheckIn&x=6&y=41&amountNQT=3000000000&asset=535298268338500849&feeNQT=100000000&deadline=1440
+
+A player's CollectPower will restore to 100 after check in, and has to sleep 4 hours. All amountNQT goes to dividendFSM's account, which id is 4.
+
+11. dividendFSM
+http://127.0.0.1:9776/nxt?requestType=createATProgram&secretPhrase=btc2nxtTest1&atVersion=1&name=dividendFSM&description=test&runType=SYSTEM_AT&machineCode=1e000000000f02040000000100000035460300000000020500000000000000010600000000000000000000003755030300000004000000050000001e030000000b1ac900000004060000003456030400000005000000020b000000080000001b0b0000005f3757030c0000000b0000000200000009070000000c000000020c00000007000000010d0000000000000000000000040d0000003458030b0000000d0000001b070000001b08080000000c000000330204080000001a9300000005030000001e0300000083020400000000000000040400000028&machineData=000000000000000005000000000000000300000000000000&variables=01000000000000000a000000002000000058000000&feeNQT=200000000000&deadline=1440
+
+dividendFSM will run at height 32 to distribute dividend to the workers by their shares of the asset.
+
+version reserved 
+0100 0000 
+delayBlocks/ sleepBetween/ freezeWhenSameBalance/ startBlockHeight/ varBytes 11*8=
+00000000 0a000000 00 20000000 58000000
