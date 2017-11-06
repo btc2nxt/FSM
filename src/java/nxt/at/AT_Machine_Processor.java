@@ -1,5 +1,6 @@
 package nxt.at;
 
+import nxt.util.Convert;
 import nxt.util.Logger;
 
 public class AT_Machine_Processor{
@@ -411,28 +412,33 @@ public class AT_Machine_Processor{
 						{
 							long addData1 = machineData.getAp_data().getLong((fun.addr1*8));
 							long addData2 = machineData.getAp_data().getLong((fun.addr2*8));
-							machineData.getAp_data().putLong((fun.addr1*8), addData1+addData2);
+							addData1= Convert.safeAdd(addData1, addData2);
+							machineData.getAp_data().putLong((fun.addr1*8), addData1);
 							machineData.getAp_data().clear();
 						}
 						else if (op==OpCode.e_op_code_SUB_DAT)
 						{
 							long addData1 = machineData.getAp_data().getLong((fun.addr1*8));
 							long addData2 = machineData.getAp_data().getLong((fun.addr2*8));
-							machineData.getAp_data().putLong((fun.addr1*8), addData1-addData2);
+							addData1= Convert.safeSubtract(addData1, addData2);
+							machineData.getAp_data().putLong((fun.addr1*8), addData1);
 							machineData.getAp_data().clear();
 						}
 						else if (op==OpCode.e_op_code_MUL_DAT)
 						{
 							long addData1 = machineData.getAp_data().getLong((fun.addr1*8));
 							long addData2 = machineData.getAp_data().getLong((fun.addr2*8));
-							machineData.getAp_data().putLong((fun.addr1*8), addData1*addData2);
+							addData1= Convert.safeMultiply(addData1, addData2);
+							machineData.getAp_data().putLong((fun.addr1*8), addData1);
 							machineData.getAp_data().clear();
 						}
 						else if (op==OpCode.e_op_code_DIV_DAT)
 						{
 							long addData1 = machineData.getAp_data().getLong((fun.addr1*8));
 							long addData2 = machineData.getAp_data().getLong((fun.addr2*8));
-							machineData.getAp_data().putLong((fun.addr1*8), addData1/addData2);
+							addData1= Convert.safeDivide(addData1, addData2);
+							//machineData.getAp_data().putLong((fun.addr1*8), addData1/addData2);
+							machineData.getAp_data().putLong((fun.addr1*8), addData1);
 							machineData.getAp_data().clear();
 						}
 					}

@@ -4,6 +4,7 @@ import nxt.at.AT_Controller;
 import nxt.crypto.Crypto;
 import nxt.db.DerivedDbTable;
 import nxt.db.FilteringIterator;
+import nxt.game.TownMap;
 import nxt.peer.Peer;
 import nxt.peer.Peers;
 import nxt.util.Convert;
@@ -39,7 +40,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
 
     private static final BlockchainProcessorImpl instance = new BlockchainProcessorImpl();
 
-    private static final int [] heigthsToCheck=Constants.isTestnet ? new int[] {100, 1000, Constants.LAST_KNOWN_BLOCK} 
+    private static final int [] heigthsToCheck=Constants.isTestnet ? new int[] {500, 1000, Constants.LAST_KNOWN_BLOCK} 
     	: new int[] {1000, 89010, 175000, Constants.LAST_KNOWN_BLOCK};
     
     private static final String [] previousBlockId=Constants.isTestnet ? new String[] {"4943346385398616171", "5340891100369695005",Constants.LAST_KNOWN_BLOCK_ID} 

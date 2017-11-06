@@ -2428,9 +2428,11 @@ public abstract class TransactionType {
             		if ( move.getCollectPower() < 1)
             			throw new NxtException.NotValidException("low power, must eat or check in : " + attachment.getJSONObject());
 
+            		/*
             		if (move.getMoveType() == Move.MoveType.BUILD && transaction.getType().getSubtype() == SUBTYPE_GAME_BUILD)
             			if (move.getXCoordinate() != x && move.getYCoordinate() != y)
-            				throw new NxtException.NotValidException("Worker needn't move . " + attachment.getJSONObject());                	
+            				throw new NxtException.NotValidException("Worker needn't move . " + attachment.getJSONObject());
+            		*/                	
                 }
                 
             }
