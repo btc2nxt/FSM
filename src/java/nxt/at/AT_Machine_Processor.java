@@ -1,5 +1,6 @@
 package nxt.at;
 
+import nxt.NxtException.NotValidException;
 import nxt.util.Convert;
 import nxt.util.Logger;
 
@@ -213,7 +214,7 @@ public class AT_Machine_Processor{
 		byte op = (machineData.getAp_code()).get(machineData.getMachineState().pc);
 		if (!disassemble && !determine_jumps ) {
 			//list code doesn't show the log
-			Logger.logDebugMessage(" pc: 0x"+ String.format("%5x",machineData.getMachineState().pc) + " OpCode : "+op);
+			Logger.logDebugMessage(String.format("pc: 0x%-5x OpCode: %02x",machineData.getMachineState().pc,op));
 			//Logger.logDebugMessage("position:"+ (machineData.getAp_code()).position());
 		}
 		
@@ -412,7 +413,11 @@ public class AT_Machine_Processor{
 						{
 							long addData1 = machineData.getAp_data().getLong((fun.addr1*8));
 							long addData2 = machineData.getAp_data().getLong((fun.addr2*8));
-							addData1= Convert.safeAdd(addData1, addData2);
+							try {
+								addData1= Convert.safeAdd(addData1, addData2);
+							} catch (ArithmeticException e) {
+								e.printStackTrace();
+							}
 							machineData.getAp_data().putLong((fun.addr1*8), addData1);
 							machineData.getAp_data().clear();
 						}

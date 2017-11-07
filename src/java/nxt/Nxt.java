@@ -1,5 +1,6 @@
 package nxt;
 
+import nxt.at.AT_Controller;
 import nxt.game.Move;
 import nxt.game.TownMap;
 import nxt.http.API;
@@ -193,6 +194,7 @@ public final class Nxt {
                 Users.init();
                 DebugTrace.init();
                 TownMap.init();
+                AT_Controller.init();
                 int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
                 ThreadPool.start(timeMultiplier);
                 if (timeMultiplier > 1) {
