@@ -739,6 +739,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	@Override
 	/* 0x0357 EXT_FUN_RET_DAT_2
 	 * get sum(quantity) from account_asset where assetid=@val,val1)
+	 * total_qty got 8 decimals, so divide 10^8, then return integer of it. 
 	 */
 	public long get_TotalQty_by_AssetId( long val, int val1, AT_Machine_State state ) {		
 		Logger.logDebugMessage("get totalQty from account_asset assetId= "+val );
@@ -750,7 +751,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     		pstmt.setInt(2, val1);    		
     		ResultSet rs = pstmt.executeQuery();
     		if (rs.next()) {
-    			 return rs.getLong("total_qty");
+    			 return rs.getLong("total_qty") / Constants.ONE_NXT;
     		}
     		else
     			return (long)0L;
@@ -777,7 +778,7 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
     		
     		if (rs.next()) {
     			state.set_B1( AT_API_Helper.getByteArray( rs.getLong("account_id") ) );
-    			state.set_B2( AT_API_Helper.getByteArray( rs.getLong("quantity") ) );
+    			state.set_B2( AT_API_Helper.getByteArray( rs.getLong("quantity") / Constants.ONE_NXT) );
     			Logger.logDebugMessage("get a record of  "+rownum);
             }
     			
