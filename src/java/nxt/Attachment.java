@@ -1688,7 +1688,7 @@ public interface Attachment extends Appendix {
             if (atPaymentArray.size() >0) {
                 for (Object o : atPaymentArray) {
                     JSONObject atPayment = (JSONObject) o;
-                	AT_Transaction tx = new AT_Transaction(AT_API_Helper.getByteArray(Convert.parseLong(atPayment.get("recipientId"))), Convert.parseLong(atPayment.get("amount")), null, ((Long)attachmentData.get("x")).intValue(), ((Long)attachmentData.get("y")).intValue(), Convert.parseLong(atPayment.get("assetId")));
+                	AT_Transaction tx = new AT_Transaction(AT_API_Helper.getByteArray(Convert.parseLong(atPayment.get("recipientId"))), Convert.parseLong(atPayment.get("amount")), null, ((Long)atPayment.get("x")).intValue(), ((Long)atPayment.get("y")).intValue(), Convert.parseLong(atPayment.get("assetId")));
     				this.atPayments.add(tx);
                 }
     			
@@ -1773,6 +1773,7 @@ public interface Attachment extends Appendix {
                 	json.put("amount", tx.getAmount());
                 	json.put("x", tx.getX());
                 	json.put("y", tx.getY());
+                	json.put("assetId", tx.getAssetId());
         			atPaymentJSONArray.add(json);                	
     			}
     		}

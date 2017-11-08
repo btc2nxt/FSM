@@ -699,7 +699,7 @@ final class TransactionImpl implements Transaction {
             byte type = 5;
             byte subtype = 1;
             int timestamp = Nxt.getEpochTime();// - 500; //AT after generate a new block, so give AT 100 to run
-            short deadline = 100; //for test, set to 1 ,because it is included immediately
+            short deadline = 10; //because it is included immediately
             short steps = (short)state.getMachineState().getSteps();
 			
             byte[] senderPublicKey = Crypto.getPublicKey(secretPhrase); 
@@ -714,7 +714,7 @@ final class TransactionImpl implements Transaction {
 
             TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
             //Attachment attachment = new Attachment.AutomatedTransactionsState(atId, pc, steps, timeStamp,lastStateId, transactionDatas);
-            Attachment attachment = new Attachment.AutomatedTransactionsState(AT_API_Helper.getLong(state.getId()),(short)state.getMachineState().getPc(), steps, state.getMachineState().getTimeStamp(),lastStateId, lastRanHeight, transactionDatas,state.getMachineState().getMachineCodeUpdate(),state.getMachineState().getMachineDataUpdate());
+            Attachment attachment = new Attachment.AutomatedTransactionsState(AT_API_Helper.getLong(state.getId()),(short)state.getMachineState().getPc(), steps, state.getMachineState().getTimeStamp(),lastStateId, lastRanHeight, transactionDatas,state.getMachineState().getMachineCodeUpdate(),state.getVarMachinData());
             
             if (transactionType == null) {
                 throw new NxtException.NotValidException("Invalid transaction type: " + type + ", " + subtype);

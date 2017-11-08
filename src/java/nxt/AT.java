@@ -87,7 +87,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 
 	    private ATState(Transaction transaction, Attachment.AutomatedTransactionsState attachment) {
 	        this.atStateId = transaction.getId();
-			this.dbKey = atStateDbKeyFactory.newKey(this.atStateId);
+			this.dbKey = atStateDbKeyFactory.newKey(this.atId);
 	        this.atId = attachment.getATId();			
 			this.pc = attachment.getPc();;
 			this.steps = attachment.getSteps();
@@ -100,7 +100,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 
 	    private ATState(ResultSet rs) throws SQLException {
 			this.atStateId = rs.getLong("id");			
-			this.dbKey = atStateDbKeyFactory.newKey(this.atStateId);
+			this.dbKey = atStateDbKeyFactory.newKey(this.atId);
 			this.atId = rs.getLong("at_id");			
 			this.pc = rs.getShort("pc");
 			this.steps = rs.getShort("steps");
