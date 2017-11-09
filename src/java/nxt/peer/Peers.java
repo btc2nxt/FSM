@@ -67,8 +67,8 @@ public final class Peers {
     static final int blacklistingPeriod;
     static final boolean getMorePeers;
 
-    private static final int DEFAULT_PEER_PORT = 8874;
-    private static final int TESTNET_PEER_PORT = 9874;
+    private static final int DEFAULT_PEER_PORT = 8774;
+    private static final int TESTNET_PEER_PORT = 9774;
     private static final String myPlatform;
     private static final String myAddress;
     private static final int myPeerServerPort;

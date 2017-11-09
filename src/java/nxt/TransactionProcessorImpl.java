@@ -1,5 +1,6 @@
 package nxt;
 
+import nxt.Attachment.AutomatedTransactionsState;
 import nxt.at.AT_Transaction;
 import nxt.db.DbClause;
 import nxt.db.DbIterator;
@@ -66,8 +67,8 @@ final class TransactionProcessorImpl implements TransactionProcessor {
         @Override
         protected void save(Connection con, TransactionImpl transaction) throws SQLException {
             try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO unconfirmed_transaction (id, transaction_height, "
-                    + "fee_per_byte, timestamp, expiration, transaction_bytes, height) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+                    + "fee_per_byte, timestamp, expiration, transaction_bytes, at_id, last_state_id, height) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 int i = 0;
                 pstmt.setLong(++i, transaction.getId());
                 pstmt.setInt(++i, transaction.getHeight());
@@ -75,6 +76,17 @@ final class TransactionProcessorImpl implements TransactionProcessor {
                 pstmt.setInt(++i, transaction.getTimestamp());
                 pstmt.setInt(++i, transaction.getExpiration());
                 pstmt.setBytes(++i, transaction.getBytes());
+                
+                if (transaction.getType() == TransactionType.AutomatedTransactions.AUTOMATED_TRANSACTION_STATE) {
+                	AutomatedTransactionsState attachment = (AutomatedTransactionsState) transaction.getAttachment();
+                	pstmt.setLong(++i, attachment.getATId());
+                	pstmt.setLong(++i, attachment.getLastStateId());                	
+                }
+                else {
+                	//pst.setNull(4, java.sql.Types.INTEGER)
+                	pstmt.setLong(++i, 0);
+                	pstmt.setLong(++i, 0);                	                	
+                }
                 pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
                 pstmt.executeUpdate();
             }
@@ -105,6 +117,29 @@ final class TransactionProcessorImpl implements TransactionProcessor {
 
     };
 
+    private static final class getStateByLastStateIdClause extends DbClause {
+    	private final long atId;
+    	private final long lastStateId;
+
+        private getStateByLastStateIdClause(final long atId, long lastStateId) {
+        	super(" at_id = ? AND last_state_id = ? ");
+            this.atId = atId;
+            this.lastStateId = lastStateId;
+        }
+
+        @Override
+        public int set(PreparedStatement pstmt, int index) throws SQLException {
+        	pstmt.setLong(index++, atId);
+            pstmt.setLong(index++, lastStateId);
+            return index;
+        }
+
+    }
+    
+    public int  getUnconfirmedTXCountByLastStateId( long atId, long lastStateId) {
+        return unconfirmedTransactionTable.getCount(new getStateByLastStateIdClause(atId, lastStateId));
+    }
+    
     private final Set<TransactionImpl> broadcastedTransactions = Collections.newSetFromMap(new ConcurrentHashMap<TransactionImpl,Boolean>());
     private final Listeners<List<? extends Transaction>,Event> transactionListeners = new Listeners<>();
     private final Set<TransactionImpl> lostTransactions = new HashSet<>();
@@ -300,11 +335,28 @@ final class TransactionProcessorImpl implements TransactionProcessor {
             throw new NxtException.NotValidException("Transaction signature verification failed");
         }
         List<Transaction> processedTransactions;
+        boolean sendToPeers = true;
+        
         synchronized (BlockchainImpl.getInstance()) {
             if (TransactionDb.hasTransaction(transaction.getId())) {
                 Logger.logMessage("Transaction " + transaction.getStringId() + " already in blockchain, will not broadcast again");
                 return;
             }
+            
+            if (transaction.getType() == TransactionType.AutomatedTransactions.AUTOMATED_TRANSACTION_STATE) {
+            	AutomatedTransactionsState attachment = (AutomatedTransactionsState) transaction.getAttachment();
+            	long atId = attachment.getATId();
+            	long lastStateId = attachment.getLastStateId();
+            	
+            	if (attachment.getATId() >0 && attachment.getATId() <= Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM)
+            		sendToPeers = false;
+            	
+            	if (AT.getStateByLastStateIdCount(atId, lastStateId) > 0) {
+                    Logger.logMessage("AT Transaction " + transaction.getStringId() + " already in blockchain, will not broadcast again");
+                    return;
+            	}
+            }
+            		
             if (unconfirmedTransactionTable.get(((TransactionImpl) transaction).getDbKey()) != null) {
                 if (enableTransactionRebroadcasting) {
                     broadcastedTransactions.add((TransactionImpl) transaction);
@@ -314,7 +366,7 @@ final class TransactionProcessorImpl implements TransactionProcessor {
                 }
                 return;
             }
-            processedTransactions = processTransactions(Collections.singleton((TransactionImpl) transaction), true);
+            processedTransactions = processTransactions(Collections.singleton((TransactionImpl) transaction), sendToPeers);
         }
         if (processedTransactions.contains(transaction)) {
             if (enableTransactionRebroadcasting) {
@@ -482,6 +534,19 @@ final class TransactionProcessorImpl implements TransactionProcessor {
                             continue;
                         }
 
+                        if (transaction.getType() == TransactionType.AutomatedTransactions.AUTOMATED_TRANSACTION_STATE) {
+                        	AutomatedTransactionsState attachment = (AutomatedTransactionsState) transaction.getAttachment();
+                        	long atId = attachment.getATId();
+                        	long lastStateId = attachment.getLastStateId();
+                        	                        	
+                        	if (AT.getStateByLastStateIdCount(atId, lastStateId) > 0) {
+                                continue;
+                        	}
+                        	
+                            if (getUnconfirmedTXCountByLastStateId(atId, lastStateId) > 0)
+                            	continue;
+                        }
+                        
                         if (! transaction.verifySignature()) {
                             if (Account.getAccount(transaction.getSenderId()) != null) {
                                 Logger.logDebugMessage("Transaction " + transaction.getJSONObject().toJSONString() + " failed to verify");
@@ -519,7 +584,8 @@ final class TransactionProcessorImpl implements TransactionProcessor {
         }
 
         if (sendToPeersTransactions.size() > 0) {
-            Peers.sendToSomePeers(sendToPeersTransactions);
+        	Logger.logMessage("send to some peers");
+        	Peers.sendToSomePeers(sendToPeersTransactions);
         }
 
         if (addedUnconfirmedTransactions.size() > 0) {

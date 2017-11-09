@@ -429,6 +429,29 @@ public final class AT extends AT_Machine_State implements Cloneable  {
         return atPaymentTable.getManyBy(new DbClause.LongClause("at_state_id", stateId), from, to);
     }
 	
+    private static final class getStateByLastStateIdClause extends DbClause {
+    	private final long atId;
+    	private final long lastStateId;
+
+        private getStateByLastStateIdClause(final long atId, long lastStateId) {
+        	super(" at_id = ? AND last_state_id = ? ");
+            this.atId = atId;
+            this.lastStateId = lastStateId;
+        }
+
+        @Override
+        public int set(PreparedStatement pstmt, int index) throws SQLException {
+        	pstmt.setLong(index++, atId);
+            pstmt.setLong(index++, lastStateId);
+            return index;
+        }
+
+    }
+    
+    public static int  getStateByLastStateIdCount( long atId, long lastStateId) {
+        return atStateTable.getCount(new getStateByLastStateIdClause(atId, lastStateId));
+    }
+
     protected int getPreviousBlock() {
 		return this.previousBlock;
 	}

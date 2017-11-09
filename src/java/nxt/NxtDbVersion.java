@@ -392,6 +392,10 @@ class NxtDbVersion extends DbVersion {
             case 153:
                 apply("CREATE UNIQUE INDEX IF NOT EXISTS land_id_idx ON land (id)");
             case 154:
+                apply("ALTER TABLE unconfirmed_transaction ADD COLUMN IF NOT EXISTS at_id BIGINT NULL");                
+            case 155:
+                apply("ALTER TABLE unconfirmed_transaction ADD COLUMN IF NOT EXISTS last_state_id BIGINT NULL");                
+            case 156:
                 return;
             default:
                 throw new RuntimeException("Blockchain database inconsistent with code, probably trying to run older code on newer database");

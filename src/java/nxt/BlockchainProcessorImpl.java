@@ -1,5 +1,6 @@
 package nxt;
 
+import nxt.Attachment.AutomatedTransactionsState;
 import nxt.at.AT_Controller;
 import nxt.crypto.Crypto;
 import nxt.db.DerivedDbTable;
@@ -768,8 +769,17 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                         return hasAllReferencedTransactions(transaction, transaction.getTimestamp(), 0);
                     }
                 })) {
-            for (TransactionImpl transaction : transactions) {
-                orderedUnconfirmedTransactions.add(transaction);
+        	long atId;
+        	long lastStateId;
+        	for (TransactionImpl transaction : transactions) {
+                if (transaction.getType() == TransactionType.AutomatedTransactions.AUTOMATED_TRANSACTION_STATE) {
+                	AutomatedTransactionsState attachment = (AutomatedTransactionsState) transaction.getAttachment();
+                	atId = attachment.getATId();
+                	lastStateId = attachment.getLastStateId();
+                	Logger.logMessage(String.format("atid %d, laststateid: %d", atId, lastStateId));
+                }
+
+            	orderedUnconfirmedTransactions.add(transaction);
             }
         }
 
