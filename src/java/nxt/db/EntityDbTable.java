@@ -1,5 +1,6 @@
 package nxt.db;
 
+import nxt.AT;
 import nxt.Nxt;
 
 import java.sql.Connection;
@@ -295,6 +296,18 @@ public abstract class EntityDbTable<T> extends DerivedDbTable {
         }
     }
 
+    public final int getCountFromHeight(DbClause dbClause, int fromHeight) {
+        try (Connection con = db.getConnection();
+             PreparedStatement pstmt = con.prepareStatement("SELECT COUNT(*) FROM " + table
+                     + " WHERE " + dbClause.getClause() + "AND height >= ?")) {
+            dbClause.set(pstmt, 1);
+            pstmt.setInt(2, fromHeight);
+            return getCount(pstmt);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.toString(), e);
+        }
+    }
+    
     public final int getCount(DbClause dbClause, int height) {
         checkAvailable(height);
         Connection con = null;
@@ -345,7 +358,8 @@ public abstract class EntityDbTable<T> extends DerivedDbTable {
         if (cachedT == null) {
             db.getCache(table).put(dbKey, t);
         } else if (t != cachedT) { // not a bug
-            throw new IllegalStateException("Different instance found in Db cache, perhaps trying to save an object "
+            if (!(t instanceof AT.ATState))  //but when dirty read ,there is a bug 2017.11.10
+            	throw new IllegalStateException("Different instance found in Db cache, perhaps trying to save an object "
                     + "that was read outside the current transaction");
         }
         try (Connection con = db.getConnection()) {
