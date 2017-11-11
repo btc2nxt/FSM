@@ -1,0 +1,37 @@
+<div>
+    <h2>Transaction <%=transaction %></h2>
+    <table>
+	    <tr>
+	      <td><strong>Transaction ID</strong></td>
+	      <td><%=transaction %></td>
+	    </tr>
+	    <tr>
+	      <td><strong>Block</strong></td>
+	      <td><a href="?id=<%=block %>" class="function_getBlock"><%=block %></a></td>
+	    </tr>
+	    <tr>
+	      <td><strong>Sender</strong></td>
+	      <td><a href="?id=<%=sender %>" class="function_getAccount"><%=sender %></a> (<%=senderRS %>)</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Recipient</strong></td>
+	      <td><a href="?id=<%=recipient %>" class="function_getAccount"><%=recipient %></a> (<%=recipientRS %>)</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Received Time</strong></td>
+	      <td><%=timestamp %></td>
+	    </tr>
+	    <tr>
+	      <td><strong>Fee</strong></td>
+	      <td><%=feeNQT/100000000 %> NFD</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Amount</strong></td>
+	      <td><%=amountNQT/100000000 %> NFD</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Confirmations</strong></td>
+	      <td><%=confirmations %></td>
+	    </tr>
+  	</table>
+</div>

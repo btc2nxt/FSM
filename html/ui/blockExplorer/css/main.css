@@ -1,0 +1,37 @@
+*{
+	font-family: Arial;
+	color: rgb(50, 50, 50);;
+}
+
+html{
+	background:#d6d6d6;
+}
+
+a{
+	text-decoration:none;
+	color:#690000;
+}
+
+input[type=submit]{
+	background-color: #fff;
+	border-color: #eee;
+	font-weight: 500;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid transparent;
+	-webkit-box-shadow: inset 0px -2px 0px 0px rgba(0, 0, 0, 0.09);
+	-moz-box-shadow: inset 0px -2px 0px 0px rgba(0, 0, 0, 0.09);
+	box-shadow: inset 0px -1px 0px 0px rgba(0, 0, 0, 0.09);
+}
+
+table{
+	border:1px solid #ccc !important;
+	background:#eee;
+	border-collapse:collapse;
+}
+table td,
+table th{
+	border:1px solid #ccc;
+	padding:5px;
+}

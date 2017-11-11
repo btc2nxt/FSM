@@ -1,0 +1,29 @@
+<div>
+    <h2>Account <%=account %></h2>
+    <table>
+	    <tr>
+	      <td><strong>Account ID</strong></td>
+	      <td><%=account %> (<%=accountRS %>)</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Public Key</td>
+	      <td><%=_data.publicKey %></td>
+	    </tr>
+	    <tr>
+	      <td><strong>Balance</strong></td>
+	      <td><%=balanceNQT/100000000 %> NFD</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Effective Balance</strong></td>
+	      <td><%=effectiveBalanceNXT %> NFD</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Forged Balance</strong></td>
+	      <td><%=forgedBalanceNQT/100000000 %> NFD</td>
+	    </tr>
+	    <tr>
+	      <td><strong>Unconfirmed Balance</strong></td>
+	      <td><%=unconfirmedBalanceNQT/100000000 %> NFD</td>
+	    </tr>
+  	</table>
+</div>

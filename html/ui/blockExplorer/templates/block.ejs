@@ -1,0 +1,60 @@
+<div>
+    <h2>Block <%=block %></h2>
+    <table>
+		  <tr>
+		    <td><strong>Number Of Transactions</strong></td>
+		    <td><%=numberOfTransactions %></td>
+		  </tr>
+		  <tr>
+		    <td><strong>Height</strong></td>
+		    <td><%=height %></td>
+		  </tr>
+		  <tr>
+		    <td><strong>Timestamp</strong></td>
+		    <td><%=timestamp %></td>
+		  </tr>
+		  <tr>
+		    <td><strong>Previous Block</strong></td>
+		    <td><a href="?id=<%=previousBlock %>" class="function_getBlock"><%=previousBlock %></a></td>
+		  </tr>
+		  <tr>
+		  	<td><strong>Generator</strong></td>
+		  	<td><a href="?id=<%=generator %>" class="function_getAccount"><%=generator %></a> (<%=generatorRS %>)</td>
+		  </tr>
+		<tr>
+		  <td><strong>Fee</strong></td>
+		  <td><%=totalFeeNQT/100000000 %> NFD</td>
+		</tr>
+		<tr>
+		  <td><strong>Amount</strong></td>
+		  <td><%=totalAmountNQT/100000000 %> NFD</td>
+		</tr>
+		<tr>
+		  <td><strong>Version</strong></td>
+		  <td><%=version %></td>
+		</tr>
+  	</table>
+  	<h3>Transactions</h3>
+
+  	<table>
+	    <tr>
+	      <th><strong>Transaction ID</strong></th>
+	      <th><strong>Sender</strong></th>
+	      <th><strong>Recipient</strong></th>
+	      <th><strong>Received Time</strong></th>
+	      <th><strong>Amount</strong></th>
+	      <th><strong>Confirmations</strong></th>
+	    </tr>
+	    
+  		<% for(var i=0; i<transactions.length; i++) {%>
+	    <tr class="dataCompleteTransaction">
+		  <td><a href="?id=<%=transactions[i] %>" ><%=transactions[i] %></a></td>
+	      <td><a href=""></a></td>
+	      <td><a href=""></a></td>
+	      <td></td>
+	      <td></td>
+	      <td></td>
+	    </tr>
+	    <% } %>
+  	</table>
+</div>
