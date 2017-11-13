@@ -93,7 +93,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 			this.steps = attachment.getSteps();
 			this.timeStamp = attachment.getTimeStamp();		
 			this.lastStateId = attachment.getLastStateId();
-			this.machineCodeUpdate = attachment.getMachineCode();			
+			this.machineCodeUpdate = attachment.getMachineCode();
 			this.machineDataUpdate = attachment.getMachineData();
 			this.lastRanHeight = attachment.getLastRanHeight();
 	    }
@@ -467,9 +467,9 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 		 * 
 		 * pre-distribute and airdrop have coded FSM Id.
 		 */
-		long systemATId = Math.abs(atId);
-		systemATId = systemATId % Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM ;
-		try {
+		long systemATId = 0 ;//Math.abs(atId);
+		//systemATId = systemATId % Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM ;
+		try {			
 			if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT) {
 				if (name.equals(Constants.GAME_PREDISTRIBUTE_FSM_NAME))
 					systemATId = Constants.GAME_PREDISTRIBUTE_FSM_ID;
@@ -480,8 +480,12 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 				else if (name.equals(Constants.GAME_DIVIDEND_FSM_NAME))
 					systemATId = Constants.GAME_DIVIDEND_FSM_ID;
 				
-				if ( systemATId == 0 )
+				if ( systemATId == 0 || systemATId > Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM)
 					throw new ATIdNotAcceptedException("Invalid AT Id, equals 0" );
+				
+				AT at = getAT(systemATId);
+				if (at != null)
+					throw new ATIdNotAcceptedException("Invalid AT Id, already existed." );
 
 				bf.putLong( systemATId );				
 			} else {
@@ -528,7 +532,7 @@ public final class AT extends AT_Machine_State implements Cloneable  {
 	}
 
 	static void removeAT(long atId) {
-		Logger.logDebugMessage("remove AT from ringATs error, no AT with id: " + atId);			
+		Logger.logDebugMessage("remove AT " + atId);			
 	}
 
 	static boolean isATAccountId(long atId) {

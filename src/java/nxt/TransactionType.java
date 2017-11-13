@@ -3,6 +3,8 @@ package nxt;
 import nxt.game.Move;
 import nxt.game.Move.LandCompleted;
 import nxt.game.Move.MoveType;
+import nxt.AT.ATIdNotAcceptedException;
+import nxt.AT.ATRunType;
 import nxt.Attachment.AbstractAttachment;
 import nxt.Attachment.AutomatedTransactionsCreation;
 import nxt.NxtException.NotValidException;
@@ -1725,11 +1727,46 @@ public abstract class TransactionType {
 				if (Nxt.getBlockchain().getLastBlock().getHeight()< Constants.AUTOMATED_TRANSACTION_BLOCK){
 					throw new NxtException.NotYetEnabledException("Automated Transactions not yet enabled at height " + Nxt.getBlockchain().getLastBlock().getHeight());
 				}
+				
 				Attachment.AutomatedTransactionsCreation attachment = (Attachment.AutomatedTransactionsCreation) transaction.getAttachment();
 				if (transaction.getFeeNQT() < attachment.getTotalPages() * AT_Constants.getInstance().COST_PER_PAGE( transaction.getHeight() ) ){
 					throw new NxtException.NotValidException("Invalid automated transaction program creation attachment: " + attachment.getJSONObject());
 				}
-				//Logger.logDebugMessage("validating success");
+				if (ATRunType.valueOf(attachment.getRunType()) == ATRunType.SYSTEM_AT) {
+					boolean validCreator = false; 
+					long senderId = transaction.getSenderId();
+					for (int i = 0; i < Genesis.GENESIS_RECIPIENTS.length; i++) {
+						if ( Genesis.GENESIS_RECIPIENTS[i] == senderId
+							 && Genesis.GENESIS_AMOUNTS[i] * Constants.ONE_NXT > Constants.MIN_SYSTEM_AT_CREATOR_BALANCE_IN_GENESIS) {
+							validCreator =true;
+							break;
+						}
+		            }
+					if (! validCreator)
+						throw new NxtException.NotValidException(transaction.getSenderId()+" cannot create SYSTEM AT");
+					
+					String runType = attachment.getRunType();
+					String name = attachment.getName();
+					long systemATId = 0 ;
+					if (ATRunType.valueOf(runType) == ATRunType.SYSTEM_AT) {
+						if (name.equals(Constants.GAME_PREDISTRIBUTE_FSM_NAME))
+							systemATId = Constants.GAME_PREDISTRIBUTE_FSM_ID;
+						else if (name.equals(Constants.GAME_AIRDROP_FSM_NAME))
+							systemATId = Constants.GAME_AIRDROP_FSM_ID;
+						else if (name.equals(Constants.GAME_SHARE_REDEEM_FSM_NAME))
+							systemATId = Constants.GAME_SHARE_REDEEM_FSM_ID;
+						else if (name.equals(Constants.GAME_DIVIDEND_FSM_NAME))
+							systemATId = Constants.GAME_DIVIDEND_FSM_ID;
+						
+						if ( systemATId == 0 || systemATId > Constants.MAX_AUTOMATED_TRANSACTION_SYSTEM)
+							throw new NxtException.NotValidException("Invalid System FSM name. " + attachment.getJSONObject());
+						
+						AT at = AT.getAT(systemATId);
+						if (at != null)
+							throw new NxtException.NotValidException("This SYSTEM FSM has already existed. " + attachment.getJSONObject());
+					}
+
+				}
 			}
 
 			@Override
