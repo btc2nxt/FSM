@@ -43,10 +43,11 @@ public final class AT_Controller {
 				
 				try{
 					for (AT_Controller vm : vms.values()) {
-						if (vm.getATId() == 0 )
-							runCreatorATs(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());
-						else
-							runForAnyoneAT(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());                		
+						//if (vm.getATId() == 0 )
+						//	runCreatorATs(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());
+						//else
+						//	runForAnyoneAT(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());
+						runUserAT(block.getHeight(), vm.getAccountId(), vm.getSecretPhrase(), vm.getATId());
 					}
                 }
 				catch ( NxtException.ValidationException e )
@@ -408,20 +409,22 @@ public final class AT_Controller {
 		return totalSteps;
 	}
 
-	public static int runForAnyoneAT( int blockHeight, long accountId, String secretPhrase, long atId) throws NotValidException{
+	public static int runUserAT( int blockHeight, long accountId, String secretPhrase, long atId) throws NotValidException{
 
 		int atCost;
 		int totalSteps = 0; 
 		long lastStateId =0L;
 		int lastRanHeight = 0;
 		
-		Logger.logDebugMessage("For Anyone AT will be running");
+		Logger.logDebugMessage("Users FSM will be running");
 		int orderedATHeight = 0;
 		Account account = Account.getAccount(accountId);
 		AT at = AT.getAT(atId);		
 		
 		if ( (at.getRunType()== AT.ATRunType.FOR_ANYONE || at.getRunType()== AT.ATRunType.CREATEOR_ONLY && AT_API_Helper.getLong(at.getCreator()) == accountId ) 
-				&& account.getUnconfirmedBalanceNQT() > AT_Constants.getInstance().MAX_STEPS(blockHeight) * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT)
+				&& account.getUnconfirmedBalanceNQT() > AT_Constants.getInstance().MAX_STEPS(blockHeight) * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT
+				&& at.getStartBlock() <= blockHeight 
+				&& at.getDelayBlocks() < blockHeight - at.getCreationBlockHeight())
 		{
 			/*load AT machine code, get state from AT_State
 			 * reset machine_state
@@ -431,40 +434,38 @@ public final class AT_Controller {
 			listCode( at , true , true );
 			
 			Logger.logDebugMessage("atId " + AT_API_Helper.getLong(at.getId()));
-            try (DbIterator<AT.ATState> atStates = at.getATStates(0, 1)) {
-                if (atStates.hasNext()) {
-                   AT.ATState atState = atStates.next();
-                   lastRanHeight = atState.getLastRanHeight();
-                   if (atState.getPc() < 0 || at.getSleepBetween() < blockHeight - lastRanHeight ) 
-                	   return 0;                   
-                   
-                   at.getMachineState().pc = atState.getPc();
-                   long timeStamp = atState.getTimeStamp();
-                   lastStateId = atState.getId();
-                   Logger.logDebugMessage("height,pc " + atState.getTimeStamp()+ " "+at.getMachineState().pc);
-                   
-                   //load update of FSM
-                   try (DbIterator<AT.ATState> atStateUpdates = at.getATStateUpdates(0, 1)) {                   
-                   if ( atStateUpdates.hasNext()) {
-                	   atState = atStateUpdates.next();
-                       if (atState.getMachineData() != null) {
-                       	at.setVarAp_data(atState.getMachineData());                		
-                       }                	
-                    }
-                   }
-                   /*
-                    * when send a message to FSM, the message will rewrite all data area,
-                    * and timestamp is on $address 0 
-                    * so timestamp must be set after the rewriting
-                    */
-                   at.setTimeStamp(timeStamp);
-                }
-                else {
-                	at.setTimeStamp(AT_API_Helper.getLongTimestamp(at.getCreationBlockHeight(),0));                	
-                	Logger.logDebugMessage("AT doesn't have AT_State record, set timestamp to createion height " );                	
-                }              	
-            }
 
+            AT.ATState atState = AT.getATStateById(atId); 
+            if (atState != null) {
+                /*
+                * the AT has stopped (with pc = -1) 
+                * || sleepbetween && pc =0	   
+                */
+            	lastRanHeight = atState.getLastRanHeight();
+                if (atState.getPc() < 0 || (at.getSleepBetween() > blockHeight - lastRanHeight && atState.getPc() == 0)) 
+                   
+                at.getMachineState().pc = atState.getPc(); 
+                long timeStamp = atState.getTimeStamp();
+                lastStateId = atState.getId();
+                Logger.logDebugMessage("height,pc " + atState.getTimeStamp()+ " "+at.getMachineState().pc);
+                   
+                 /*
+                  * load var data from AT_State
+                 */
+                if (atState.getMachineData().length != 0)
+                	at.setVarAp_data(atState.getMachineData());                		
+                /*
+                  * when send a message to FSM, the message will rewrite all data area,
+                  * and timestamp is on $address 0 
+                  * so timestamp must be set after the rewriting
+                */
+                at.setTimeStamp(timeStamp);
+            }
+            else {
+               	//at.setTimeStamp(AT_API_Helper.getLongTimestamp(at.getCreationBlockHeight(),0));                	
+               	Logger.logDebugMessage("FSM doesn't have AT_State record " );              	
+            }
+            
 			at.setLastRanSteps(totalSteps);
 			//if have txs, must update payload 				
 			atCost =getATResult(at,AT_API_Helper.getLong(at.getId()),blockHeight, orderedATHeight,account );
@@ -630,7 +631,7 @@ public final class AT_Controller {
         
         Account sender = Account.getAccount(tx.getSenderId());
 		atCost =getATResult(at,AT_API_Helper.getLong(at.getId()),runBlockHeight, 0, sender );
-		
+			
         /* compare the two at_transactions
          return (atCost >0 && at.getTransactions(). equals(atPayments));
          strange: ATTransaction.modcount of two objects aren't same, others are same ???

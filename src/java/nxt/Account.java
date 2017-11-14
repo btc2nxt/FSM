@@ -613,6 +613,32 @@ public final class Account {
         }
     }
 
+    public static long getGuaranteedBalanceNQTChange(long accountId, int numberOfConfirmations) {
+        int currentHeight = Nxt.getBlockchain().getHeight();
+    	if (numberOfConfirmations >= currentHeight) {
+            return 0;
+        }
+        if (numberOfConfirmations > 2880 || numberOfConfirmations < 0) {
+            throw new IllegalArgumentException("Number of required confirmations must be between 0 and " + 2880);
+        }
+        int height = currentHeight - numberOfConfirmations;
+        try (Connection con = Db.db.getConnection();
+             PreparedStatement pstmt = con.prepareStatement("SELECT SUM (additions) AS additions "
+                     + "FROM account_guaranteed_balance WHERE account_id = ? AND height > ? AND height <= ?")) {
+            pstmt.setLong(1, accountId);
+            pstmt.setInt(2, height);
+            pstmt.setInt(3, currentHeight);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (!rs.next()) {
+                    return 0;
+                }
+                return rs.getLong("additions");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e.toString(), e);
+        }
+    }
+
     public DbIterator<AccountAsset> getAssets(int from, int to) {
         return accountAssetTable.getManyBy(new DbClause.LongClause("account_id", this.id), from, to);
     }
@@ -869,6 +895,15 @@ public final class Account {
         }
         if (unconfirmed > confirmed) {
             throw new DoubleSpendingException("Unconfirmed exceeds confirmed balance or quantity for account " + Convert.toUnsignedLong(accountId));
+        }
+        
+        /*
+         * protection of FSM id= 2,GAME_AIRDROP_FSM_ID
+         * within 1440 blocks, sending amount must be less then 144 * GAME_DISTRIBUTE_RATE
+         */
+        if (accountId == Constants.GAME_AIRDROP_FSM_ID) {
+        	if (getGuaranteedBalanceNQTChange(accountId, 1440) > Constants.GAME_DISTRIBUTE_RATE * 150)
+        		throw new DoubleSpendingException("Send amount exceeds setting amount of a day for account " + Convert.toUnsignedLong(accountId));        		
         }
     }
 
