@@ -71,9 +71,13 @@ public final class AT_Controller {
 	
     public static void init() {};   
     
-    public static int runSteps( AT_Machine_State state, Account executor )
+    public static int runSteps( AT_Machine_State state )
 	{
-		state.getMachineState().finished = false;
+    	int height = Nxt.getBlockchain().getHeight();
+    	int maxSteps = (int)AT_Constants.getInstance().MAX_STEPS( height );
+    	long stepFee = AT_Constants.getInstance().STEP_FEE( height );
+    	
+    	state.getMachineState().finished = false;
 		state.getMachineState().steps = 0;
 		state.getAp_code().clear();		
 		//an AT has run
@@ -82,18 +86,19 @@ public final class AT_Controller {
 
 		AT_Machine_Processor processor = new AT_Machine_Processor( state );
 
-		int height = Nxt.getBlockchain().getHeight();
+		
 		state.setLastRanBlock(height);
 
-		while ( state.getMachineState().steps < (AT_Constants.getInstance().MAX_STEPS( height )) )
+		while ( state.getMachineState().steps < maxSteps )
 		{
-			if ( ( executor.getUnconfirmedBalanceNQT() < AT_Constants.getInstance().STEP_FEE( height )) )
+			if ( ( state.getG_balance() < stepFee ) )
 			{
 				Logger.logDebugMessage( "stopped - not enough balance" );
 				return 3;
 			}
 
 			state.getMachineState().steps++;
+			state.setG_balanceMinus(stepFee);			
 			int rc = processor.processOp( false , false );
 			
 			/*
@@ -101,7 +106,7 @@ public final class AT_Controller {
 			 * BLK_SET 0 is end of the block
 			 */
 			if (state.getMachineState().codeBlockSteps > 0 && !state.getMachineState().inCodeBlock) {
-				if (state.getMachineState().steps +state.getMachineState().codeBlockSteps < (AT_Constants.getInstance().MAX_STEPS( height ) )) {
+				if (state.getMachineState().steps +state.getMachineState().codeBlockSteps < maxSteps) {
 					state.getMachineState().inCodeBlock = true;
 				} 
 				else {
@@ -242,7 +247,6 @@ public final class AT_Controller {
     }
 	
 	/*
-	 * decide AT will run or not
 	 * after runsteps, will generate fee txs
 	 */
 			
@@ -258,13 +262,7 @@ public final class AT_Controller {
 				at.setStateAndData(blockATBytesAtHeights.get(currentBlockHeight - 1) );
 			}
 		}*/
-		
-		//start when reach a setting block which is set in createion of FSM
-		if ( at.getStartBlock() > currentBlockHeight)
-		{
-			return 0;
-		}
-		
+				
 		long atAccountBalance = getATAccountBalance( atId );
 		long atStateBalance = at.getG_balance() + at.getStepsFeeNQT();
 
@@ -276,21 +274,10 @@ public final class AT_Controller {
 			return 0;
 		}
 
-		//update g_balance, because of new tx sending money to AT's account
-		if (atAccountBalance != atStateBalance) {
-			at.setG_balance( atAccountBalance - at.getStepsFeeNQT());
-		}
-
-		if ( ( at.getDelayBlocks() == 0 || at.getDelayBlocks() > 0 && currentBlockHeight - at.getCreationBlockHeight() >= at.getDelayBlocks()) )
-		{
-			Logger.logDebugMessage(String.format("FSM %s is running", atId));					
-			at.clearTransactions();
-			//waiting for blocks after create an AT 
-			if (at.getDelayBlocks() > 0) {
-				at.setDelayBlocks( 0 );				
-			}
-			
-			runSteps ( at, account );
+		at.setG_balance(atAccountBalance);					
+		at.clearTransactions();
+		Logger.logDebugMessage(String.format("FSM %s is running", atId));
+		runSteps ( at );
 			
 			/*save at state to blockatbytesATHeights
 			at.setLastRanBlock(currentBlockHeight);				
@@ -302,20 +289,13 @@ public final class AT_Controller {
 					blockATBytesAtHeights.remove(currentBlockHeight - AT_Constants.AT_POP_BLOCK);
 				}
 				
-			}*/						
-			
-			return getCostOfOneAT();			
-		}
-		else {
-			Logger.logDebugMessage(String.format("FSM %s is at sleeping", atId));
-			return 0;
-		}
+			}*/												
+		return getCostOfOneAT();
 	}
 	
 	/*
 	 * atId = 0: only run account's ATs
 	 * >0 : only run the AT which must be with RunType=FOR_ANYONE or which is the account's AT, but isn't SYSTEM_AT.  
-	 */
 	public static int runCreatorATs( int blockHeight, long accountId, String secretPhrase, long atId) throws NotValidException{
 
 		int atCost;
@@ -330,10 +310,6 @@ public final class AT_Controller {
 		try (DbIterator<AT> ats = AT.getATsIssuedBy(accountId, 0, 10))	{
 		while ( ats.hasNext() && account.getUnconfirmedBalanceNQT() > AT_Constants.getInstance().MAX_STEPS(blockHeight) * Constants.AUTOMATED_TRANSACTIONS_STEP_COST_NQT)
 		{
-			/*load AT machine code, get state from AT_State
-			 * reset machine_state
-			 * add machineState.jumps(call listCode(at , true , true )) 	
-			 */
 			AT at = ats.next();
 			listCode( at , true , true );
 			
@@ -360,11 +336,6 @@ public final class AT_Controller {
                        }                	
                     }
                    }
-                   /*
-                    * when send a message to FSM, the message will rewrite all data area,
-                    * and timestamp is on $address 0 
-                    * so timestamp must be set after the rewriting
-                    */
                    at.setTimeStamp(timeStamp);
                 }
                 else {
@@ -408,7 +379,7 @@ public final class AT_Controller {
 
 		return totalSteps;
 	}
-
+*/
 	public static int runUserAT( int blockHeight, long accountId, String secretPhrase, long atId) throws NotValidException{
 
 		int atCost;

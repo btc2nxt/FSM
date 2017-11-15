@@ -804,14 +804,14 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 	public long send_to_Address_in_B( long val , AT_Machine_State state ) {
 		
 		if ( state.getG_balance() >= Constants.ONE_NXT ) { 
-			if ( state.getG_balance() >= val ) {
+			if ( state.getG_balance() >= val + Constants.ONE_NXT ) {
 				//AT_Transaction tx = new AT_Transaction(state.getId(), state.get_B1().clone() , val, null );
 				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , val, null, 0, 0, 0 );
 				state.addTransaction( tx );
-				state.setG_balance( state.getG_balance() - val );
+				state.setG_balanceMinus( val );
 			}
 			else {
-				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null, 0 ,0, 0 );			
+				AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() - Constants.ONE_NXT, null, 0 ,0, 0 );			
 				state.addTransaction( tx );
 				state.setG_balance( 0L );
 				//at.setG_balance( at.getG_balance() - 123 );
@@ -826,8 +826,8 @@ public class AT_API_Platform_Impl extends AT_API_Impl {
 		//long atId = AT_API_Helper.getLong( state.getId() );
 		//AT at = AT.getAT( atId );
 		//bug: G_balance = 0 ,AT has to stop
-		if ( state.getG_balance() >= 0 && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
-			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() , null,0 ,0, 0 );
+		if ( state.getG_balance() >= Constants.ONE_NXT && AT_API_Helper.getLong(state.get_B1()) > 0 ) {
+			AT_Transaction tx = new AT_Transaction( state.get_B1().clone() , state.getG_balance() - Constants.ONE_NXT , null,0 ,0, 0 );
 			state.addTransaction( tx );
 			state.setG_balance( 0L );			
 		}

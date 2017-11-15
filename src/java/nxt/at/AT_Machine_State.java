@@ -493,6 +493,11 @@ public class AT_Machine_State
 		this.g_balance = g_balance;
 	}
 
+	public void setG_balanceMinus(Long balance) 
+	{
+		this.g_balance = g_balance - balance;
+	}
+	
 	public void setP_balance(Long p_balance) 
 	{
 		this.p_balance = p_balance;
