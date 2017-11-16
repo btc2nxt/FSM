@@ -558,9 +558,6 @@ public final class AT_Controller {
 				}
 			}
 					
-			if (totalSteps >= AT_Constants.getInstance().MAX_STEPS( blockHeight )) {
-				break;
-			}
 		}
         }
 

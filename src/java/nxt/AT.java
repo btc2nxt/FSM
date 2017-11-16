@@ -11,9 +11,7 @@ package nxt;
 
 
 import nxt.at.AT_API_Helper;
-import nxt.at.AT_Constants;
 import nxt.at.AT_Controller;
-import nxt.at.AT_Exception;
 import nxt.at.AT_Machine_State;
 import nxt.crypto.Crypto;
 import nxt.db.DbClause;

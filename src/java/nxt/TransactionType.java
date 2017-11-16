@@ -2,17 +2,13 @@ package nxt;
 
 import nxt.game.Move;
 import nxt.game.Move.LandCompleted;
-import nxt.game.Move.MoveType;
-import nxt.AT.ATIdNotAcceptedException;
 import nxt.AT.ATRunType;
 import nxt.Attachment.AbstractAttachment;
 import nxt.Attachment.AutomatedTransactionsCreation;
 import nxt.NxtException.NotValidException;
 import nxt.NxtException.ValidationException;
-import nxt.at.AT_API_Helper;
 import nxt.at.AT_Constants;
 import nxt.at.AT_Transaction;
-import nxt.db.DbIterator;
 import nxt.util.Convert;
 import nxt.util.Logger;
 import nxt.game.TownMap;
@@ -1714,7 +1710,7 @@ public abstract class TransactionType {
 			AbstractAttachment parseAttachment(JSONObject attachmentData)
 					throws NotValidException {
 				// TODO Auto-generated method stub
-				Logger.logDebugMessage("parsing at attachment");
+				//Logger.logDebugMessage("parsing at attachment");
 				Attachment.AutomatedTransactionsCreation atCreateAttachment = new Attachment.AutomatedTransactionsCreation(attachmentData);
 				//Logger.logDebugMessage("attachment parsed");
 				return atCreateAttachment;

@@ -5,16 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import nxt.Asset;
 import nxt.Constants;
 import nxt.Nxt;
 import nxt.db.DbIterator;
 import nxt.db.DbKey;
 import nxt.db.DbUtils;
 import nxt.db.EntityDbTable;
-import nxt.game.Move.LandCompleted;
-import nxt.game.Move.MoveType;
-import nxt.util.Logger;
 
 public final class TownMap {
     public static enum LandDescription {
@@ -222,36 +218,4 @@ public final class TownMap {
     	land.assetId = assetId;
     	landTable.insert(land);
     }
-    
-    
-    /*
-     * (x,y ) ---> Hotel.room
-     * (x,y ) ---> Restaurant.table
-     * ...
-     
-    public static void setLifeValueOfLandAsset(int x, int y, long lifeValue) {
-		for ( int i = 0; i <10; i++) {
-			if (x >= lands[i].x && x <= lands[i].x1
-					&& y >= lands[i].y & y <= lands[i].y1) {
-				int seq = (y- lands[i].y) * (lands[i].x1 - lands[i].x + 1) + x- lands[i].x + 1;
-				lands[i].lifeValues[seq] = lifeValue;
-				break;
-			}
-		}
-    }
-    
-    public static long getLifeValueOfLandAsset(int x, int y) {
-		long lifeValue = 0;
-		
-    	for ( int i = 0; i <10; i++) {
-			if (x >= lands[i].x && x <= lands[i].x1
-					&& y >= lands[i].y & y <= lands[i].y1) {
-				int seq = (y- lands[i].y) * (lands[i].x1 - lands[i].x + 1) + x- lands[i].x + 1;
-				lifeValue = lands[i].lifeValues[seq];
-				break;
-			}
-		}
-    	return lifeValue;
-    }  
-    */  
 }

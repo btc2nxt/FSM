@@ -269,6 +269,8 @@ public final class Move {
     		break;
     	case BE_COLLECTOR:
     		player = Account.PlayerType.COLLECTOR;
+		default:
+			break;
         }
     	
     	if (player == null) 
@@ -295,7 +297,7 @@ public final class Move {
         
     }
     
-    private Move(long accountId, int collectPower, int attackPower, int defenseValue, int healthyIndex, int xCoordinate, int yCoordinate, String step, long lifeValue) {
+    private Move(long accountId, int collectPower, int attackPower, int defenseValue, int healthyIndex, int xCoordinate, int yCoordinate, String step, long lifeValue, long assetId) {
         this.accountId = accountId;
         this.dbKey = moveDbKeyFactory.newKey(this.accountId);
         this.collectPower = collectPower;
@@ -394,18 +396,4 @@ public final class Move {
         return assetId;
     }
     
-    /*void setAccountPlayer(int xCoordinate, int yCoordinate, MoveType step) {
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        this.step = step;
-        moveTable.insert(this);
-    }
-    
-    void playerMoveTo(int xCoordinate, int yCoordinate, MoveType step) {
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        if (this.attackPower > 1) 
-        	--this.attackPower;
-        moveTable.insert(this);
-    }*/
 }
